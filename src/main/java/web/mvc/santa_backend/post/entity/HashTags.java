@@ -11,14 +11,14 @@ public class HashTags {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    Long HashTagDetailId;
+    private   Long HashTagDetailId;
 
     @ManyToOne
             @JoinColumn(name = "post_id")
-    Posts postId;
+    private  Posts postId;
 
     @Column(nullable = false)
-    String tag;
+    private   String tag;
 
 
 }

@@ -3,8 +3,12 @@ package web.mvc.santa_backend.post.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
+import org.springframework.boot.context.properties.bind.DefaultValue;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 
 @Entity
@@ -14,17 +18,22 @@ public class Posts {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    Long postId;
+    private   Long postId;
     @Column(nullable = false)
-    Long createUserId;
+    private  Long createUserId;
+
+    @CreatedDate
+    @Column(nullable = false)
+    private  LocalDateTime create_at;
 
     @Column(nullable = false)
-    LocalDateTime create_at;
+            @ColumnDefault("0")
+    private Long likeCount;
     @Column(nullable = false)
-    Long likeCount;
+    @ColumnDefault("0")
+    private   Long postLevel;
     @Column(nullable = false)
-    Long postLevel;
-    @Column(nullable = false)
-    boolean contentVisible;
+    @ColumnDefault("false")
+    private   boolean contentVisible;
 
 }

@@ -11,13 +11,13 @@ public class ImageSources {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    Long imageId;
+    private    Long imageId;
 
     @ManyToOne
             @JoinColumn(name = "post_id")
-    Posts posts;
+    private    Posts posts;
 
     @Column(nullable = false,length = 255)
-    String source;
+    private  String source;
 
 }

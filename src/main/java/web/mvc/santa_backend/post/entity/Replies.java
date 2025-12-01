@@ -3,6 +3,7 @@ package web.mvc.santa_backend.post.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 
@@ -14,20 +15,21 @@ public class Replies {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    Long replyId;
+    private  Long replyId;
 
     @Column(nullable = false)
-    Long userId;
+    private  Long userId;
 
     @ManyToOne
     @JoinColumn(name = "post_id")
     private Posts posts;
 
     @Column(nullable = false)
-    String replyContent;
+    private   String replyContent;
 
     @Column(nullable = false)
-    Long replyLike;
+    @ColumnDefault("0")
+    private  Long replyLike;
 
 
 }
