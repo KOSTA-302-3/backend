@@ -1,0 +1,33 @@
+package web.mvc.santa_backend.post.entity;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Getter
+@Setter
+@Table(name = "replies")
+public class Replies {
+
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    Long replyId;
+
+    @Column(nullable = false)
+    Long userId;
+
+    @ManyToOne
+    @JoinColumn(name = "post_id")
+    private Posts posts;
+
+    @Column(nullable = false)
+    String replyContent;
+
+    @Column(nullable = false)
+    Long replyLike;
+
+
+}
