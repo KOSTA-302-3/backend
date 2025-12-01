@@ -2,6 +2,7 @@ package web.mvc.santa_backend.user.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import web.mvc.santa_backend.common.enumtype.BlockType;
 
 import java.time.LocalDateTime;
@@ -29,6 +30,7 @@ public class Blocks {
     @Column(nullable = false)
     private Long targetId;
 
-    @Column(nullable = false, name = "created_at", columnDefinition = "datetime default now()")
+    @Column(nullable = false, name = "created_at")
+    @CreationTimestamp
     private LocalDateTime createdAt;
 }

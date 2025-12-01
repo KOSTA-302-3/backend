@@ -2,6 +2,7 @@ package web.mvc.santa_backend.user.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -24,6 +25,7 @@ public class Users_Colors {
     @JoinColumn(name = "color_id")
     private Colors color;
 
-    @Column(nullable = false, name = "created_at", columnDefinition = "datetime default now()")
+    @Column(nullable = false, name = "created_at")
+    @CreationTimestamp
     private LocalDateTime createdAt;
 }

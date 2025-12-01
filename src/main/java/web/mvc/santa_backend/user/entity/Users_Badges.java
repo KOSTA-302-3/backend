@@ -2,6 +2,7 @@ package web.mvc.santa_backend.user.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -24,6 +25,7 @@ public class Users_Badges {
     @JoinColumn(name = "badge_id")
     private Badges badge;
 
-    @Column(nullable = false, name = "created_at", columnDefinition = "datetime default now()")
+    @Column(nullable = false, name = "created_at")
+    @CreationTimestamp
     private LocalDateTime createdAt;
 }

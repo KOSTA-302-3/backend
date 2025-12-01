@@ -2,6 +2,7 @@ package web.mvc.santa_backend.user.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import web.mvc.santa_backend.common.enumtype.UserRole;
 
 import java.time.LocalDateTime;
@@ -57,7 +58,8 @@ public class Users {
     @Column(nullable = false, columnDefinition = "bigint default 0")
     private Long followerCount = 0L;
 
-    @Column(nullable = false, name = "created_at", columnDefinition = "datetime default now()")
+    @Column(nullable = false, name = "created_at")
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
     @Column(name = "deleted_at")
