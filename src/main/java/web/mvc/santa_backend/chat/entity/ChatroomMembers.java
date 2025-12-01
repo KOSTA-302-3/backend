@@ -3,6 +3,7 @@ package web.mvc.santa_backend.chat.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import web.mvc.santa_backend.common.enumtype.UserRole;
+import web.mvc.santa_backend.user.entity.Users;
 
 import java.util.List;
 
@@ -27,11 +28,11 @@ public class ChatroomMember {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="chatroom_id", nullable = false)
-    private Chatroom chatroom;
+    private Chatrooms chatroom;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id", nullable = false)
-    private User user;
+    private Users user;
 
     private Long startRead;
     private Long lastRead;
