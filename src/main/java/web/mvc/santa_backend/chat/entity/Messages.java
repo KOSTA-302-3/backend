@@ -31,7 +31,7 @@ public class Messages {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "reply_message_id")
-    private Message replyMessage;
+    private Messages replyMessage;
 
     @Lob
     @Column(nullable = false)

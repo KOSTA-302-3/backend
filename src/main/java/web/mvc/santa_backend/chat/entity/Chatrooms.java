@@ -41,5 +41,5 @@ public class Chatrooms {
     private String description;
 
     @OneToMany(mappedBy = "chatroom", fetch = FetchType.LAZY)
-    private List<ChatroomMember> chatroomMembers = new ArrayList<>();
+    private List<ChatroomMembers> chatroomMembers = new ArrayList<>();
 }

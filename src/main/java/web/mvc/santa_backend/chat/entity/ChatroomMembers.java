@@ -48,6 +48,6 @@ public class ChatroomMembers {
     private boolean isBanned = false;
 
     @OneToMany(mappedBy = "chatroomMember", fetch = FetchType.LAZY)
-    private List<Message> messages;
+    private List<Messages> messages;
 
 }
