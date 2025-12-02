@@ -39,4 +39,8 @@ public class Notifications {
     @Column(nullable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false, name = "action_user_id")
+    private Users actionUser;
 }

@@ -19,4 +19,5 @@ public class NotificationDTO {
     private Boolean isRead;
     private NotificationType type;
     private LocalDateTime createdAt;
+    private Long actionUserId;
 }

@@ -7,9 +7,28 @@ import java.util.List;
 
 public interface NotificationService {
 
+    /**
+     * 관리자..에서 사용할 지 몰라서 지우진 않았으나 아직 구현되지 않은 메서드
+     * @return
+     */
     public List<NotificationDTO> getAllNotifications();
 
+    /**
+     * user가 읽지 않은 알림만 가져오는 메서드
+     * @param id
+     * @param page
+     * @return
+     */
     public Page<NotificationDTO> getNotificationByUserId(Long id, int page);
+
+    /**
+     * 유저의 모든 알림을 가져오는 메서드
+     * @param id
+     * @param page
+     * @return
+     */
+
+    public Page<NotificationDTO> getAllNotificationByUserId(Long id, int page);
 
     /**
      * 알림을 생성하는 메서드.
@@ -23,7 +42,9 @@ public interface NotificationService {
      */
     public void createNotification(NotificationDTO notificationDTO);
 
-    public void updateNotification(NotificationDTO notificationDTO);
-
+    /**
+     * isRead의 값을 true로 바꿔서 읽은 상태로 바꾸는 메서드
+     * @param id
+     */
     public void deleteNotificationById(Long id);
 }

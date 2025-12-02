@@ -8,4 +8,6 @@ import web.mvc.santa_backend.user.entity.Users;
 
 public interface NotificationRepository extends JpaRepository<Notifications,Long> {
     Page<Notifications> findByUser(Users user, Pageable pageable);
+
+    Page<Notifications> findByUserAndIsRead(Users user, boolean isRead, Pageable pageable);
 }
