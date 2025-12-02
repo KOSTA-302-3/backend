@@ -16,7 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Chatrooms {
+public class Chatroom {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long chatroomId;
@@ -41,5 +41,5 @@ public class Chatrooms {
     private String description;
 
     @OneToMany(mappedBy = "chatroom", fetch = FetchType.LAZY)
-    private List<ChatroomMembers> chatroomMembers = new ArrayList<>();
+    private List<ChatroomMember> chatroomMembers = new ArrayList<>();
 }

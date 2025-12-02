@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import web.mvc.santa_backend.common.enumtype.NotificationType;
-import web.mvc.santa_backend.user.entity.Users;
 
 import java.time.LocalDateTime;
 
@@ -15,14 +14,14 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Notifications {
+public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long notificationId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id", nullable = false)
-    private Users user;
+    private User user;
 
     @Column(nullable = false)
     private String message;
