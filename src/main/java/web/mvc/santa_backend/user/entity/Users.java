@@ -64,8 +64,4 @@ public class Users {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
-
-    @OneToOne
-    @MapsId
-    private Customs custom;
 }
