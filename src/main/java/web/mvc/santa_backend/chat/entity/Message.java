@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Messages {
+public class Message {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long messageId;
@@ -27,11 +27,11 @@ public class Messages {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chatroom_member_id", nullable = true)
-    private ChatroomMembers chatroomMember;
+    private ChatroomMember chatroomMember;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "reply_message_id")
-    private Messages replyMessage;
+    private Message replyMessage;
 
     @Lob
     @Column(nullable = false)
