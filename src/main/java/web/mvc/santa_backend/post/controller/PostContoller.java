@@ -80,15 +80,16 @@ public class PostContoller {
     }
     //댓글쓰기
     @PostMapping("/createReplies")
-    Posts createReplies(@RequestParam RepliesDTO repliesDTO){
+    Posts createReplies(@RequestBody RepliesDTO repliesDTO){
         repliesService.createReplies(repliesDTO);
+
         return null;
 
     }
 
     //댓글 수정
     @PutMapping("/updateReplies")
-    Posts updateReplies(@RequestParam RepliesDTO repliesDTO){
+    Posts updateReplies(@RequestBody RepliesDTO repliesDTO){
         repliesService.updateReplies(repliesDTO);
         return null;
 
@@ -96,7 +97,7 @@ public class PostContoller {
 
     //댓글 삭제
     @DeleteMapping("/deleteReplies")
-    Posts deleteReplies(@RequestParam RepliesDTO repliesDTO){
+    Posts deleteReplies(@RequestBody RepliesDTO repliesDTO){
         repliesService.deleteReplies(repliesDTO);
         return null;
 

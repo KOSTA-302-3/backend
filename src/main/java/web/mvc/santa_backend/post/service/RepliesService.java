@@ -2,6 +2,7 @@ package web.mvc.santa_backend.post.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import web.mvc.santa_backend.post.dto.RepliesDTO;
 import web.mvc.santa_backend.post.entity.Replies;
 import web.mvc.santa_backend.post.repository.PostResository;
@@ -16,28 +17,37 @@ public class RepliesService {
     @Autowired
     private RepliesRepository repliesRepository;
     @Autowired
-    private PostResository postResository;
+    private PostResository postRepository;
 
-
-    public List<RepliesDTO> findReplies(Long id){
+    @Transactional
+    public List<RepliesDTO> findReplies(Long id) {
 
         List<RepliesDTO> dtoList = new ArrayList<>();
 
-        for(Replies replies : repliesRepository.findAllByPostsPostId(id)){
-            dtoList.add(new RepliesDTO(replies));
+        for (Replies replies : repliesRepository.findAllByPostsPostId(id)) {
+            dtoList.add(new RepliesDTO(replies.getReplyId(),
+                    replies.getUserId(),
+                    replies.getPosts().getPostId(),
+                    replies.getReplyContent(),
+                    replies.getReplyLike()
+            ));
         }
 
 
         return dtoList;
-    };
+    }
 
+    ;
 
-    public void createReplies(RepliesDTO repliesDTO){
+    @Transactional
+    public void createReplies(RepliesDTO repliesDTO) {
+        System.out.println(repliesDTO.toString());
         repliesRepository.save(
                 Replies.builder().
-                        userId(repliesDTO.getReplies().getUserId()).
-                        posts(postResository.findById(repliesDTO.getReplies().getUserId()).get()).
-                        replyContent(repliesDTO.getReplies().getReplyContent()).replyLike(repliesDTO.getReplies().getReplyLike()).
+                        userId(repliesDTO.getUserId()).
+                        posts(postRepository.findById(repliesDTO.getPostId()).get()).
+                        replyContent(repliesDTO.getReplyContent()).
+                        replyLike(0L).
                         build()
 
         );
@@ -46,14 +56,15 @@ public class RepliesService {
     }
 
 
-
-   public void updateReplies(RepliesDTO repliesDTO){
+    @Transactional
+    public void updateReplies(RepliesDTO repliesDTO) {
         repliesRepository.save(
                 Replies.builder().
-                        replyId(repliesDTO.getReplies().getReplyId()).
-                        userId(repliesDTO.getReplies().getUserId()).
-                        posts(postResository.findById(repliesDTO.getReplies().getPosts().getPostId()).get()).
-                        replyContent(repliesDTO.getReplies().getReplyContent()).replyLike(repliesDTO.getReplies().getReplyLike()).
+                        replyId(repliesDTO.getReplyId()).
+                        userId(repliesDTO.getUserId()).
+                        posts(postRepository.findById(repliesDTO.getPostId()).get()).
+                        replyContent(repliesDTO.getReplyContent()).
+                        replyLike(repliesDTO.getReplyLike()).
                         build()
 
         );
@@ -62,10 +73,9 @@ public class RepliesService {
     }
 
 
-
-
-  public   void deleteReplies(RepliesDTO repliesDTO){
-        repliesRepository.deleteById(repliesDTO.getReplies().getReplyId());
+    @Transactional
+    public void deleteReplies(RepliesDTO repliesDTO) {
+        repliesRepository.deleteById(repliesDTO.getReplyId());
         System.out.println("댓글 삭제 성공!");
     }
 

@@ -10,7 +10,7 @@ import java.util.List;
 @Repository
 public interface PostResository extends JpaRepository<Posts, Long> {
 
-    List<Posts> findAllByPostLevel(Long level);
+    List<Posts> findAllByPostLevelBetween(Long startLevel,Long endLevel);
 
 
 

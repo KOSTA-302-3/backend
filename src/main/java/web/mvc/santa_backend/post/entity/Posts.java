@@ -29,6 +29,8 @@ public class Posts {
     @CreatedDate
     @Column(nullable = false)
     private  LocalDateTime create_at;
+    @Column(nullable = true, columnDefinition = "text")
+    private String content;
 
     @Column(nullable = false)
             @ColumnDefault("0")

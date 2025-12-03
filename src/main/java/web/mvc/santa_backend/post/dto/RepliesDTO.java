@@ -11,6 +11,13 @@ import web.mvc.santa_backend.post.entity.Replies;
 @Setter
 @AllArgsConstructor
 public class RepliesDTO {
-    private Replies replies;
+    private Long replyId;
 
+    private Long userId;
+
+    private Long postId;
+
+    private String replyContent;
+
+    private Long replyLike;
 }
