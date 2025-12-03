@@ -31,7 +31,7 @@ public class NotificationController {
 
     @PutMapping("/api/notification/{notificationId}")
     public ResponseEntity<?> checkNotification(@PathVariable Long notificationId){
-
+        notificationService.deleteNotificationById(notificationId);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 }
