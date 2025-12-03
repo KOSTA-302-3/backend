@@ -48,24 +48,24 @@ public class PostContoller {
 
     //게시물 작성
     @PostMapping("/createPosts")
-    Posts createPosts(){
-
+    Posts createPosts(@RequestBody PostDTO postDTO){
+        postService.createPosts(postDTO);
         return null;
 
     }
 
     //게시물 수정
     @PutMapping("/updatePosts")
-    Posts updatePosts(){
-
+    Posts updatePosts(@RequestBody PostDTO postDTO){
+        postService.updatePosts(postDTO);
         return null;
 
     }
 
     //게시물 삭제
     @DeleteMapping("/deletePosts")
-    Posts deletePosts(){
-
+    Posts deletePosts(@RequestBody PostDTO postDTO){
+        postService.deletePosts(postDTO);
         return null;
 
     }
@@ -80,24 +80,24 @@ public class PostContoller {
     }
     //댓글쓰기
     @PostMapping("/createReplies")
-    Posts createReplies(){
-
+    Posts createReplies(@RequestParam RepliesDTO repliesDTO){
+        repliesService.createReplies(repliesDTO);
         return null;
 
     }
 
     //댓글 수정
     @PutMapping("/updateReplies")
-    Posts updateReplies(){
-
+    Posts updateReplies(@RequestParam RepliesDTO repliesDTO){
+        repliesService.updateReplies(repliesDTO);
         return null;
 
     }
 
     //댓글 삭제
     @DeleteMapping("/deleteReplies")
-    Posts deleteReplies(){
-
+    Posts deleteReplies(@RequestParam RepliesDTO repliesDTO){
+        repliesService.deleteReplies(repliesDTO);
         return null;
 
     }

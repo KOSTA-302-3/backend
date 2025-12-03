@@ -8,6 +8,7 @@ import web.mvc.santa_backend.post.repository.HashTagsRepository;
 import web.mvc.santa_backend.post.repository.ImageSourcesRepository;
 import web.mvc.santa_backend.post.repository.PostResository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +57,29 @@ public class PostService {
 
 
         return dtoList;
+    }
+
+    public void createPosts(PostDTO posts){
+        postResository.save(Posts.builder().
+                createUserId(posts.getPosts().getPostId()).
+                create_at(posts.getPosts().getCreate_at()
+                ).likeCount(posts.getPosts().getLikeCount()).postLevel(posts.getPosts().getPostLevel()).contentVisible(false).
+                build()
+        );
+    }
+
+    public void updatePosts(PostDTO posts){
+        postResository.save(Posts.builder().
+                postId(posts.getPosts().getPostId()).
+                createUserId(posts.getPosts().getCreateUserId()).
+                create_at(posts.getPosts().getCreate_at()
+                ).likeCount(posts.getPosts().getLikeCount()).postLevel(posts.getPosts().getPostLevel()).contentVisible(false).
+                build()
+        );
+    }
+
+    public void deletePosts(PostDTO posts){
+        postResository.deleteById(posts.getPosts().getPostId());
     }
 
 
