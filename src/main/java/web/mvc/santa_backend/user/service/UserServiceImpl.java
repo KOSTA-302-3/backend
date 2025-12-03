@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final CustomService customService;
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
 
@@ -63,6 +64,7 @@ public class UserServiceImpl implements UserService {
 
         Users newUser = userRepository.save(modelMapper.map(userRequestDTO, Users.class));
         log.info("user: {}", newUser);
+        customService.addCustom(newUser);
     }
 
     @Transactional(readOnly = true)
