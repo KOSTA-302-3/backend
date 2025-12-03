@@ -15,7 +15,7 @@ public class ImageSources {
 
     @ManyToOne
             @JoinColumn(name = "post_id")
-    private    Posts posts;
+    private  Posts posts;
 
     @Column(nullable = false,length = 255)
     private  String source;

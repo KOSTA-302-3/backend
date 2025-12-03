@@ -8,7 +8,9 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 
 @Entity
@@ -35,5 +37,7 @@ public class Posts {
     @Column(nullable = false)
     @ColumnDefault("false")
     private   boolean contentVisible;
+
+
 
 }
