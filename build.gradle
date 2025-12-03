@@ -35,7 +35,7 @@ dependencies {
 
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
+//    testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-websocket-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -43,6 +43,8 @@ dependencies {
     implementation 'org.springframework.security:spring-security-oauth2-client:6.5.1'
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
     implementation("software.amazon.awssdk:s3:2.39.6")
+    implementation 'org.modelmapper:modelmapper:3.1.1'
+
 }
 
 tasks.named('test') {

@@ -11,7 +11,11 @@ import lombok.*;
 @AllArgsConstructor
 public class Customs {
     @Id
+    @Column(name = "user_id")
+    private Long id;
+
     @OneToOne
+    @MapsId
     @JoinColumn(name = "user_id")
     private Users user;
 

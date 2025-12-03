@@ -3,16 +3,14 @@ package web.mvc.santa_backend.post.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Entity
 @Getter
 @Setter
-public class FeedBakcs {
+public class FeedBacks {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
