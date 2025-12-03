@@ -33,7 +33,8 @@ public interface NotificationService {
     /**
      * 알림을 생성하는 메서드.
      * DTO내의 필수입력 변수목록
-     * Long userId
+     * Long userId(알림을 볼 사람)
+     * Long actionUserId(좋아요를 누른 사람, DM을 보낸 사람, 답글을 단 사람..)
      * NotificationType type(enum)
      * 선택입력
      * String link(url)
