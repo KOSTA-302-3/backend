@@ -115,7 +115,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public UserResponseDTO deleteUser(Long id) {
+    public UserResponseDTO deactivateUser(Long id) {
         Users user = userRepository.findById(id)
                 //.orElseThrow(()->new DMLException(ErrorCode.));
                 .orElseThrow(()->new RuntimeException("탈퇴 실패"));
@@ -125,47 +125,11 @@ public class UserServiceImpl implements UserService {
         return modelMapper.map(user, UserResponseDTO.class);
     }
 
-
-    /**
-     * DTO -> Entity
-     * (UserRequestDTO -> Users)
-     */
-/*    private Users toEntity(UserRequestDTO UserRequestDTO) {
-        return Users.builder()
-                .username(UserRequestDTO.getUsername())
-                .password(UserRequestDTO.getPassword())
-                .email(UserRequestDTO.getEmail())
-                .phone(UserRequestDTO.getPhone())
-                .profileImage(UserRequestDTO.getProfileImage())
-                .description(UserRequestDTO.getDescription())
-                .level(UserRequestDTO.getLevel())
-                .followerCount(0L)
-                .followingCount(0L)
-                .build();
-    }*/
-
-    /**
-     * Entity -> DTO
-     * (Users -> UserResponseDTO)
-     */
-//    private UserResponseDTO toDTO(Users users) {
-//        // Users 에는.. followingList, blockedList, Custom에 대한 정보가 없는데..어떻게 가져오는 거지? join..
-//        return UserResponseDTO.builder()
-//                .userId(users.getUserId())
-//                .username(users.getUsername())
-//                .password(users.getPassword())
-//                .email(users.getEmail())
-//                .phone(users.getPhone())
-//                .profileImage(users.getProfileImage())
-//                .description(users.getDescription())
-//                .followerCnt(users.getFollowerCount())
-//                .followingCnt(users.getFollowingCount())
-//                .point(users.getPoint())
-//                .level(users.getLevel())
-//                .state(users.isState())
-//                .isPrivate(users.isPrivate())
-//                .createdAt(users.getCreatedAt())
-//                .deletedAt(users.getDeletedAt())
-//                .build();
-//    }
+    @Transactional
+    @Override
+    public void deleteUser(Long id) {
+        userRepository.findById(id)
+                .orElseThrow(()->new RuntimeException("삭제 실패"));
+        userRepository.deleteById(id);
+    }
 }

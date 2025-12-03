@@ -42,5 +42,10 @@ public interface UserService {
     /**
      * 유저 탈퇴
      */
-    UserResponseDTO deleteUser(Long id);
+    UserResponseDTO deactivateUser(Long id);
+
+    /**
+     * 유저 삭제
+     */
+    void deleteUser(Long id);
 }

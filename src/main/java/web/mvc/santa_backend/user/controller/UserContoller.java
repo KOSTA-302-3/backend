@@ -64,7 +64,7 @@ public class UserContoller {
     }
 
     /* 유저 조회, 수정, 탈퇴 */
-    @Operation(summary = "아이디(username)로 유저 목록 조회(검색)")
+    @Operation(summary = "아이디(username)로 유저 목록 조회(검색)", description = "page 0부터 시작")
     @GetMapping("/api/users/{username}/{page}")
     public ResponseEntity<?> getUsersByUsername(@PathVariable String username, @PathVariable int page) {
         log.info("username: {}, page: {}", username, page);
@@ -94,11 +94,20 @@ public class UserContoller {
     }
 
     @Operation(summary = "유저 탈퇴")
-    @PutMapping("/api/users/delete/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
-        log.info("deleteUser/ id: {}", id);
-        UserResponseDTO deleteUser = userService.deleteUser(id);
+    @PutMapping("/api/users/softdelete/{id}")
+    public ResponseEntity<?> deactivateUser(@PathVariable Long id) {
+        log.info("deactivateUser/ id: {}", id);
+        UserResponseDTO deleteUser = userService.deactivateUser(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(deleteUser);
+    }
+
+    @Operation(summary = "유저 삭제")
+    @DeleteMapping("/api/users/harddelete/{id}")
+    public String deleteUser(@PathVariable Long id) {
+        log.info("deleteUser/ id: {}", id);
+        userService.deleteUser(id);
+
+        return "유저 삭제 완료";
     }
 }
