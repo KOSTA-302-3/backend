@@ -15,7 +15,7 @@ public class HashTags {
 
     @ManyToOne
             @JoinColumn(name = "post_id")
-    private  Posts postId;
+    private  Posts posts;
 
     @Column(nullable = false)
     private   String tag;
