@@ -69,7 +69,7 @@ public class UserContoller {
     public ResponseEntity<?> getUsersByUsername(@PathVariable String username, @PathVariable int page) {
         log.info("username: {}, page: {}", username, page);
         Page<UserSimpleDTO> users = userService.getUsersByUsername(username, page);
-        // UserSimpleDTO 로 변경
+
         return ResponseEntity.status(HttpStatus.OK).body(users);
     }
 

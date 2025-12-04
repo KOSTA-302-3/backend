@@ -12,7 +12,6 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserRequestDTO {
-    private Long userId;
     // 가입 시 필수
     private String username;
     private String password;

@@ -7,10 +7,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
 import web.mvc.santa_backend.common.enumtype.UserRole;
+import web.mvc.santa_backend.user.entity.Customs;
 import web.mvc.santa_backend.user.entity.Users;
+import web.mvc.santa_backend.user.repository.CustomRepository;
 import web.mvc.santa_backend.user.repository.UserRepository;
+import web.mvc.santa_backend.user.service.UserService;
 
 import java.time.LocalDateTime;
 
@@ -21,14 +27,18 @@ public class UserTests {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private CustomRepository customRepository;
 
 
     @Test
     @DisplayName("유저 등록")
+    @Transactional
+    @Rollback(false)
     void insertUsers() {
         String encPwd = passwordEncoder.encode("1234"); // 비밀번호 암호화
 
-        userRepository.save(
+        Users user1 = userRepository.save(
                 Users.builder()
                         .username("admin")
                         .password(encPwd)
@@ -44,8 +54,9 @@ public class UserTests {
                         .createdAt(LocalDateTime.now())
                         .build()
         );
+        customRepository.save(Customs.builder().user(user1).build());
 
-        userRepository.save(
+        Users user2 = userRepository.save(
                 Users.builder()
                         .username("mj")
                         .password(encPwd)
@@ -61,8 +72,9 @@ public class UserTests {
                         .createdAt(LocalDateTime.now())
                         .build()
         );
+        customRepository.save(Customs.builder().user(user2).build());
 
-        userRepository.save(
+        Users user3 = userRepository.save(
                 Users.builder()
                         .username("dh")
                         .password(encPwd)
@@ -78,15 +90,29 @@ public class UserTests {
                         .createdAt(LocalDateTime.now())
                         .build()
         );
+        customRepository.save(Customs.builder().user(user3).build());
     }
 
     @Test
     @DisplayName("username으로 유저 목록 조회")
-    void selectUserByUsername() {
+    @Transactional(readOnly = true)
+    void selectUsersByUsername() {
         String keyword = "m";
 
         Pageable pageable = PageRequest.of(1, 10);
         Page<Users> users = userRepository.findByUsernameContainingIgnoreCase(keyword, pageable);
+
+        System.out.println("users: " + users);
+    }
+
+    @Test
+    @DisplayName("username으로 유저 목록 조회 (JPQL)")
+    @Transactional(readOnly = true)
+    void selectUsersByUsername2() {
+        String keyword = "m";
+
+        Pageable pageable = PageRequest.of(1, 10);
+        Page<Users> users = userRepository.findWithCustomByUsername(keyword, pageable);
 
         System.out.println("users: " + users);
     }

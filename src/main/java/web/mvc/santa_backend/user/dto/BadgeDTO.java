@@ -1,7 +1,13 @@
 package web.mvc.santa_backend.user.dto;
 
 import jakarta.persistence.Column;
+import lombok.*;
 
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class BadgeDTO {
     private Long badgeId;
     private String name;
