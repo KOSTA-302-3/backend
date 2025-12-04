@@ -110,4 +110,23 @@ public class UserContoller {
 
         return "유저 삭제 완료";
     }
+
+    /* 팔로우 관련 조회 */
+    @Operation(summary = "팔로워 조회")
+    @GetMapping("/api/users/{id}/followers")
+    public ResponseEntity<?> getFollowers(@PathVariable Long id) {
+        log.info("getFollowers/ id: {}", id);
+        // TODO: userService.getFollowers(id);
+
+        return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
+
+    @Operation(summary = "팔로잉 조회")
+    @GetMapping("api/users/{id}/followings")
+    public ResponseEntity<?> getFollowings(@PathVariable Long id) {
+        log.info("getFollowings/ id: {}", id);
+        // TODO: userService:getFollowings(id);
+
+        return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
 }
