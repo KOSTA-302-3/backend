@@ -12,10 +12,14 @@ import org.springframework.transaction.annotation.Transactional;
 import web.mvc.santa_backend.user.dto.UserResponseDTO;
 import web.mvc.santa_backend.user.dto.UserRequestDTO;
 import web.mvc.santa_backend.user.dto.UserSimpleDTO;
+import web.mvc.santa_backend.user.entity.Follows;
 import web.mvc.santa_backend.user.entity.Users;
+import web.mvc.santa_backend.user.repository.FollowRepository;
 import web.mvc.santa_backend.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +27,7 @@ import java.time.LocalDateTime;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final FollowRepository followRepository;
     private final CustomService customService;
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
@@ -91,10 +96,11 @@ public class UserServiceImpl implements UserService {
                 //.orElseThrow(()->new RuntimeException(ErrorCode.USER_NOTFOUND))
                 .orElseThrow(()->new RuntimeException("해당 유저가 없습니다."));
 
-        System.out.println(user.getCustom());
-        log.info("getCustom: {}", user.getCustom());
+        UserResponseDTO userResponseDTO = modelMapper.map(user, UserResponseDTO.class);
+        userResponseDTO.setFollowingList(this.getFollowings(id));
+        userResponseDTO.setFollowerList(this.getFollowers(id));
 
-        return modelMapper.map(user, UserResponseDTO.class);
+        return userResponseDTO;
     }
 
     @Transactional
@@ -131,6 +137,28 @@ public class UserServiceImpl implements UserService {
         user.setState(false);   // 상태 비활성화로 변경
         user.setDeletedAt(LocalDateTime.now());
 
+        // 현재 유저를 팔로우 하고 있는 유저들의 팔로잉 수 -1
+        this.getFollowers(id).forEach(follower -> userRepository.decreaseFollowingCount(follower.getUserId()));
+        // 현재 유저가 팔로우 하고 있는 유저들의 팔로워 수 -1
+        this.getFollowings(id).forEach(following -> userRepository.decreaseFollowerCount(following.getUserId()));
+
+        return modelMapper.map(user, UserResponseDTO.class);
+    }
+
+    @Transactional
+    @Override
+    public UserResponseDTO reactivateUser(Long id) {
+        Users user = userRepository.findById(id)
+                //.orElseThrow(()->new DMLException(ErrorCode.));
+                .orElseThrow(()->new RuntimeException("복구 실패"));
+        user.setState(true);
+        user.setDeletedAt(null);
+
+        // 현재 유저를 팔로우 하고 있는 유저들의 팔로잉 수 +1
+        this.getFollowers(id).forEach(follower -> userRepository.increaseFollowingCount(follower.getUserId()));
+        // 현재 유저가 팔로우 하고 있는 유저들의 팔로워 수 +1
+        this.getFollowings(id).forEach(following -> userRepository.increaseFollowerCount(following.getUserId()));
+
         return modelMapper.map(user, UserResponseDTO.class);
     }
 
@@ -140,5 +168,68 @@ public class UserServiceImpl implements UserService {
         userRepository.findById(id)
                 .orElseThrow(()->new RuntimeException("삭제 실패"));
         userRepository.deleteById(id);
+    }
+
+    @Override
+    public List<UserSimpleDTO> getFollowings(Long id) {
+        List<Follows> follows = followRepository.findByFollower_UserIdAndFollowing_StateIsTrueAndPendingIsFalse(id);
+
+        // Follows -> Follows.following (Users) -> UserSimpleDTO
+        List<UserSimpleDTO> followings = follows.stream()
+                .map(follow -> modelMapper.map(follow.getFollowing(), UserSimpleDTO.class))
+                .toList();
+
+        return followings;
+    }
+
+    @Override
+    public List<UserSimpleDTO> getFollowers(Long id) {
+        List<Follows> follows = followRepository.findByFollowing_UserIdAndFollower_StateIsTrueAndPendingIsFalse(id);
+
+        // Follows -> Follows.following (Users) -> UserSimpleDTO
+        List<UserSimpleDTO> followers = follows.stream()
+                .map(follow -> modelMapper.map(follow.getFollower(), UserSimpleDTO.class))
+                .toList();
+
+        return followers;
+    }
+
+    @Override
+    public Page<UserSimpleDTO> getFollowings(Long id, int page) {
+        Pageable pageable = PageRequest.of(page, 10);
+
+        Page<Follows> follows = followRepository.findByFollower_UserIdAndFollowing_StateIsTrueAndPendingIsFalse(id, pageable);
+
+        // Follows -> Follows.following (Users) -> UserSimpleDTO
+        Page<UserSimpleDTO> followings = follows
+                .map(follow -> modelMapper.map(follow.getFollowing(), UserSimpleDTO.class));
+
+        return followings;
+    }
+
+    @Override
+    public Page<UserSimpleDTO> getFollowers(Long id, int page) {
+        Pageable pageable = PageRequest.of(page, 10);
+
+        Page<Follows> follows = followRepository.findByFollowing_UserIdAndFollower_StateIsTrueAndPendingIsFalse(id, pageable);
+
+        // Follows -> Follows.following (Users) -> UserSimpleDTO
+        Page<UserSimpleDTO> followers = follows
+                .map(follow -> modelMapper.map(follow.getFollower(), UserSimpleDTO.class));
+
+        return followers;
+    }
+
+    @Override
+    public Page<UserSimpleDTO> getPendingFollowers(Long id, int page) {
+        Pageable pageable = PageRequest.of(page, 10);
+
+        Page<Follows> follows = followRepository.findByFollowing_UserIdAndPendingIsTrue(id, pageable);
+
+        // Follows -> Follows.following (Users) -> UserSimpleDTO
+        Page<UserSimpleDTO> followers = follows
+                .map(follow -> modelMapper.map(follow.getFollower(), UserSimpleDTO.class));
+
+        return followers;
     }
 }

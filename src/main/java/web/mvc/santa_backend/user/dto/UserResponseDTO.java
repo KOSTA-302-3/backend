@@ -22,8 +22,8 @@ public class UserResponseDTO {
     private String phone;
     private String profileImage;
     private String description;
-    private Long followingCnt;
-    private Long followerCnt;
+    private Long followingCount;
+    private Long followerCount;
 
     private Long point;
     private int level;
@@ -36,9 +36,9 @@ public class UserResponseDTO {
     private LocalDateTime deletedAt;
 
     private CustomDTO customDTO;
-    private List<UserResponseDTO> followingList;
-    private List<UserResponseDTO> followerList;
-    private List<UserResponseDTO> blockedList;
-    private List<UserResponseDTO> reportedUserList;
+    private List<UserSimpleDTO> followingList;
+    private List<UserSimpleDTO> followerList;
+    private List<UserSimpleDTO> blockedList;
+    private List<UserSimpleDTO> reportedUserList;
     private List<PostDTO> reportedPostList;
 }
