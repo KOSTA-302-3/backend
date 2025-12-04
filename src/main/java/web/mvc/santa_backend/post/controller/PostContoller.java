@@ -1,7 +1,9 @@
 package web.mvc.santa_backend.post.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import web.mvc.santa_backend.post.dto.PostDTO;
 import web.mvc.santa_backend.post.dto.RepliesDTO;
 import web.mvc.santa_backend.post.entity.Posts;
@@ -10,6 +12,8 @@ import web.mvc.santa_backend.post.service.PostService;
 import web.mvc.santa_backend.post.service.RepliesService;
 
 import java.util.List;
+
+import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
 @RestController
 @RequestMapping("/posts")
@@ -47,11 +51,11 @@ public class PostContoller {
     }
 
     //게시물 작성
-    @PostMapping("/createPosts")
+    @PostMapping(value = "/createPosts")
     Posts createPosts(@RequestBody PostDTO postDTO){
+
         postService.createPosts(postDTO);
         return null;
-
     }
 
     //게시물 수정
@@ -100,7 +104,16 @@ public class PostContoller {
     Posts deleteReplies(@RequestBody RepliesDTO repliesDTO){
         repliesService.deleteReplies(repliesDTO);
         return null;
+    }
 
+
+    @PostMapping(value = "/imageUpload/{postId}" , consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    Posts createPosts(@RequestPart List<MultipartFile> files,
+                      @PathVariable Long postId){
+
+        postService.imgUpload(files,postId);
+
+        return null;
     }
 
 

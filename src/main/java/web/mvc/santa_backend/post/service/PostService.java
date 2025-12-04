@@ -3,12 +3,16 @@ package web.mvc.santa_backend.post.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import web.mvc.santa_backend.common.S3.S3Uploader;
 import web.mvc.santa_backend.post.dto.PostDTO;
+import web.mvc.santa_backend.post.entity.ImageSources;
 import web.mvc.santa_backend.post.entity.Posts;
 import web.mvc.santa_backend.post.repository.HashTagsRepository;
 import web.mvc.santa_backend.post.repository.ImageSourcesRepository;
 import web.mvc.santa_backend.post.repository.PostResository;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +26,8 @@ public class PostService {
     private HashTagsRepository hashTagsRepository;
     @Autowired
     private ImageSourcesRepository imageSourcesRepository;
+    @Autowired
+    private S3Uploader s3Uploader;
 
     @Transactional
     public List<PostDTO> getAllPostsWithOffFilter() {
@@ -62,6 +68,8 @@ public class PostService {
     }
     @Transactional
     public void createPosts(PostDTO posts){
+
+
         postResository.save(Posts.builder().
                 createUserId(posts.getPosts().getPostId()).
                 create_at(posts.getPosts().getCreate_at()).
@@ -90,4 +98,35 @@ public class PostService {
     }
 
 
+
+    @Transactional
+    public void imgUpload(List<MultipartFile> files,Long postId){
+        List<String> urls = new ArrayList<>();
+        for(MultipartFile file : files){
+            try {
+                urls.add(s3Uploader.uploadFile(file,"test"));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        for(int i = 0 ; i < urls.size() ; i++){
+            imageSourcesRepository.save(
+                    ImageSources.builder().
+                            posts(
+                                    postResository.findById(postId).get()
+                            ).
+                            source(urls.get(i)).
+                            build()
+            );
+
+
+        }
+
+
+
+    }
+
+
 }
+
