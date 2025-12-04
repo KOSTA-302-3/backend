@@ -5,6 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import web.mvc.santa_backend.chat.dto.NotificationDTO;
+import web.mvc.santa_backend.chat.repository.NotificationRepository;
+import web.mvc.santa_backend.chat.service.NotificationService;
+import web.mvc.santa_backend.common.enumtype.NotificationType;
 import web.mvc.santa_backend.user.entity.Follows;
 import web.mvc.santa_backend.user.entity.Users;
 import web.mvc.santa_backend.user.repository.FollowRepository;
@@ -20,6 +24,7 @@ public class FollowServiceImpl implements FollowService {
     private final FollowRepository followRepository;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
+    private final NotificationService notificationService;
 
 
     @Transactional
@@ -48,6 +53,15 @@ public class FollowServiceImpl implements FollowService {
         // count 증가
         userRepository.increaseFollowingCount(followerId);  // 현재 유저의 팔로잉 수 증가
         userRepository.increaseFollowerCount(followingId);  // 팔로우 당한 유저의 팔로워 수 증가
+
+        // 알림
+        NotificationDTO notificationDTO = NotificationDTO.builder()
+                .userId(following.getUserId())
+                .actionUserId(follower.getUserId())
+                .type(NotificationType.FOLLOW)
+                .link(null)
+                .build();
+        notificationService.createNotification(notificationDTO);
 
         followRepository.save(follow);
     }
