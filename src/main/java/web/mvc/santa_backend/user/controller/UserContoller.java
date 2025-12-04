@@ -14,6 +14,8 @@ import web.mvc.santa_backend.user.dto.UserRequestDTO;
 import web.mvc.santa_backend.user.dto.UserSimpleDTO;
 import web.mvc.santa_backend.user.service.UserService;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -112,21 +114,39 @@ public class UserContoller {
     }
 
     /* 팔로우 관련 조회 */
-    @Operation(summary = "팔로워 조회")
+    @Operation(summary = "팔로워 조회 (전체 리스트)")
     @GetMapping("/api/users/{id}/followers")
     public ResponseEntity<?> getFollowers(@PathVariable Long id) {
         log.info("getFollowers/ id: {}", id);
-        // TODO: userService.getFollowers(id);
+        List<UserSimpleDTO> followers = userService.getFollowers(id);
 
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        return ResponseEntity.status(HttpStatus.OK).body(followers);
     }
 
-    @Operation(summary = "팔로잉 조회")
+    @Operation(summary = "팔로잉 조회 (전체 리스트)")
     @GetMapping("api/users/{id}/followings")
     public ResponseEntity<?> getFollowings(@PathVariable Long id) {
         log.info("getFollowings/ id: {}", id);
-        // TODO: userService:getFollowings(id);
+        List<UserSimpleDTO> followings = userService.getFollowings(id);
 
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        return ResponseEntity.status(HttpStatus.OK).body(followings);
+    }
+
+    @Operation(summary = "팔로워 조회 (페이징)")
+    @GetMapping("/api/users/{id}/followers/{page}")
+    public ResponseEntity<?> getFollowers(@PathVariable Long id, @PathVariable int page) {
+        log.info("getFollowers/ id: {}", id);
+        Page<UserSimpleDTO> followers = userService.getFollowers(id, page);
+
+        return ResponseEntity.status(HttpStatus.OK).body(followers);
+    }
+
+    @Operation(summary = "팔로잉 조회 (페이징)")
+    @GetMapping("api/users/{id}/followings/{page}")
+    public ResponseEntity<?> getFollowings(@PathVariable Long id, @PathVariable int page) {
+        log.info("getFollowings/ id: {}", id);
+        Page<UserSimpleDTO> followings = userService.getFollowings(id, page);
+
+        return ResponseEntity.status(HttpStatus.OK).body(followings);
     }
 }

@@ -12,10 +12,14 @@ import org.springframework.transaction.annotation.Transactional;
 import web.mvc.santa_backend.user.dto.UserResponseDTO;
 import web.mvc.santa_backend.user.dto.UserRequestDTO;
 import web.mvc.santa_backend.user.dto.UserSimpleDTO;
+import web.mvc.santa_backend.user.entity.Follows;
 import web.mvc.santa_backend.user.entity.Users;
+import web.mvc.santa_backend.user.repository.FollowRepository;
 import web.mvc.santa_backend.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +27,7 @@ import java.time.LocalDateTime;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final FollowRepository followRepository;
     private final CustomService customService;
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
@@ -140,5 +145,55 @@ public class UserServiceImpl implements UserService {
         userRepository.findById(id)
                 .orElseThrow(()->new RuntimeException("삭제 실패"));
         userRepository.deleteById(id);
+    }
+
+    @Override
+    public List<UserSimpleDTO> getFollowings(Long id) {
+        List<Follows> follows = followRepository.findByFollower_UserIdAndFollowing_StateIsTrueAndPendingIsFalse(id);
+
+        // Follows -> Follows.following (Users) -> UserSimpleDTO
+        List<UserSimpleDTO> followings = follows.stream()
+                .map(follow -> modelMapper.map(follow.getFollowing(), UserSimpleDTO.class))
+                .toList();
+
+        return followings;
+    }
+
+    @Override
+    public List<UserSimpleDTO> getFollowers(Long id) {
+        List<Follows> follows = followRepository.findByFollowing_UserIdAndFollower_StateIsTrueAndPendingIsFalse(id);
+
+        // Follows -> Follows.following (Users) -> UserSimpleDTO
+        List<UserSimpleDTO> followers = follows.stream()
+                .map(follow -> modelMapper.map(follow.getFollower(), UserSimpleDTO.class))
+                .toList();
+
+        return followers;
+    }
+
+    @Override
+    public Page<UserSimpleDTO> getFollowings(Long id, int page) {
+        Pageable pageable = PageRequest.of(page, 10);
+
+        Page<Follows> follows = followRepository.findByFollower_UserIdAndFollowing_StateIsTrueAndPendingIsFalse(id, pageable);
+
+        // Follows -> Follows.following (Users) -> UserSimpleDTO
+        Page<UserSimpleDTO> followings = follows
+                .map(follow -> modelMapper.map(follow.getFollowing(), UserSimpleDTO.class));
+
+        return followings;
+    }
+
+    @Override
+    public Page<UserSimpleDTO> getFollowers(Long id, int page) {
+        Pageable pageable = PageRequest.of(page, 10);
+
+        Page<Follows> follows = followRepository.findByFollowing_UserIdAndFollower_StateIsTrueAndPendingIsFalse(id, pageable);
+
+        // Follows -> Follows.following (Users) -> UserSimpleDTO
+        Page<UserSimpleDTO> followers = follows
+                .map(follow -> modelMapper.map(follow.getFollower(), UserSimpleDTO.class));
+
+        return followers;
     }
 }
