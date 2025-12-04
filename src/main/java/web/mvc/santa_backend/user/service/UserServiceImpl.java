@@ -96,10 +96,11 @@ public class UserServiceImpl implements UserService {
                 //.orElseThrow(()->new RuntimeException(ErrorCode.USER_NOTFOUND))
                 .orElseThrow(()->new RuntimeException("해당 유저가 없습니다."));
 
-        System.out.println(user.getCustom());
-        log.info("getCustom: {}", user.getCustom());
+        UserResponseDTO userResponseDTO = modelMapper.map(user, UserResponseDTO.class);
+        userResponseDTO.setFollowingList(this.getFollowings(id));
+        userResponseDTO.setFollowerList(this.getFollowers(id));
 
-        return modelMapper.map(user, UserResponseDTO.class);
+        return userResponseDTO;
     }
 
     @Transactional
@@ -135,6 +136,28 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(()->new RuntimeException("탈퇴 실패"));
         user.setState(false);   // 상태 비활성화로 변경
         user.setDeletedAt(LocalDateTime.now());
+
+        // 현재 유저를 팔로우 하고 있는 유저들의 팔로잉 수 -1
+        this.getFollowers(id).forEach(follower -> userRepository.decreaseFollowingCount(follower.getUserId()));
+        // 현재 유저가 팔로우 하고 있는 유저들의 팔로워 수 -1
+        this.getFollowings(id).forEach(following -> userRepository.decreaseFollowerCount(following.getUserId()));
+
+        return modelMapper.map(user, UserResponseDTO.class);
+    }
+
+    @Transactional
+    @Override
+    public UserResponseDTO reactivateUser(Long id) {
+        Users user = userRepository.findById(id)
+                //.orElseThrow(()->new DMLException(ErrorCode.));
+                .orElseThrow(()->new RuntimeException("복구 실패"));
+        user.setState(true);
+        user.setDeletedAt(null);
+
+        // 현재 유저를 팔로우 하고 있는 유저들의 팔로잉 수 +1
+        this.getFollowers(id).forEach(follower -> userRepository.increaseFollowingCount(follower.getUserId()));
+        // 현재 유저가 팔로우 하고 있는 유저들의 팔로워 수 +1
+        this.getFollowings(id).forEach(following -> userRepository.increaseFollowerCount(following.getUserId()));
 
         return modelMapper.map(user, UserResponseDTO.class);
     }

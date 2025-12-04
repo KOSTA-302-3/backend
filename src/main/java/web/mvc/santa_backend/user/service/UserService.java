@@ -48,6 +48,11 @@ public interface UserService {
     UserResponseDTO deactivateUser(Long id);
 
     /**
+     * 유저 탈퇴 복구
+     */
+    UserResponseDTO reactivateUser(Long id);
+
+    /**
      * 유저 삭제
      */
     void deleteUser(Long id);

@@ -104,6 +104,15 @@ public class UserContoller {
         return ResponseEntity.status(HttpStatus.OK).body(deleteUser);
     }
 
+    @Operation(summary = "유저 탈퇴 복구")
+    @PutMapping("/api/users/recover/{id}")
+    public ResponseEntity<?> reactivateUser(@PathVariable Long id) {
+        log.info("reactivateUser/ id: {}", id);
+        UserResponseDTO recoverUser = userService.reactivateUser(id);
+
+        return ResponseEntity.status(HttpStatus.OK).body(recoverUser);
+    }
+
     @Operation(summary = "유저 삭제")
     @DeleteMapping("/api/users/harddelete/{id}")
     public String deleteUser(@PathVariable Long id) {
