@@ -76,7 +76,8 @@ public class UserServiceImpl implements UserService {
         Pageable pageable = PageRequest.of(page, 10);
         //Pageable pageable = PageRequest.of(page, 10, 정렬방향, 정렬기준필드);
 
-        Page<Users> users = userRepository.findByUsernameContainingIgnoreCase(username, pageable);
+        //Page<Users> users = userRepository.findByUsernameContainingIgnoreCase(username, pageable);
+        Page<Users> users = userRepository.findWithCustomByUsername(username, pageable);
         Page<UserSimpleDTO> userSimpleDTOs = users.map(user -> modelMapper.map(user, UserSimpleDTO.class));
 
         return userSimpleDTOs;
@@ -85,9 +86,13 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     @Override
     public UserResponseDTO getUserById(Long id) {
-        Users user = userRepository.findById(id)
+        //Users user = userRepository.findById(id)
+        Users user = userRepository.findWithCustomById(id)
                 //.orElseThrow(()->new RuntimeException(ErrorCode.USER_NOTFOUND))
                 .orElseThrow(()->new RuntimeException("해당 유저가 없습니다."));
+
+        System.out.println(user.getCustom());
+        log.info("getCustom: {}", user.getCustom());
 
         return modelMapper.map(user, UserResponseDTO.class);
     }
@@ -105,6 +110,8 @@ public class UserServiceImpl implements UserService {
         Users user = userRepository.findById(id)
                 //.orElseThrow(()->new DMLException(ErrorCode.));
                 .orElseThrow(()->new RuntimeException("수정 실패"));
+
+        // TODO: save로수정
         user.setUsername(userRequestDTO.getUsername());
         user.setProfileImage(userRequestDTO.getProfileImage());
         user.setDescription(userRequestDTO.getDescription());

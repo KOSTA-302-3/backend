@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import web.mvc.santa_backend.user.entity.Users;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<Users, Long> {
@@ -19,9 +20,14 @@ public interface UserRepository extends JpaRepository<Users, Long> {
 
     Boolean existsByEmail(String email);
 
+    // 예전 거 삭제예정
     Page<Users> findByUsernameContainingIgnoreCase(String username, Pageable pageable);
 
-    /*@Query("select u from Users u join fetch u.custom c " +
-            "where lower(u.username) like lower(concat('%', :username, '%'))")
-    Page<Users> findWithCustomByUsername(String username, Pageable pageable);*/
+    @Query(value = "select u from Users u left join fetch u.custom c " +
+            "where lower(u.username) like lower(concat('%', :username, '%'))",
+            countQuery = "select count(u.userId) from Users u left join u.custom")
+    Page<Users> findWithCustomByUsername(String username, Pageable pageable);
+
+    @Query("select u from Users u left join fetch u.custom c where u.userId = :id")
+    Optional<Users> findWithCustomById(Long id);
 }

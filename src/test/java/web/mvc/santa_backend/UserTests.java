@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import web.mvc.santa_backend.common.enumtype.UserRole;
 import web.mvc.santa_backend.user.entity.Customs;
@@ -33,6 +34,7 @@ public class UserTests {
     @Test
     @DisplayName("유저 등록")
     @Transactional
+    @Rollback(false)
     void insertUsers() {
         String encPwd = passwordEncoder.encode("1234"); // 비밀번호 암호화
 
@@ -93,11 +95,24 @@ public class UserTests {
 
     @Test
     @DisplayName("username으로 유저 목록 조회")
-    void selectUserByUsername() {
+    @Transactional(readOnly = true)
+    void selectUsersByUsername() {
         String keyword = "m";
 
         Pageable pageable = PageRequest.of(1, 10);
         Page<Users> users = userRepository.findByUsernameContainingIgnoreCase(keyword, pageable);
+
+        System.out.println("users: " + users);
+    }
+
+    @Test
+    @DisplayName("username으로 유저 목록 조회 (JPQL)")
+    @Transactional(readOnly = true)
+    void selectUsersByUsername2() {
+        String keyword = "m";
+
+        Pageable pageable = PageRequest.of(1, 10);
+        Page<Users> users = userRepository.findWithCustomByUsername(keyword, pageable);
 
         System.out.println("users: " + users);
     }
