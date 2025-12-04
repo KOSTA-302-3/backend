@@ -12,6 +12,8 @@ import org.springframework.web.multipart.MultipartFile;
 import web.mvc.santa_backend.common.S3.S3Uploader;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,10 +21,22 @@ import java.io.IOException;
 public class UploadTestController {
     private final S3Uploader s3Uploader;
 
-    @PostMapping("api/uploadfile")
+    @PostMapping("/api/uploadfile")
     public ResponseEntity<String> upload(@RequestParam("file") MultipartFile file) throws IOException {
         log.info("Uploading file {}", file.getOriginalFilename());
         String url = s3Uploader.uploadFile(file, "test");
         return ResponseEntity.status(HttpStatus.CREATED).body(url);
+    }
+
+    @PostMapping("/api/uploadfiles")
+    public ResponseEntity<List<String>> uploadFiles(@RequestParam("files") List<MultipartFile> files) throws IOException {
+        log.info("Uploading files {}", files);
+
+        List<String> urls = new ArrayList<>();
+
+        for (MultipartFile file : files) {
+            urls.add(s3Uploader.uploadFile(file, "test"));
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(urls);
     }
 }
