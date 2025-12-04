@@ -1,0 +1,18 @@
+package web.mvc.santa_backend.chat.repository;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import web.mvc.santa_backend.chat.entity.ChatroomMembers;
+import web.mvc.santa_backend.chat.entity.Chatrooms;
+
+import java.util.List;
+
+public interface ChatroomMemberRepository extends JpaRepository<ChatroomMembers,Long> {
+    @Query("select c from ChatroomMembers cm join cm.chatroom c where cm.user.userId = :userId")
+    Page<Chatrooms> findByUserId(Long userId, Pageable pageable);
+
+    @Query("select c from ChatroomMembers cm join cm.chatroom c where cm.user.userId = :userId and lower(c.name) like lower(concat('%', :word, '%'))")
+    Page<Chatrooms> findByUserIdAndWord(Long userId, String word, Pageable pageable);
+}
