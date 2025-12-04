@@ -22,8 +22,8 @@ public class UserResponseDTO {
     private String phone;
     private String profileImage;
     private String description;
-    private Long followingCnt;
-    private Long followerCnt;
+    private Long followingCount;
+    private Long followerCount;
 
     private Long point;
     private int level;

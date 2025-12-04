@@ -25,14 +25,15 @@ public class FollowServiceImpl implements FollowService {
     @Transactional
     @Override
     public void follow(Long followerId, Long followingId) {
+        // 자기 자신 팔로우 시
+        if (followerId.equals(followingId)) throw new RuntimeException("자신을 팔로우 할 수 없습니다.");
+
         // id 에 해당하는 유저 찾기
         Users follower = userRepository.findById(followerId).orElseThrow(()->new RuntimeException("Follower not found"));
         Users following = userRepository.findById(followingId).orElseThrow(()->new RuntimeException("Following not found"));
 
         // 해당 유저가 비활성화(탈퇴) 상태이면 (state=false)
-        if (following.isState() == false)
-            throw new RuntimeException("탈퇴한 유저입니다.");
-
+        if (following.isState() == false) throw new RuntimeException("탈퇴한 유저입니다.");
         // 이미 팔로우 한 유저라면 (잘못된 접근)
         if (followRepository.existsByFollower_UserIdAndFollowing_UserId(followerId, followingId))
             throw new RuntimeException("이미 팔로우 중입니다.");

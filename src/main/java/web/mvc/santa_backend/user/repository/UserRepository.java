@@ -38,11 +38,11 @@ public interface UserRepository extends JpaRepository<Users, Long> {
     void increaseFollowingCount(Long userId);
 
     @Modifying
-    @Query("update Users u set u.followerCount = u.followerCount + 1 where u.userId = :userId")
+    @Query("update Users u set u.followingCount = u.followingCount - 1 where u.userId = :userId")
     void decreaseFollowingCount(Long userId);
 
     @Modifying
-    @Query("update Users u set u.followingCount = u.followingCount - 1 where u.userId = :userId")
+    @Query("update Users u set u.followerCount = u.followerCount + 1 where u.userId = :userId")
     void increaseFollowerCount(Long userId);
 
     @Modifying
