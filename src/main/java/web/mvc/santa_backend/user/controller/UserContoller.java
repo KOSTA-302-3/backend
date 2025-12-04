@@ -126,7 +126,6 @@ public class UserContoller {
     @Operation(summary = "팔로워 조회 (전체 리스트)")
     @GetMapping("/api/users/{id}/followers")
     public ResponseEntity<?> getFollowers(@PathVariable Long id) {
-        log.info("getFollowers/ id: {}", id);
         List<UserSimpleDTO> followers = userService.getFollowers(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(followers);
@@ -135,7 +134,6 @@ public class UserContoller {
     @Operation(summary = "팔로잉 조회 (전체 리스트)")
     @GetMapping("api/users/{id}/followings")
     public ResponseEntity<?> getFollowings(@PathVariable Long id) {
-        log.info("getFollowings/ id: {}", id);
         List<UserSimpleDTO> followings = userService.getFollowings(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(followings);
@@ -144,7 +142,6 @@ public class UserContoller {
     @Operation(summary = "팔로워 조회 (페이징)")
     @GetMapping("/api/users/{id}/followers/{page}")
     public ResponseEntity<?> getFollowers(@PathVariable Long id, @PathVariable int page) {
-        log.info("getFollowers/ id: {}", id);
         Page<UserSimpleDTO> followers = userService.getFollowers(id, page);
 
         return ResponseEntity.status(HttpStatus.OK).body(followers);
@@ -153,9 +150,16 @@ public class UserContoller {
     @Operation(summary = "팔로잉 조회 (페이징)")
     @GetMapping("api/users/{id}/followings/{page}")
     public ResponseEntity<?> getFollowings(@PathVariable Long id, @PathVariable int page) {
-        log.info("getFollowings/ id: {}", id);
         Page<UserSimpleDTO> followings = userService.getFollowings(id, page);
 
         return ResponseEntity.status(HttpStatus.OK).body(followings);
+    }
+
+    @Operation(summary = "대기 중인 팔로워 조회 (페이징)", description = "현재 유저가 대기 팔로워 수락/거절 선택을 위함")
+    @GetMapping("api/users/{id}/pending/{page}")
+    public ResponseEntity<?> getPendingFollowers(@PathVariable Long id, @PathVariable int page) {
+        Page<UserSimpleDTO> pendings = userService.getPendingFollowers(id, page);
+
+        return ResponseEntity.status(HttpStatus.OK).body(pendings);
     }
 }

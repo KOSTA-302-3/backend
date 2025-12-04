@@ -65,4 +65,6 @@ public interface UserService {
     Page<UserSimpleDTO> getFollowings(Long id, int page);
 
     Page<UserSimpleDTO> getFollowers(Long id, int page);
+
+    Page<UserSimpleDTO> getPendingFollowers(Long id, int page);
 }

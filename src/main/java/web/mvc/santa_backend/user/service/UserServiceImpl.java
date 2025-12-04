@@ -219,4 +219,17 @@ public class UserServiceImpl implements UserService {
 
         return followers;
     }
+
+    @Override
+    public Page<UserSimpleDTO> getPendingFollowers(Long id, int page) {
+        Pageable pageable = PageRequest.of(page, 10);
+
+        Page<Follows> follows = followRepository.findByFollowing_UserIdAndPendingIsTrue(id, pageable);
+
+        // Follows -> Follows.following (Users) -> UserSimpleDTO
+        Page<UserSimpleDTO> followers = follows
+                .map(follow -> modelMapper.map(follow.getFollower(), UserSimpleDTO.class));
+
+        return followers;
+    }
 }

@@ -28,7 +28,7 @@ public class FollowController {
         return "팔로우 완료";
     }
 
-    @Operation(summary = "언팔로우")
+    @Operation(summary = "언팔로우 및 팔로우 거절", description = "언팔로우 / 비공개 유저에게 온 팔로우 요청을 거절 (둘 다 레코드 삭제)")
     @DeleteMapping("/{followerId}/{followingId}")
     //@DeleteMapping("/{followingId}")  // jwt 적용 시
     public String unfollow(@PathVariable Long followerId, @PathVariable Long followingId) {
@@ -44,4 +44,13 @@ public class FollowController {
 
         return ResponseEntity.status(HttpStatus.OK).body(isFollowing);
     }
+
+    @Operation(summary = "팔로우 수락", description = "비공개 유저에게 온 팔로우 요청을 수락")
+    @PutMapping("/{followerId}/{followingId}")
+    public String approveFollow(@PathVariable Long followerId, @PathVariable Long followingId) {
+        followService.approveFollow(followerId, followingId);
+
+        return "팔로우 수락";
+    }
+
 }

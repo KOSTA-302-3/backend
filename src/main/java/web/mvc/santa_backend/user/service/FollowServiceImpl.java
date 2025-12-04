@@ -50,9 +50,10 @@ public class FollowServiceImpl implements FollowService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        // count 증가
-        userRepository.increaseFollowingCount(followerId);  // 현재 유저의 팔로잉 수 증가
-        userRepository.increaseFollowerCount(followingId);  // 팔로우 당한 유저의 팔로워 수 증가
+        if (following.isPrivate() == false) {   // 공개 계정일 경우만 count 증가
+            userRepository.increaseFollowingCount(followerId);  // 현재 유저의 팔로잉 수 증가
+            userRepository.increaseFollowerCount(followingId);  // 팔로우 당한 유저의 팔로워 수 증가
+        }
 
         // 알림
         NotificationDTO notificationDTO = NotificationDTO.builder()
@@ -82,5 +83,19 @@ public class FollowServiceImpl implements FollowService {
     @Override
     public boolean isFollowing(Long followerId, Long followingId) {
         return followRepository.existsByFollower_UserIdAndFollowing_UserId(followerId, followingId);
+    }
+
+    @Transactional
+    @Override
+    public void approveFollow(Long followerId, Long followingId) {
+        Follows follow = followRepository.findByFollower_UserIdAndFollowing_UserId(followerId, followingId)
+                .orElseThrow(()->new RuntimeException("팔로우 수락 실패"));
+
+        if (follow.isPending() == false) throw new RuntimeException("이미 수락한 유저입니다.");
+        follow.setPending(false);
+
+        // count 증가
+        userRepository.increaseFollowingCount(followerId);  // 현재 유저의 팔로잉 수 증가
+        userRepository.increaseFollowerCount(followingId);  // 팔로우 당한 유저의 팔로워 수 증가
     }
 }
