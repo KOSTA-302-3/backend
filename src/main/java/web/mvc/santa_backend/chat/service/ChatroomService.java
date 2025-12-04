@@ -33,10 +33,9 @@ public interface ChatroomService {
     /**
      * 채팅방의 제목, 비밀번호, 공개상태, 설명, 이미지를 바꾸는 메서드
      * 수정할 내용만 DTO에 입력
-     * @param id
      * @param chatroomDTO
      */
-    public void updateChatroom(Long id, ChatroomDTO chatroomDTO);
+    public void updateChatroom(ChatroomDTO chatroomDTO);
 
     /**
      * 채팅방의 isDelete 상태를 true로 변경(소프트 딜리트)

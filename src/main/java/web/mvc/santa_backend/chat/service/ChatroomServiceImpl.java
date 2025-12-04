@@ -33,7 +33,7 @@ public class ChatroomServiceImpl implements ChatroomService {
         Page<Chatrooms> chatrooms = null;
         Pageable pageable = PageRequest.of(page, 10);
         if(userId==null && word==null){
-            chatrooms = chatroomRepository.findByIsPrivateAndIsDeleted(false, false);
+            chatrooms = chatroomRepository.findByIsPrivateAndIsDeleted(false, false, pageable);
         }else if(userId==null && word!=null){
             chatrooms = chatroomRepository.findByWord(word, pageable);
         }else if(userId!=null && word==null){
@@ -48,8 +48,8 @@ public class ChatroomServiceImpl implements ChatroomService {
     }
 
     @Override
-    public void updateChatroom(Long id, ChatroomDTO chatroomDTO) {
-        Chatrooms chatroom = chatroomRepository.findById(id).orElseThrow(() -> new RuntimeException());
+    public void updateChatroom(ChatroomDTO chatroomDTO) {
+        Chatrooms chatroom = chatroomRepository.findById(chatroomDTO.getChatroomId()).orElseThrow(() -> new RuntimeException());
         if(chatroomDTO.getName()!=null){
             chatroom.setName(chatroomDTO.getName());
         }

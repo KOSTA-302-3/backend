@@ -10,5 +10,5 @@ public interface ChatroomRepository extends JpaRepository<Chatrooms, Long> {
     @Query("select c from Chatrooms c where c.isPrivate = false and c.isDeleted = false and lower(c.name) like lower(concat('%', :word, '%'))")
     Page<Chatrooms> findByWord(String word, Pageable pageable);
 
-    Page<Chatrooms> findByIsPrivateAndIsDeleted(boolean isPrivate, boolean isDeleted);
+    Page<Chatrooms> findByIsPrivateAndIsDeleted(boolean isPrivate, boolean isDeleted, Pageable pageable);
 }

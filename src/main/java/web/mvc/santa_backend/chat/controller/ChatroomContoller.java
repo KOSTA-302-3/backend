@@ -39,11 +39,17 @@ public class ChatroomContoller {
     }
 
     @PutMapping("/api/chatroom/{chatroomId}")
-    public ResponseEntity<?> updateChatroom(@PathVariable Long chatroomId, @RequestBody ChatroomDTO chatroomDTO) {
+    public ResponseEntity<?> updateChatroom(@RequestBody ChatroomDTO chatroomDTO) {
         //TODO
         //업데이트 요청을 하는 사람은 ChatroomMember의 role.ADMIN 한정..
         //그렇다면..ChatroomMember에서 userId와 roomId로 조회해서 레코드 하나를 찾고.. 그 레코드 안에서 role을 확인하는 로직이 필요
+        chatroomService.updateChatroom(chatroomDTO);
+        return ResponseEntity.status(HttpStatus.OK).body("ok");
+    }
 
+    @PutMapping("api/chatroom/delete/{chatroomId}")
+    public ResponseEntity<?> deleteChatroom(@PathVariable Long chatroomId) {
+        chatroomService.deleteChatroom(chatroomId);
         return ResponseEntity.status(HttpStatus.OK).body("ok");
     }
 }
