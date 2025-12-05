@@ -16,7 +16,8 @@ public class NotificationDTO {
     private Long userId;
     private String message;
     private String link;
-    private Boolean isRead;
+    @Builder.Default
+    private Boolean isRead = false;
     private NotificationType type;
     private LocalDateTime createdAt;
     private Long actionUserId;
