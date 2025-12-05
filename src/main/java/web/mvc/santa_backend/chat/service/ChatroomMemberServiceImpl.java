@@ -66,8 +66,14 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
 
     @Override
     public void updateChatroomMember(Long userId, ChatroomMemberDTO chatroomMemberDTO) {
+        //요청한 사람의 chatroomMember 레코드를 가져옴
+        Users currentUser = Users.builder().userId(userId).build();
+        Chatrooms currentChatroom = Chatrooms.builder().chatroomId(chatroomMemberDTO.getChatroomId()).build();
+        ChatroomMembers currentChatMember = chatroomMemberRepository.findByUserAndChatroom(currentUser, currentChatroom).orElseThrow(() -> new ChatMemberNotFoundException(ErrorCode.CHATMEMBER_NOT_FOUND));
 
-        ChatroomMembers chatroomMember = chatroomMemberRepository.findById(chatroomMemberDTO.getChatroomMemberId()).orElseThrow(() -> new ChatMemberNotFoundException(ErrorCode.CHATMEMBER_NOT_FOUND));
+        //관리할 상대의 chatroomMember 레코드를 가져옴
+        Users user = Users.builder().userId(chatroomMemberDTO.getUserId()).build();
+        ChatroomMembers chatroomMember = chatroomMemberRepository.findByUserAndChatroom(user, currentChatroom).orElseThrow(() -> new ChatMemberNotFoundException(ErrorCode.CHATMEMBER_NOT_FOUND));
         //최근 읽은 글 업데이트
         if(chatroomMemberDTO.getLastRead() != null){
             chatroomMember.setLastRead(chatroomMemberDTO.getLastRead());
@@ -77,18 +83,18 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
             chatroomMember.setNoteOff(chatroomMemberDTO.getNoteOff());
         }
         //강제 퇴장(Admin만 가능)
-        if(chatroomMemberDTO.getIsBanned() != null && chatroomMemberDTO.getRole().equals(UserRole.ADMIN)){
+        if(chatroomMemberDTO.getIsBanned() != null && currentChatMember.getRole().equals(UserRole.ADMIN)){
             chatroomMember.setBanned(chatroomMemberDTO.getIsBanned());
         }
         //role 변경... 고민중..
-        if(chatroomMemberDTO.getRole() != null){
+        if(chatroomMemberDTO.getRole() != null && currentChatMember.getRole().equals(UserRole.ADMIN)){
             chatroomMember.setRole(chatroomMemberDTO.getRole());
         }
     }
 
     @Override
     public void deleteChatroomMember(Long chatroomMemberId) {
-
+        chatroomMemberRepository.deleteById(chatroomMemberId);
     }
 
     private ChatroomMembers toEntity(ChatroomMemberDTO chatroomMemberDTO) {
