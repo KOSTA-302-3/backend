@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import web.mvc.santa_backend.common.filter.JWTFilter;
 import web.mvc.santa_backend.common.filter.LoginFilter;
 import web.mvc.santa_backend.common.security.JWTUtil;
 
@@ -40,9 +41,6 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // 모두 허용 (임시)
-        http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
-
         // csrf disable (csrf공격을 방어하기 위한 토큰 주고 받는 부분을 비활성화)
         http.csrf((auth) -> auth.disable());
         // http basic 인증 방식 disable
@@ -52,27 +50,32 @@ public class SecurityConfig {
         http.formLogin((auth) -> auth.disable());
 
 
-        // 경로별 인가 작업 (수정 예정)
-//        http.authorizeHttpRequests((auth) ->
-//                auth
-//                        .requestMatchers("/index", "/users", "/users/**").permitAll()
-//
-//                        // swagger 설정
-//                        .requestMatchers(
-//                                "/v3/api-docs",
-//                                "/v3/api-docs/**",
-//                                "/swagger-ui.html",
-//                                "/swagger-ui/**",
-//                                "/swagger-resources/**",
-//                                "/webjars/**"
-//                        ).permitAll()
-//
-//                        // GET 요청 누구나 접근 가능
-//                        .requestMatchers(HttpMethod.GET, "/posts/**").permitAll()
-//                        // POST 요청 인증 필요
-//                        .requestMatchers(HttpMethod.POST, "/posts").authenticated()
-//                        .requestMatchers("/admin").hasRole("ADMIN")
-//                        .anyRequest().authenticated());
+        // 모두 허용 (임시)
+        http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+
+
+        // 경로별 인가 작업 (필요한 거 추가!)
+        /*http.authorizeHttpRequests((auth) ->
+                auth
+                        //.requestMatchers("/index", "/users", "/users/**").permitAll()
+                        // swagger 설정
+                        .requestMatchers(
+                                "/v3/api-docs",
+                                "/v3/api-docs/**",
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/swagger-resources/**",
+                                "/webjars/**"
+                        ).permitAll()
+                        // GET 요청 누구나 접근 가능
+                        .requestMatchers(HttpMethod.GET, "/users/**").permitAll()
+                        // Follow 인증 필요
+                        .requestMatchers("/follows/**").authenticated()
+                        .requestMatchers("/test").authenticated()
+                        // POST 요청 인증 필요
+                        //.requestMatchers(HttpMethod.POST, "/posts").authenticated()
+                        .requestMatchers("/admin").hasRole("ADMIN")
+                        .anyRequest().authenticated());*/
 
         // 필터 추가(교체)
         // UsernamePasswordAuthenticationFilter 는 form login(security의 기본 로그인)을 진행하는 필터
@@ -83,6 +86,9 @@ public class SecurityConfig {
                         this.authenticationManager(authenticationConfiguration),    // AuthenticationManager
                         jwtUtil),
                 UsernamePasswordAuthenticationFilter.class);
+
+        // LoginFilter(Authentication 담당) 이전에 JWTFilter(JWT 검증) 실행
+        http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
 
         return http.build();
     }
