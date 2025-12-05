@@ -45,6 +45,12 @@ dependencies {
     implementation("software.amazon.awssdk:s3:2.39.6")
     implementation 'org.modelmapper:modelmapper:3.1.1'
 
+    // jwt
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+    // gson
+    implementation 'com.google.code.gson:gson:2.10.1'
 }
 
 tasks.named('test') {

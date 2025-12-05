@@ -12,6 +12,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import web.mvc.santa_backend.common.filter.LoginFilter;
+import web.mvc.santa_backend.common.security.JWTUtil;
 
 @Configuration
 @EnableWebSecurity
@@ -21,6 +24,8 @@ public class SecurityConfig {
 
     //AuthenticationManager가 인자로 받을 AuthenticationConfiguraion 객체 생성자 주입
     private final AuthenticationConfiguration authenticationConfiguration;
+
+    private final JWTUtil jwtUtil;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
@@ -35,10 +40,50 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable());
         // 모두 허용 (임시)
         http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
-        
+
+        // csrf disable (csrf공격을 방어하기 위한 토큰 주고 받는 부분을 비활성화)
+        http.csrf((auth) -> auth.disable());
+        // http basic 인증 방식 disable
+        http.httpBasic((auth) -> auth.disable());
+        // Form 로그인 방식 disable -> React, JWT 인증 방식으로 변경
+        // disable 설정하면 security의 UsernamePasswordAuthenticationFilter 비활성화
+        http.formLogin((auth) -> auth.disable());
+
+
+        // 경로별 인가 작업 (수정 예정)
+//        http.authorizeHttpRequests((auth) ->
+//                auth
+//                        .requestMatchers("/index", "/users", "/users/**").permitAll()
+//
+//                        // swagger 설정
+//                        .requestMatchers(
+//                                "/v3/api-docs",
+//                                "/v3/api-docs/**",
+//                                "/swagger-ui.html",
+//                                "/swagger-ui/**",
+//                                "/swagger-resources/**",
+//                                "/webjars/**"
+//                        ).permitAll()
+//
+//                        // GET 요청 누구나 접근 가능
+//                        .requestMatchers(HttpMethod.GET, "/posts/**").permitAll()
+//                        // POST 요청 인증 필요
+//                        .requestMatchers(HttpMethod.POST, "/posts").authenticated()
+//                        .requestMatchers("/admin").hasRole("ADMIN")
+//                        .anyRequest().authenticated());
+
+        // 필터 추가(교체)
+        // UsernamePasswordAuthenticationFilter 는 form login(security의 기본 로그인)을 진행하는 필터
+        // form login을 위에서 disable 했고, 우리는 이 필터를 상속받은 LoginFilter로 jwt 방식 로그인을 할 것
+        // addFilterAt:  UsernamePasswordAuthenticationFilter 자리에 LoginFilter 가 실행되도록 설정
+        http.addFilterAt(
+                new LoginFilter(
+                        this.authenticationManager(authenticationConfiguration),    // AuthenticationManager
+                        jwtUtil),
+                UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 }
