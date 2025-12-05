@@ -32,8 +32,9 @@ public class ChatroomMemberServiceTest {
         //given
         Long chatroomId = 1L;
         boolean banned = false;
+        Long userId = 1L;
         //when
-        List<UserSimpleDTO> chatroomMembers = chatroomMemberService.getChatroomMembers(chatroomId,banned);
+        List<UserSimpleDTO> chatroomMembers = chatroomMemberService.getChatroomMembers(chatroomId,banned,userId);
 
         //then
         Assertions.assertNotNull(chatroomMembers);

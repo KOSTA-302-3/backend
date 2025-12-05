@@ -31,9 +31,15 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserSimpleDTO> getChatroomMembers(Long chatroomId, boolean isBanned) {
-        List<ChatroomMembers> chatroomMembers = chatroomMemberRepository.findByChatroomAndIsBanned(Chatrooms.builder().chatroomId(chatroomId).build(), isBanned);
+    public List<UserSimpleDTO> getChatroomMembers(Long chatroomId, boolean isBanned, Long userId) {
+        //먼저 방 참여자인지의 검증
+        checkChatMember(chatroomId, userId);
+        //chatroomId로 현재유저/강퇴유저를 isBanned로 구별해서 불러오기
+        List<ChatroomMembers> chatroomMembers =
+                chatroomMemberRepository.findByChatroomAndIsBanned(Chatrooms.builder().chatroomId(chatroomId).build(), isBanned);
+
         List<UserSimpleDTO> userSimpleDTOList = new ArrayList<>();
+
         //chatroomMember에 들어있는 user엔티티를... userSimpleDTO로 변환후 리스트에 add
         for(ChatroomMembers m : chatroomMembers){
             userSimpleDTOList.add(
@@ -66,6 +72,9 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
 
     @Override
     public void updateChatroomMember(Long userId, ChatroomMemberDTO chatroomMemberDTO) {
+        //같은 채팅방에 있는지 확인
+        checkChatMember(chatroomMemberDTO.getChatroomId(), userId);
+
         //요청한 사람의 chatroomMember 레코드를 가져옴
         Users currentUser = Users.builder().userId(userId).build();
         Chatrooms currentChatroom = Chatrooms.builder().chatroomId(chatroomMemberDTO.getChatroomId()).build();
@@ -74,6 +83,8 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
         //관리할 상대의 chatroomMember 레코드를 가져옴
         Users user = Users.builder().userId(chatroomMemberDTO.getUserId()).build();
         ChatroomMembers chatroomMember = chatroomMemberRepository.findByUserAndChatroom(user, currentChatroom).orElseThrow(() -> new ChatMemberNotFoundException(ErrorCode.CHATMEMBER_NOT_FOUND));
+
+        //TODO 관리자가 아닐시에 에러 날리도록 변경해야함
         //최근 읽은 글 업데이트
         if(chatroomMemberDTO.getLastRead() != null){
             chatroomMember.setLastRead(chatroomMemberDTO.getLastRead());
@@ -93,8 +104,10 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
     }
 
     @Override
-    public void deleteChatroomMember(Long chatroomMemberId) {
-        chatroomMemberRepository.deleteById(chatroomMemberId);
+    public void deleteChatroomMember(Long userId, Long chatroomId) {
+        Users user = Users.builder().userId(userId).build();
+        Chatrooms chatroom = Chatrooms.builder().chatroomId(chatroomId).build();
+        chatroomMemberRepository.deleteByUserAndChatroom(user, chatroom);
     }
 
     private ChatroomMembers toEntity(ChatroomMemberDTO chatroomMemberDTO) {
@@ -122,5 +135,14 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
                 .role(chatroomMembers.getRole())
                 .isBanned(chatroomMembers.isBanned())
                 .build();
+    }
+
+    private void checkChatMember(Long chatroomId, Long userId){
+        Chatrooms chatroom = Chatrooms.builder().chatroomId(chatroomId).build();
+        Users user = Users.builder().userId(userId).build();
+        boolean result = chatroomMemberRepository.existsByChatroomAndUserAndIsBanned(chatroom, user, false);
+        if(!result){
+            throw new ChatMemberNotFoundException(ErrorCode.NOT_CHATMEMBER);
+        }
     }
 }

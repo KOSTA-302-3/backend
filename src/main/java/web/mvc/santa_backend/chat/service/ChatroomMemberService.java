@@ -14,7 +14,7 @@ public interface ChatroomMemberService {
      * @param isBanned 강퇴여부
      * @return 조회된 사용자 목록
      */
-    public List<UserSimpleDTO> getChatroomMembers(Long chatroomId, boolean isBanned);
+    public List<UserSimpleDTO> getChatroomMembers(Long chatroomId, boolean isBanned, Long userId);
 
     /**
      * user가 채팅방에 참여하는 메서드(채팅 멤버가 추가되는 메서드)
@@ -43,7 +43,8 @@ public interface ChatroomMemberService {
      * 채팅방 퇴장, 혹은 강퇴한 사람이 강퇴여부를 삭제하는데 사용
      * 강퇴와 다른 점은 chatroomMember의 레코드가 실제로 삭제된다는 것.
      * 강퇴는 chatroomMembers의 isBanned의 값을 true로 바꾼다...
-     * @param chatroomMemberId
+     * @param userId
+     * @param chatroomId
      */
-    void deleteChatroomMember(Long chatroomMemberId);
+    void deleteChatroomMember(Long userId, Long chatroomId);
 }

@@ -25,4 +25,8 @@ public interface ChatroomMemberRepository extends JpaRepository<ChatroomMembers,
     boolean existsByChatroomAndUser(Chatrooms chatroom, Users user);
 
     Optional<ChatroomMembers> findByUserAndChatroom(Users user, Chatrooms chatroom);
+
+    boolean existsByChatroomAndUserAndIsBanned(Chatrooms chatroom, Users user, boolean isBanned);
+
+    void deleteByUserAndChatroom(Users user, Chatrooms chatroom);
 }
