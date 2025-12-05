@@ -22,12 +22,9 @@ public class Messages {
     @Column(name="user_id", nullable = false)
     private Long userId;
 
-    @Column(name = "chatroom_id", nullable = false)
-    private Long chatroomId;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chatroom_member_id", nullable = true)
-    private ChatroomMembers chatroomMember;
+    @JoinColumn(name = "chatroom_id", nullable = false)
+    private Chatrooms chatrooms;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "reply_message_id")
