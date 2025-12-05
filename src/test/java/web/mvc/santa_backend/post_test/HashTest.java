@@ -11,10 +11,13 @@ public class HashTest {
     private HashTagsRepository hashTagsRepository;
     @Test
     public void hashTest(){
-
         System.out.println(hashTagsRepository.findAllByPostsPostId(1L));
-
-
     };
+
+    @Test
+    public void hashTagInserTest(){
+        System.out.println(hashTagsRepository.findByTag("#santa").toString());
+
+    }
 
 }

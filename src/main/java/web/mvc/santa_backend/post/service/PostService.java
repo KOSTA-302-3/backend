@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import web.mvc.santa_backend.common.S3.S3Uploader;
 import web.mvc.santa_backend.post.dto.PostDTO;
+import web.mvc.santa_backend.post.entity.HashTags;
 import web.mvc.santa_backend.post.entity.ImageSources;
 import web.mvc.santa_backend.post.entity.Posts;
 import web.mvc.santa_backend.post.repository.HashTagsRepository;
@@ -34,7 +35,7 @@ public class PostService {
 
         List<PostDTO> dtoList = new ArrayList<PostDTO>();
 
-        List<Posts> postList = postResository.findAll();
+        List<Posts> postList = postResository.findAllPostsLimit();
 
         for (Posts posts : postList) {
             dtoList.add(new PostDTO(posts, hashTagsRepository.findAllByPostsPostId(posts.getPostId()),
@@ -125,6 +126,18 @@ public class PostService {
 
 
 
+    }
+
+    @Transactional
+    public void insertHashTags(String hashTags,Long postId){
+        String[] hashArray = hashTags.split("#");
+
+        for(int i = 1 ; i < hashArray.length ;i++) {
+            hashTagsRepository.save(HashTags.builder().
+                    posts(postResository.findById(postId).get()).
+                    tag("#"+hashArray[i]).
+                    build());
+        }
     }
 
 

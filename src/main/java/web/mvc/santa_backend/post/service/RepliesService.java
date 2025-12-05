@@ -1,6 +1,7 @@
 package web.mvc.santa_backend.post.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import web.mvc.santa_backend.post.dto.RepliesDTO;
@@ -20,10 +21,11 @@ public class RepliesService {
     private PostResository postRepository;
 
     @Transactional
+    @Cacheable(value = "replies", key = "#id")
     public List<RepliesDTO> findReplies(Long id) {
 
         List<RepliesDTO> dtoList = new ArrayList<>();
-
+        System.out.println("접근");
         for (Replies replies : repliesRepository.findAllByPostsPostId(id)) {
             dtoList.add(new RepliesDTO(replies.getReplyId(),
                     replies.getUserId(),

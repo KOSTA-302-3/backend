@@ -11,6 +11,7 @@ import web.mvc.santa_backend.post.entity.Replies;
 import web.mvc.santa_backend.post.service.PostService;
 import web.mvc.santa_backend.post.service.RepliesService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
@@ -78,8 +79,15 @@ public class PostContoller {
     @ResponseBody
     @GetMapping("/getReplies")
     List<RepliesDTO> getReplies(@RequestParam Long id){
+        List<RepliesDTO> list = new ArrayList<>();
 
-        return repliesService.findReplies(id);
+        long st = System.currentTimeMillis();
+
+        list = repliesService.findReplies(id);
+
+        System.out.println(System.currentTimeMillis()-st);
+        return list;
+
 
     }
     //댓글쓰기
@@ -113,6 +121,14 @@ public class PostContoller {
 
         postService.imgUpload(files,postId);
 
+        return null;
+    }
+
+    @PostMapping(value = "/hashTagsInsert/{postId}")
+    Posts insertHashTag(String hashTags,@PathVariable Long postId){
+
+
+       postService.insertHashTags(hashTags,postId);
         return null;
     }
 
