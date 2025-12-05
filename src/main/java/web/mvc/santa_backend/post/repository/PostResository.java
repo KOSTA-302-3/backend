@@ -12,7 +12,7 @@ import java.util.List;
 @Repository
 public interface PostResository extends JpaRepository<Posts, Long> {
 
-    List<Posts> findAllByPostLevelBetween(Long startLevel,Long endLevel);
+    Page<Posts> findAllByPostLevelBetween(Long startLevel,Long endLevel,Pageable page);
 
     @Query(nativeQuery = true,value = "select * from posts limit 2")
     List<Posts> findAllPostsLimit();

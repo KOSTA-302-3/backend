@@ -1,6 +1,9 @@
 package web.mvc.santa_backend.post.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,13 +34,14 @@ public class PostService {
     private S3Uploader s3Uploader;
 
     @Transactional
-    public List<PostDTO> getAllPostsWithOffFilter() {
+    public List<PostDTO> getAllPostsWithOffFilter(int pageNo) {
 
         List<PostDTO> dtoList = new ArrayList<PostDTO>();
 
-        List<Posts> postList = postResository.findAllPostsLimit();
+        Pageable pageable = PageRequest.of(pageNo-1, 5);
+        Page<Posts> page = postResository.findAll(pageable);
 
-        for (Posts posts : postList) {
+        for (Posts posts : page) {
             dtoList.add(new PostDTO(posts, hashTagsRepository.findAllByPostsPostId(posts.getPostId()),
                     imageSourcesRepository.findAllByPostsPostId(posts.getPostId())
 
@@ -50,13 +54,14 @@ public class PostService {
     }
 
     @Transactional
-    public List<PostDTO> getAllPostsWithOnFilter(Long level) {
+    public List<PostDTO> getAllPostsWithOnFilter(Long level,int pageNo) {
 
         List<PostDTO> dtoList = new ArrayList<PostDTO>();
 
-        List<Posts> postList = postResository.findAllByPostLevelBetween(0L,level);
+        Pageable pageable = PageRequest.of(pageNo-1, 5);
+        Page<Posts> page = postResository.findAllByPostLevelBetween(0L,level,pageable);
 
-        for (Posts posts : postList) {
+        for (Posts posts : page) {
             dtoList.add(new PostDTO(posts, hashTagsRepository.findAllByPostsPostId(posts.getPostId()),
                     imageSourcesRepository.findAllByPostsPostId(posts.getPostId())
 

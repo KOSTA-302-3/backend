@@ -27,15 +27,15 @@ public class PostContoller {
     //필터링 끈 전체 게시물 보기
     @ResponseBody
     @GetMapping("/getAllOffFilter")
-    List<PostDTO> getAllPostsWithOffFilter() {
-        return  postService.getAllPostsWithOffFilter();
+    List<PostDTO> getAllPostsWithOffFilter(int pageNo) {
+        return  postService.getAllPostsWithOffFilter(pageNo);
     }
     //필터링 킨 전체 게시물 보기
     @ResponseBody
     @GetMapping("/getAllOnFilter")
-    List<PostDTO> getAllPostsWithOnFilter(Long level) {
+    List<PostDTO> getAllPostsWithOnFilter(Long level,int page) {
 
-        return postService.getAllPostsWithOnFilter(level);
+        return postService.getAllPostsWithOnFilter(level,page);
     }
 
     //필터링 끈 팔로우 게시물 보기
@@ -78,12 +78,12 @@ public class PostContoller {
     //댓글보기
     @ResponseBody
     @GetMapping("/getReplies")
-    List<RepliesDTO> getReplies(@RequestParam Long id){
+    List<RepliesDTO> getReplies(@RequestParam Long id,@RequestParam int pageNo){
         List<RepliesDTO> list = new ArrayList<>();
 
         long st = System.currentTimeMillis();
 
-        list = repliesService.findReplies(id);
+        list = repliesService.findReplies(id,pageNo);
 
         System.out.println(System.currentTimeMillis()-st);
         return list;
