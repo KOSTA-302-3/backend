@@ -4,19 +4,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import web.mvc.santa_backend.chat.dto.ChatroomDTO;
-import web.mvc.santa_backend.chat.entity.Chatrooms;
 import web.mvc.santa_backend.chat.service.ChatroomService;
 
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "ChatController API", description = "채팅관련 정보 DB저장용")
-public class ChatroomContoller {
+@Tag(name = "ChatroomController API", description = "채팅방 정보 DB저장용")
+public class ChatroomController {
     private final ChatroomService chatroomService;
 
     @PostMapping("/api/chatroom")
