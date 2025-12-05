@@ -79,7 +79,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
         GrantedAuthority auth = iterator.next();
-        String role = auth.getAuthority(); // JWT 에 ROLE_USER or ROLE_ADMIN 로 저장됨
+
+        // role을 다시 DB에서 찾을 필요 없이 security 가 넣어 준 Authentication.authorities에서 바로 사용한 것
+        //String role = auth.getAuthority(); // JWT 에 ROLE_USER or ROLE_ADMIN 로 저장됨
+        String role = customUserDetails.getUser().getRole().toString(); // prefix 없이 ADMIN or USER 로 저장
         System.out.println("role: " + role);
 
         //토큰 생성 (password는 JWTUtil에서 안 담음!!)
