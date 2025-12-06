@@ -1,4 +1,4 @@
-package web.mvc.santa_backend.post.entity;
+package web.mvc.santa_backend.post.entity.dbtest;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.index.Indexed;
+import web.mvc.santa_backend.post.entity.Posts;
 
 import java.util.List;
 

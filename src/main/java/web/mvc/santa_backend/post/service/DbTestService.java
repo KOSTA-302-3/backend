@@ -2,25 +2,28 @@ package web.mvc.santa_backend.post.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.ResponseBody;
 import web.mvc.santa_backend.post.dto.PostDTO;
-import web.mvc.santa_backend.post.entity.ImageSources;
-import web.mvc.santa_backend.post.entity.Posts;
-import web.mvc.santa_backend.post.repository.EntityRepository;
+import web.mvc.santa_backend.post.entity.dbtest.MongoTestEntity;
 import web.mvc.santa_backend.post.repository.HashTagsRepository;
 import web.mvc.santa_backend.post.repository.ImageSourcesRepository;
 import web.mvc.santa_backend.post.repository.PostResository;
+import web.mvc.santa_backend.post.repository.dbtest.MongoTestRepositiry;
 
 @Service
 
 public class DbTestService {
     @Autowired
     PostResository postResository;
+    @Autowired
     ImageSourcesRepository imageSourcesRepository;
-
+    @Autowired
     HashTagsRepository hashTagsRepository;
-
+    @Autowired
+    MongoTestRepositiry mongoTestRepositiry;
 
     //redis 강의 참고
     //다만 redis key는 Ano 에서는value key는 메서드에서 쓰는 파라미터
@@ -35,5 +38,14 @@ public class DbTestService {
                 ,imageSourcesRepository.findAllByPostsPostId(postId)
         );
     };
+
+    public Page<MongoTestEntity> mongoTest(){
+
+        Pageable pageable = PageRequest.of(0,10);
+
+        return mongoTestRepositiry.findAll(pageable);
+
+
+    }
 
 }
