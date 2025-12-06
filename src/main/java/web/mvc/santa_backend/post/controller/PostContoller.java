@@ -1,6 +1,7 @@
 package web.mvc.santa_backend.post.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,13 +28,13 @@ public class PostContoller {
     //필터링 끈 전체 게시물 보기
     @ResponseBody
     @GetMapping("/getAllOffFilter")
-    List<PostDTO> getAllPostsWithOffFilter(int pageNo) {
+    Page<PostDTO> getAllPostsWithOffFilter(int pageNo) {
         return  postService.getAllPostsWithOffFilter(pageNo);
     }
     //필터링 킨 전체 게시물 보기
     @ResponseBody
     @GetMapping("/getAllOnFilter")
-    List<PostDTO> getAllPostsWithOnFilter(Long level,int page) {
+    Page<PostDTO> getAllPostsWithOnFilter(Long level,int page) {
 
         return postService.getAllPostsWithOnFilter(level,page);
     }
@@ -78,15 +79,14 @@ public class PostContoller {
     //댓글보기
     @ResponseBody
     @GetMapping("/getReplies")
-    List<RepliesDTO> getReplies(@RequestParam Long id,@RequestParam int pageNo){
-        List<RepliesDTO> list = new ArrayList<>();
+    Page<RepliesDTO> getReplies(@RequestParam Long id,@RequestParam int pageNo){
 
         long st = System.currentTimeMillis();
 
-        list = repliesService.findReplies(id,pageNo);
+        Page<RepliesDTO> replies= repliesService.findReplies(id,pageNo);
 
         System.out.println(System.currentTimeMillis()-st);
-        return list;
+        return replies;
 
 
     }

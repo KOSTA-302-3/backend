@@ -34,43 +34,48 @@ public class PostService {
     private S3Uploader s3Uploader;
 
     @Transactional
-    public List<PostDTO> getAllPostsWithOffFilter(int pageNo) {
+    public Page<PostDTO> getAllPostsWithOffFilter(int pageNo) {
 
-        List<PostDTO> dtoList = new ArrayList<PostDTO>();
 
         Pageable pageable = PageRequest.of(pageNo-1, 5);
         Page<Posts> page = postResository.findAll(pageable);
 
-        for (Posts posts : page) {
-            dtoList.add(new PostDTO(posts, hashTagsRepository.findAllByPostsPostId(posts.getPostId()),
-                    imageSourcesRepository.findAllByPostsPostId(posts.getPostId())
+        Page<PostDTO> dtoPage = page.map(posts ->
+                new PostDTO(
+                posts,
+                hashTagsRepository.findAllByPostsPostId(posts.getPostId()),
+                imageSourcesRepository.findAllByPostsPostId(posts.getPostId())
+        )
+        );
 
-            ));
 
-        }
+//
+//        for (Posts posts : page) {
+//            dtoList.add(new PostDTO(posts, hashTagsRepository.findAllByPostsPostId(posts.getPostId()),
+//                    imageSourcesRepository.findAllByPostsPostId(posts.getPostId())
+//
+//            ));
+//
+//        }
 
 
-        return dtoList;
+        return dtoPage;
     }
 
     @Transactional
-    public List<PostDTO> getAllPostsWithOnFilter(Long level,int pageNo) {
-
-        List<PostDTO> dtoList = new ArrayList<PostDTO>();
+    public Page<PostDTO> getAllPostsWithOnFilter(Long level,int pageNo) {
 
         Pageable pageable = PageRequest.of(pageNo-1, 5);
         Page<Posts> page = postResository.findAllByPostLevelBetween(0L,level,pageable);
 
-        for (Posts posts : page) {
-            dtoList.add(new PostDTO(posts, hashTagsRepository.findAllByPostsPostId(posts.getPostId()),
-                    imageSourcesRepository.findAllByPostsPostId(posts.getPostId())
-
-            ));
-
-        }
+        Page<PostDTO> pageDTO = page.map(posts -> new PostDTO(
+                posts,
+                hashTagsRepository.findAllByPostsPostId(posts.getPostId()),
+                imageSourcesRepository.findAllByPostsPostId(posts.getPostId())
+        ));
 
 
-        return dtoList;
+        return pageDTO;
     }
     @Transactional
     public void createPosts(PostDTO posts){
