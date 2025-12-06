@@ -1,12 +1,14 @@
 package web.mvc.santa_backend.post.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class HashTags {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)

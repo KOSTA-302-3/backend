@@ -27,8 +27,8 @@ public class RepliesTest {
     @DisplayName("글번호 해당 댓글 조회 ")
     void repliesGetTest(){
 
-        System.out.println(repliesService.findReplies(1L).size());
-        System.out.println(repliesService.findReplies(2L).size());
+        System.out.println(repliesService.findReplies(1L,2).getTotalPages());
+        System.out.println(repliesService.findReplies(2L,2).getTotalPages());
 
     }
 
