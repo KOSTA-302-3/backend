@@ -10,4 +10,7 @@ import java.util.List;
 public interface HashTagsRepository extends JpaRepository<HashTags,Long> {
 
     List<HashTags> findAllByPostsPostId(Long id);
+
+    HashTags findByTag(String tag);
+
 }

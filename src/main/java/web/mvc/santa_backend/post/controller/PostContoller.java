@@ -1,7 +1,10 @@
 package web.mvc.santa_backend.post.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import web.mvc.santa_backend.post.dto.PostDTO;
 import web.mvc.santa_backend.post.dto.RepliesDTO;
 import web.mvc.santa_backend.post.entity.Posts;
@@ -9,7 +12,10 @@ import web.mvc.santa_backend.post.entity.Replies;
 import web.mvc.santa_backend.post.service.PostService;
 import web.mvc.santa_backend.post.service.RepliesService;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
 @RestController
 @RequestMapping("/posts")
@@ -22,15 +28,15 @@ public class PostContoller {
     //필터링 끈 전체 게시물 보기
     @ResponseBody
     @GetMapping("/getAllOffFilter")
-    List<PostDTO> getAllPostsWithOffFilter() {
-        return  postService.getAllPostsWithOffFilter();
+    Page<PostDTO> getAllPostsWithOffFilter(int pageNo) {
+        return  postService.getAllPostsWithOffFilter(pageNo);
     }
     //필터링 킨 전체 게시물 보기
     @ResponseBody
     @GetMapping("/getAllOnFilter")
-    List<PostDTO> getAllPostsWithOnFilter(Long level) {
+    Page<PostDTO> getAllPostsWithOnFilter(Long level,int page) {
 
-        return postService.getAllPostsWithOnFilter(level);
+        return postService.getAllPostsWithOnFilter(level,page);
     }
 
     //필터링 끈 팔로우 게시물 보기
@@ -47,11 +53,11 @@ public class PostContoller {
     }
 
     //게시물 작성
-    @PostMapping("/createPosts")
+    @PostMapping(value = "/createPosts")
     Posts createPosts(@RequestBody PostDTO postDTO){
+
         postService.createPosts(postDTO);
         return null;
-
     }
 
     //게시물 수정
@@ -73,9 +79,15 @@ public class PostContoller {
     //댓글보기
     @ResponseBody
     @GetMapping("/getReplies")
-    List<RepliesDTO> getReplies(@RequestParam Long id){
+    Page<RepliesDTO> getReplies(@RequestParam Long id,@RequestParam int pageNo){
 
-        return repliesService.findReplies(id);
+        long st = System.currentTimeMillis();
+
+        Page<RepliesDTO> replies= repliesService.findReplies(id,pageNo);
+
+        System.out.println(System.currentTimeMillis()-st);
+        return replies;
+
 
     }
     //댓글쓰기
@@ -100,7 +112,24 @@ public class PostContoller {
     Posts deleteReplies(@RequestBody RepliesDTO repliesDTO){
         repliesService.deleteReplies(repliesDTO);
         return null;
+    }
 
+
+    @PostMapping(value = "/imageUpload/{postId}" , consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    Posts createPosts(@RequestPart List<MultipartFile> files,
+                      @PathVariable Long postId){
+
+        postService.imgUpload(files,postId);
+
+        return null;
+    }
+
+    @PostMapping(value = "/hashTagsInsert/{postId}")
+    Posts insertHashTag(String hashTags,@PathVariable Long postId){
+
+
+       postService.insertHashTags(hashTags,postId);
+        return null;
     }
 
 

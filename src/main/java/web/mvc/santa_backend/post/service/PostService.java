@@ -1,14 +1,22 @@
 package web.mvc.santa_backend.post.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import web.mvc.santa_backend.common.S3.S3Uploader;
 import web.mvc.santa_backend.post.dto.PostDTO;
+import web.mvc.santa_backend.post.entity.HashTags;
+import web.mvc.santa_backend.post.entity.ImageSources;
 import web.mvc.santa_backend.post.entity.Posts;
 import web.mvc.santa_backend.post.repository.HashTagsRepository;
 import web.mvc.santa_backend.post.repository.ImageSourcesRepository;
 import web.mvc.santa_backend.post.repository.PostResository;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,46 +30,57 @@ public class PostService {
     private HashTagsRepository hashTagsRepository;
     @Autowired
     private ImageSourcesRepository imageSourcesRepository;
+    @Autowired
+    private S3Uploader s3Uploader;
 
     @Transactional
-    public List<PostDTO> getAllPostsWithOffFilter() {
-
-        List<PostDTO> dtoList = new ArrayList<PostDTO>();
-
-        List<Posts> postList = postResository.findAll();
-
-        for (Posts posts : postList) {
-            dtoList.add(new PostDTO(posts, hashTagsRepository.findAllByPostsPostId(posts.getPostId()),
-                    imageSourcesRepository.findAllByPostsPostId(posts.getPostId())
-
-            ));
-
-        }
+    public Page<PostDTO> getAllPostsWithOffFilter(int pageNo) {
 
 
-        return dtoList;
+        Pageable pageable = PageRequest.of(pageNo-1, 5);
+        Page<Posts> page = postResository.findAll(pageable);
+
+        Page<PostDTO> dtoPage = page.map(posts ->
+                new PostDTO(
+                posts,
+                hashTagsRepository.findAllByPostsPostId(posts.getPostId()),
+                imageSourcesRepository.findAllByPostsPostId(posts.getPostId())
+        )
+        );
+
+
+//
+//        for (Posts posts : page) {
+//            dtoList.add(new PostDTO(posts, hashTagsRepository.findAllByPostsPostId(posts.getPostId()),
+//                    imageSourcesRepository.findAllByPostsPostId(posts.getPostId())
+//
+//            ));
+//
+//        }
+
+
+        return dtoPage;
     }
 
     @Transactional
-    public List<PostDTO> getAllPostsWithOnFilter(Long level) {
+    public Page<PostDTO> getAllPostsWithOnFilter(Long level,int pageNo) {
 
-        List<PostDTO> dtoList = new ArrayList<PostDTO>();
+        Pageable pageable = PageRequest.of(pageNo-1, 5);
+        Page<Posts> page = postResository.findAllByPostLevelBetween(0L,level,pageable);
 
-        List<Posts> postList = postResository.findAllByPostLevelBetween(0L,level);
-
-        for (Posts posts : postList) {
-            dtoList.add(new PostDTO(posts, hashTagsRepository.findAllByPostsPostId(posts.getPostId()),
-                    imageSourcesRepository.findAllByPostsPostId(posts.getPostId())
-
-            ));
-
-        }
+        Page<PostDTO> pageDTO = page.map(posts -> new PostDTO(
+                posts,
+                hashTagsRepository.findAllByPostsPostId(posts.getPostId()),
+                imageSourcesRepository.findAllByPostsPostId(posts.getPostId())
+        ));
 
 
-        return dtoList;
+        return pageDTO;
     }
     @Transactional
     public void createPosts(PostDTO posts){
+
+
         postResository.save(Posts.builder().
                 createUserId(posts.getPosts().getPostId()).
                 create_at(posts.getPosts().getCreate_at()).
@@ -90,4 +109,47 @@ public class PostService {
     }
 
 
+
+    @Transactional
+    public void imgUpload(List<MultipartFile> files,Long postId){
+        List<String> urls = new ArrayList<>();
+        for(MultipartFile file : files){
+            try {
+                urls.add(s3Uploader.uploadFile(file,"test"));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        for(int i = 0 ; i < urls.size() ; i++){
+            imageSourcesRepository.save(
+                    ImageSources.builder().
+                            posts(
+                                    postResository.findById(postId).get()
+                            ).
+                            source(urls.get(i)).
+                            build()
+            );
+
+
+        }
+
+
+
+    }
+
+    @Transactional
+    public void insertHashTags(String hashTags,Long postId){
+        String[] hashArray = hashTags.split("#");
+
+        for(int i = 1 ; i < hashArray.length ;i++) {
+            hashTagsRepository.save(HashTags.builder().
+                    posts(postResository.findById(postId).get()).
+                    tag("#"+hashArray[i]).
+                    build());
+        }
+    }
+
+
 }
+
