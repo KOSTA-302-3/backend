@@ -1,4 +1,4 @@
-package web.mvc.santa_backend;
+package web.mvc.santa_backend.user;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -7,7 +7,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +15,6 @@ import web.mvc.santa_backend.user.entity.Customs;
 import web.mvc.santa_backend.user.entity.Users;
 import web.mvc.santa_backend.user.repository.CustomRepository;
 import web.mvc.santa_backend.user.repository.UserRepository;
-import web.mvc.santa_backend.user.service.UserService;
 
 import java.time.LocalDateTime;
 

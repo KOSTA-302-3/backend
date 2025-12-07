@@ -25,18 +25,11 @@ public class UserContoller {
     private final UserService userService;
 
     /* security 로그인 테스트용 */
-    /*@GetMapping("/")
+    /*@GetMapping("/test")
     public String test() {
         log.info("test called...");
 
-        return "index";
-    }
-
-    @GetMapping("/fail")
-    public String fail() {
-        log.info("fail called...");
-
-        return "fail";
+        return "test 입니다.";
     }*/
 
     /* 회원가입 */
