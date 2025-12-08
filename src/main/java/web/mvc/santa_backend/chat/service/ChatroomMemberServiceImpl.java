@@ -2,8 +2,6 @@ package web.mvc.santa_backend.chat.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import web.mvc.santa_backend.chat.dto.ChatroomMemberDTO;
@@ -94,8 +92,12 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
             chatroomMember.setNoteOff(chatroomMemberDTO.getNoteOff());
         }
         //강제 퇴장(Admin만 가능)
-        if(chatroomMemberDTO.getIsBanned() != null && currentChatMember.getRole().equals(UserRole.ADMIN)){
-            chatroomMember.setBanned(chatroomMemberDTO.getIsBanned());
+        if(chatroomMemberDTO.getIsBanned() != null){
+            if(currentChatMember.getRole().equals(UserRole.ADMIN)){
+                chatroomMember.setBanned(chatroomMemberDTO.getIsBanned());
+            }else{
+                throw new ForbiddenException(ErrorCode.NOT_CHATROOM_ADMIN);
+            }
         }
         //role 변경... 고민중..
         if(chatroomMemberDTO.getRole() != null && currentChatMember.getRole().equals(UserRole.ADMIN)){
