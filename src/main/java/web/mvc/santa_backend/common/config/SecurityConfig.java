@@ -51,11 +51,11 @@ public class SecurityConfig {
 
 
         // 모두 허용 (임시)
-        http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+        //http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
 
 
         // 경로별 인가 작업 (필요한 거 추가!)
-        /*http.authorizeHttpRequests((auth) ->
+        http.authorizeHttpRequests((auth) ->
                 auth
                         //.requestMatchers("/index", "/users", "/users/**").permitAll()
                         // swagger 설정
@@ -68,14 +68,14 @@ public class SecurityConfig {
                                 "/webjars/**"
                         ).permitAll()
                         // GET 요청 누구나 접근 가능
-                        .requestMatchers(HttpMethod.GET, "/users/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/user/**").permitAll()
                         // Follow 인증 필요
-                        .requestMatchers("/follows/**").authenticated()
+                        .requestMatchers("/api/follow/**").authenticated()
                         .requestMatchers("/test").authenticated()
                         // POST 요청 인증 필요
                         //.requestMatchers(HttpMethod.POST, "/posts").authenticated()
-                        .requestMatchers("/admin").hasRole("ADMIN")
-                        .anyRequest().authenticated());*/
+                        .requestMatchers("/api/admin").hasRole("ADMIN")
+                        .anyRequest().authenticated());
 
         // 필터 추가(교체)
         // UsernamePasswordAuthenticationFilter 는 form login(security의 기본 로그인)을 진행하는 필터

@@ -43,6 +43,11 @@ public interface UserService {
     UserResponseDTO updateUsers(Long id, UserRequestDTO userDTO);
 
     /**
+     * 공개/비공개 설정
+     */
+    UserResponseDTO updatePrivate(Long id, boolean toPrivate);
+
+    /**
      * 유저 탈퇴
      */
     UserResponseDTO deactivateUser(Long id);

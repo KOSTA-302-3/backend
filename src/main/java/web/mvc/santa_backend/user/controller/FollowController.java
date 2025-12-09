@@ -12,7 +12,7 @@ import web.mvc.santa_backend.user.service.FollowService;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/follows")
+@RequestMapping("/api/follow")
 @Slf4j
 @Tag(name = "FollowController API", description = "FollowController API")
 public class FollowController {

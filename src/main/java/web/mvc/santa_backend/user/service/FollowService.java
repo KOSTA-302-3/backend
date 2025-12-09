@@ -24,4 +24,8 @@ public interface FollowService {
      * 팔로우 대기 수락
      */
     void approveFollow(Long followerId, Long followingId);
+
+    void increaseFollowCount(Long followerId, Long followingId);
+
+    void decreaseFollowCount(Long followerId, Long followingId);
 }

@@ -51,8 +51,7 @@ public class FollowServiceImpl implements FollowService {
                 .build();
 
         if (following.isPrivate() == false) {   // 공개 계정일 경우만 count 증가
-            userRepository.increaseFollowingCount(followerId);  // 현재 유저의 팔로잉 수 증가
-            userRepository.increaseFollowerCount(followingId);  // 팔로우 당한 유저의 팔로워 수 증가
+            this.increaseFollowCount(followerId, followingId);
         }
 
         // 알림
@@ -74,8 +73,7 @@ public class FollowServiceImpl implements FollowService {
                 .orElseThrow(()->new RuntimeException("팔로우하지 않는 유저 언팔로우 요청"));
 
         // count 감소
-        userRepository.decreaseFollowingCount(followerId);
-        userRepository.decreaseFollowerCount(followingId);
+        this.decreaseFollowCount(followerId, followingId);
 
         followRepository.delete(follow);
     }
@@ -94,8 +92,22 @@ public class FollowServiceImpl implements FollowService {
         if (follow.isPending() == false) throw new RuntimeException("이미 수락한 유저입니다.");
         follow.setPending(false);
 
+        this.increaseFollowCount(followerId, followingId);
+    }
+
+    @Transactional
+    @Override
+    public void increaseFollowCount(Long followerId, Long followingId) {
         // count 증가
         userRepository.increaseFollowingCount(followerId);  // 현재 유저의 팔로잉 수 증가
         userRepository.increaseFollowerCount(followingId);  // 팔로우 당한 유저의 팔로워 수 증가
+    }
+
+    @Transactional
+    @Override
+    public void decreaseFollowCount(Long followerId, Long followingId) {
+        // count 감소
+        userRepository.decreaseFollowingCount(followerId);
+        userRepository.decreaseFollowerCount(followingId);
     }
 }

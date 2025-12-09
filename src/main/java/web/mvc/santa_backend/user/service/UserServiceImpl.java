@@ -97,8 +97,6 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(()->new RuntimeException("해당 유저가 없습니다."));
 
         UserResponseDTO userResponseDTO = modelMapper.map(user, UserResponseDTO.class);
-        userResponseDTO.setFollowingList(this.getFollowings(id));
-        userResponseDTO.setFollowerList(this.getFollowers(id));
 
         return userResponseDTO;
     }
@@ -117,13 +115,22 @@ public class UserServiceImpl implements UserService {
                 //.orElseThrow(()->new DMLException(ErrorCode.));
                 .orElseThrow(()->new RuntimeException("수정 실패"));
 
-        // TODO: save로수정
         user.setUsername(userRequestDTO.getUsername());
         user.setProfileImage(userRequestDTO.getProfileImage());
         user.setDescription(userRequestDTO.getDescription());
         user.setLevel(userRequestDTO.getLevel());
-        user.setPrivate(userRequestDTO.isPrivate());
+        //user.setPrivate(userRequestDTO.isPrivate());
         user.setPassword(passwordEncoder.encode(userRequestDTO.getPassword())); // TODO: 비밀번호 암호화 수준 확인 및 이전 비밀번호 불가
+
+        return modelMapper.map(user, UserResponseDTO.class);
+    }
+
+    @Override
+    public UserResponseDTO updatePrivate(Long id, boolean toPrivate) {
+        Users user = userRepository.findById(id)
+                //.orElseThrow(()->new DMLException(ErrorCode.));
+                .orElseThrow(()->new RuntimeException("수정 실패"));
+        user.setPrivate(toPrivate);
 
         return modelMapper.map(user, UserResponseDTO.class);
     }
