@@ -8,7 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import web.mvc.santa_backend.common.security.CustomUserDetails;
 import web.mvc.santa_backend.user.dto.UserResponseDTO;
 import web.mvc.santa_backend.user.dto.UserRequestDTO;
 import web.mvc.santa_backend.user.dto.UserSimpleDTO;
@@ -88,37 +90,37 @@ public class UserContoller {
     @Operation(summary = "유저 정보 수정 (TODO: password)"
             , description = "수정 항목: username, profileImage, description, level" +
             "Swagger에서 테스트 시, Request body에서 private을 isPrivate 으로 바꿔줘야 함")
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody UserRequestDTO userDTO) {
+    @PutMapping
+    public ResponseEntity<?> updateUser(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestBody UserRequestDTO userDTO) {
         log.info("updateUser/ user: {}", userDTO);
-        UserResponseDTO updateUser = userService.updateUsers(id, userDTO);
+        UserResponseDTO updateUser = userService.updateUsers(customUserDetails.getUser().getUserId(), userDTO);
 
         return ResponseEntity.status(HttpStatus.OK).body(updateUser);
     }
 
     @Operation(summary = "공개/비공개 변경", description = "toPrivate: true 시 비공개로 전환 / false 시 공개로 전환")
-    @PutMapping("/{id}/private")
-    public ResponseEntity<?> updatePrivate(@PathVariable Long id, @RequestParam boolean toPrivate) {
-        UserResponseDTO updateUser = userService.updatePrivate(id, toPrivate);
+    @PutMapping("/privacy")
+    public ResponseEntity<?> updatePrivate(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestParam boolean toPrivate) {
+        UserResponseDTO updateUser = userService.updatePrivate(customUserDetails.getUser().getUserId(), toPrivate);
 
         return ResponseEntity.status(HttpStatus.OK).body(updateUser);
     }
 
     /* 유저 탈퇴(상태 수정/삭제) */
     @Operation(summary = "유저 탈퇴")
-    @PutMapping("/softdelete/{id}")
-    public ResponseEntity<?> deactivateUser(@PathVariable Long id) {
-        log.info("deactivateUser/ id: {}", id);
-        UserResponseDTO deleteUser = userService.deactivateUser(id);
+    @PutMapping("/softdelete")
+    public ResponseEntity<?> deactivateUser(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        log.info("deactivateUser/ id: {}", customUserDetails.getUser().getUserId());
+        UserResponseDTO deleteUser = userService.deactivateUser(customUserDetails.getUser().getUserId());
 
         return ResponseEntity.status(HttpStatus.OK).body(deleteUser);
     }
 
     @Operation(summary = "유저 탈퇴 복구")
-    @PutMapping("/recover/{id}")
-    public ResponseEntity<?> reactivateUser(@PathVariable Long id) {
-        log.info("reactivateUser/ id: {}", id);
-        UserResponseDTO recoverUser = userService.reactivateUser(id);
+    @PutMapping("/recover")
+    public ResponseEntity<?> reactivateUser(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        log.info("reactivateUser/ id: {}", customUserDetails.getUser().getUserId());
+        UserResponseDTO recoverUser = userService.reactivateUser(customUserDetails.getUser().getUserId());
 
         return ResponseEntity.status(HttpStatus.OK).body(recoverUser);
     }
