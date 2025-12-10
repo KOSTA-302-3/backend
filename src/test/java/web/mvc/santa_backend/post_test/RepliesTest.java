@@ -4,38 +4,38 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import web.mvc.santa_backend.post.entity.Posts;
 import web.mvc.santa_backend.post.entity.Replies;
+import web.mvc.santa_backend.post.repository.LikesRepository;
 import web.mvc.santa_backend.post.repository.PostResository;
 import web.mvc.santa_backend.post.repository.RepliesRepository;
-import web.mvc.santa_backend.post.service.PostService;
-import web.mvc.santa_backend.post.service.RepliesService;
+import web.mvc.santa_backend.post.service.LikeServiceImpl;
+import web.mvc.santa_backend.post.service.RepliesServiceImpl;
+import web.mvc.santa_backend.user.repository.UserRepository;
 
 @SpringBootTest
 public class RepliesTest {
 
     @Autowired
-    private RepliesService repliesService;
+    private RepliesServiceImpl repliesService;
     @Autowired
     private RepliesRepository repliesRepository;
     @Autowired
     private PostResository postResository;
 
 
-
     @Test
     @DisplayName("글번호 해당 댓글 조회 ")
-    void repliesGetTest(){
+    void repliesGetTest() {
 
-        System.out.println(repliesService.findReplies(1L,2).getTotalPages());
-        System.out.println(repliesService.findReplies(2L,2).getTotalPages());
+        System.out.println(repliesService.findReplies(1L, 2).getTotalPages());
+        System.out.println(repliesService.findReplies(2L, 2).getTotalPages());
 
     }
 
 
     @Test
     @DisplayName("댓글 작성")
-    void repliesCreateTest(){
+    void repliesCreateTest() {
         repliesRepository.save(
                 Replies.builder().
                         userId(1L).
@@ -51,7 +51,7 @@ public class RepliesTest {
 
     @Test
     @DisplayName("댓글 수정")
-    void repliesUpdateTest(){
+    void repliesUpdateTest() {
         repliesRepository.save(
                 Replies.builder().
                         replyId(3L).
@@ -66,13 +66,20 @@ public class RepliesTest {
     }
 
 
-
     @Test
     @DisplayName("댓글 삭제")
-    void repliesDeleteTest(){
+    void repliesDeleteTest() {
         repliesRepository.deleteById(2L);
         System.out.println("댓글 삭제 성공!");
     }
+
+    @Autowired
+    LikesRepository likesRepository;
+    @Autowired
+    UserRepository userRepository;
+    @Autowired
+    LikeServiceImpl likedService;
+
 
 
 }

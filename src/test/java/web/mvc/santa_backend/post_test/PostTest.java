@@ -9,7 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import web.mvc.santa_backend.post.entity.Posts;
 import web.mvc.santa_backend.post.repository.PostResository;
-import web.mvc.santa_backend.post.service.PostService;
+import web.mvc.santa_backend.post.service.PostServiceImpl;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -20,7 +20,7 @@ import java.util.Scanner;
 public class PostTest {
 
     @Autowired
-    PostService postService;
+    PostServiceImpl postService;
     @Autowired
     PostResository postResository;
 

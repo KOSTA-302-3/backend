@@ -13,4 +13,12 @@ public interface HashTagsRepository extends JpaRepository<HashTags,Long> {
 
     HashTags findByTag(String tag);
 
+    List<TagMapping> findAllByPostsPostId(Long id,boolean hashCk);
+
 }
+
+
+interface TagMapping {
+    Long getTag();
+}
+

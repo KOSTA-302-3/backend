@@ -12,12 +12,16 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PostDTO {
-    private  Posts posts;
+    private Long postId;
+    private Long createUserId;
+    private LocalDateTime createAt;
+    private String content;
+    private Long likeCount;
+    private Long postLevel;
+    private boolean contentVisible;
 
-    private List<HashTags> hashTagsList;
-    private List<ImageSources> imageSourcesList;
-
-
+    private List<String> hashTagsList;
+    private List<String> imageSourcesList;
 
 
 }

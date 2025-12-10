@@ -12,4 +12,11 @@ public interface ImageSourcesRepository extends JpaRepository<ImageSources,Long>
 
     List<ImageSources> findAllByPostsPostId(Long id);
 
+    List<ImageMapping> findAllByPostsPostId(Long id,boolean listck);
+
+
+}
+
+interface ImageMapping {
+    String getSource();
 }

@@ -17,12 +17,14 @@ public interface PostResository extends JpaRepository<Posts, Long> {
     @Query(nativeQuery = true,value = "select * from posts limit 2")
     List<Posts> findAllPostsLimit();
 
-
     Posts findByContent(String content);
 
-    Page<Posts> findAll(Pageable pageable);
 
 
+     Page<Posts> findAll(Pageable pageable);
 
 
 }
+
+
+

@@ -34,4 +34,12 @@ public class Replies {
     private  Long replyLike;
 
 
+   public void increaseLikeCount(){
+        this.replyLike++;
+    }
+
+    public void decreaseLikeCount(){
+        this.replyLike--;
+    }
+
 }
