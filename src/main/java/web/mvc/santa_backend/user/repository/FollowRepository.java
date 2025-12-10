@@ -37,8 +37,15 @@ public interface FollowRepository extends JpaRepository<Follows, Long> {
 
     /**
      * 팔로우 대기 상태인 유저들(팔로워) 목록 보기 (페이징)
+     * = getPendingFollowers
      */
     Page<Follows> findByFollowing_UserIdAndPendingIsTrue(Long id, Pageable pageable);
+
+    /**
+     * 팔로우 대기 상태인 유저들 전체 목록 보기 (비공개->공개 전환 시 팔로우 요청 다 수락)
+     * = getPendingFollowers
+     */
+    List<Follows> findByFollowing_UserIdAndPendingIsTrue(Long id);
 
     Optional<Follows> findByFollower_UserIdAndFollowing_UserId(Long id, Long targetId);
 

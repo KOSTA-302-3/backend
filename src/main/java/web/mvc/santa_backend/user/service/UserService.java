@@ -72,4 +72,6 @@ public interface UserService {
     Page<UserSimpleDTO> getFollowers(Long id, int page);
 
     Page<UserSimpleDTO> getPendingFollowers(Long id, int page);
+
+    List<UserResponseDTO> updateFollowCounts();
 }

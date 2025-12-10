@@ -74,10 +74,10 @@ public class UserContoller {
         return ResponseEntity.status(HttpStatus.OK).body(users);
     }
 
-    @Operation(summary = "userId로 개인 유저 조회")
+    @Operation(summary = "userId로 개인 유저 조회",
+            description = "현재 로그인 된 유저 외에도 다른 유저들을 조회하는 거라서 id 받아오기")
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
-        // TODO: 현재 로그인 된 유저를 조회하는 거라서 AuthenticationPrincipal 필요
         log.info("getUserById/ id: {}", id);
         UserResponseDTO user = userService.getUserById(id);
 
@@ -96,7 +96,7 @@ public class UserContoller {
         return ResponseEntity.status(HttpStatus.OK).body(updateUser);
     }
 
-    @Operation(summary = "공개/비공개 변경")
+    @Operation(summary = "공개/비공개 변경", description = "toPrivate: true 시 비공개로 전환 / false 시 공개로 전환")
     @PutMapping("/{id}/private")
     public ResponseEntity<?> updatePrivate(@PathVariable Long id, @RequestParam boolean toPrivate) {
         UserResponseDTO updateUser = userService.updatePrivate(id, toPrivate);
@@ -171,5 +171,15 @@ public class UserContoller {
         Page<UserSimpleDTO> pendings = userService.getPendingFollowers(id, page);
 
         return ResponseEntity.status(HttpStatus.OK).body(pendings);
+    }
+
+    @Operation(summary = "followingCount, followerCount 동기화 (관리자용?)",
+            description = "Follows 의 레코드 수로부터 Users_followingCount, followerCount 맞추기" +
+                    "return: 팔로우 수가 맞지 않았던 유저들 반환")
+    @GetMapping("/sync")
+    public ResponseEntity<?> sync() {
+        List<UserResponseDTO> syncUsers = userService.updateFollowCounts();
+
+        return ResponseEntity.status(HttpStatus.OK).body(syncUsers);
     }
 }
