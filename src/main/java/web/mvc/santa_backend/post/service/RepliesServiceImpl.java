@@ -67,15 +67,8 @@ public class RepliesServiceImpl implements RepliesService {
 
     @Transactional
     public void updateReplies(RepliesDTO repliesDTO) {
-        repliesRepository.save(
-                Replies.builder().
-                        replyId(repliesDTO.getReplyId()).
-                        userId(repliesDTO.getUserId()).
-                        posts(postRepository.findById(repliesDTO.getPostId()).get()).
-                        replyContent(repliesDTO.getReplyContent()).
-                        replyLike(repliesDTO.getReplyLike()).
-                        build()
-        );
+       Replies replies =  repliesRepository.findById(repliesDTO.getReplyId()).get();
+       replies.setReplyContent(repliesDTO.getReplyContent());
     }
 
     @Transactional

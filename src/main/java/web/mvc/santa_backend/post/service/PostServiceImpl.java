@@ -99,22 +99,49 @@ public class PostServiceImpl implements PostService{
                 likeCount(0L).
                 content(posts.getContent()).
                 postLevel(posts.getPostLevel()).
-                contentVisible(false).
+                contentVisible(true).
                 build()
         );
     }
 
     @Transactional
     public void updatePosts(PostDTO posts) {
-        postRepository.save(Posts.builder().
-                postId(posts.getPostId()).
-                createUserId(posts.getCreateUserId()).
-                createAt(posts.getCreateAt()).
-                content(posts.getContent()).
-                likeCount(posts.getLikeCount()).
-                postLevel(posts.getPostLevel()).contentVisible(false).
-                build()
-        );
+
+        //프론트에서 받는 해시태그,이미지는 뺴는 값으로 받음
+
+        Posts post = postRepository.findById(posts.getPostId()).get();
+
+        for(String imgUrl : posts.getImageSourcesList()){
+            imageSourcesRepository.delete(
+                    imageSourcesRepository.findBySource(imgUrl).orElseThrow(() -> new RuntimeException("에러"))
+            );
+        }
+        for(String hash : posts.getHashTagsList()){
+            hashTagsRepository.delete(
+                    hashTagsRepository.findByTagAndPostsPostId(
+                            hash,posts.getPostId())
+                            .orElseThrow(() ->
+                                    new RuntimeException("에러"))
+
+            );
+        }
+
+
+        post.setContent(posts.getContent());
+        post.setContentVisible(posts.isContentVisible());
+        post.setHashTags(hashTagsRepository.findAllByPostsPostId(posts.getPostId()));
+        post.setImageSources(imageSourcesRepository.findAllByPostsPostId(posts.getPostId()));
+
+
+//        postRepository.save(Posts.builder().
+//                postId(posts.getPostId()).
+//                createUserId(posts.getCreateUserId()).
+//                createAt(posts.getCreateAt()).
+//                content(posts.getContent()).
+//                likeCount(posts.getLikeCount()).
+//                postLevel(posts.getPostLevel()).contentVisible(false).
+//                build()
+//        );
     }
 
     @Transactional
@@ -126,6 +153,7 @@ public class PostServiceImpl implements PostService{
     @Transactional
     public void imgUpload(List<MultipartFile> files, Long postId) {
         List<String> urls = new ArrayList<>();
+        List<ImageSources> imageList= new ArrayList<>();
         for (MultipartFile file : files) {
             try {
                 urls.add(s3Uploader.uploadFile(file, "test"));
@@ -135,7 +163,7 @@ public class PostServiceImpl implements PostService{
         }
 
         for (int i = 0; i < urls.size(); i++) {
-            imageSourcesRepository.save(
+           ImageSources imageSources =  imageSourcesRepository.save(
                     ImageSources.builder().
                             posts(
                                     postRepository.findById(postId).get()
@@ -143,9 +171,11 @@ public class PostServiceImpl implements PostService{
                             source(urls.get(i)).
                             build()
             );
-
+        imageList.add(imageSources);
 
         }
+
+        postRepository.findById(postId).get().setImageSources(imageList);
 
 
     }
@@ -154,14 +184,18 @@ public class PostServiceImpl implements PostService{
     public void insertHashTags(String hashTags, Long postId) {
         String[] hashArray = hashTags.split("#");
         Posts post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("존재하지 않는 게시글 입니다"));
-
+        List<HashTags> hashTagList = new ArrayList<>();
 
         for (int i = 1; i < hashArray.length; i++) {
-            hashTagsRepository.save(HashTags.builder().
+            HashTags hash =  hashTagsRepository.save(HashTags.builder().
                     posts(post).
                     tag("#" + hashArray[i]).
                     build());
+
+            hashTagList.add(hash);
         }
+        postRepository.findById(postId).get().setHashTags(hashTagList);
+
     }
 
 
