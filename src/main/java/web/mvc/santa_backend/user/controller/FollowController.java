@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import web.mvc.santa_backend.common.security.CustomUserDetails;
-import web.mvc.santa_backend.user.dto.FollowRequestDTO;
+import web.mvc.santa_backend.user.dto.FollowDTO;
 import web.mvc.santa_backend.user.service.FollowService;
 
 @RestController
@@ -23,10 +23,10 @@ public class FollowController {
 
     @Operation(summary = "팔로우")
     @PostMapping
-    public String follow(@RequestBody Long followingId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        followService.follow(customUserDetails.getUser().getUserId(), followingId);
+    public ResponseEntity<?> follow(@RequestBody Long followingId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        FollowDTO follow = followService.follow(customUserDetails.getUser().getUserId(), followingId);
 
-        return "팔로우 완료";
+        return ResponseEntity.status(HttpStatus.OK).body(follow);
     }
 
     @Operation(summary = "언팔로우 및 팔로우 거절", description = "언팔로우 / 비공개 유저에게 온 팔로우 요청을 거절 (둘 다 레코드 삭제)")
@@ -47,10 +47,10 @@ public class FollowController {
 
     @Operation(summary = "팔로우 수락", description = "비공개 유저에게 온 팔로우 요청을 수락")
     @PutMapping("/{followerId}")
-    public String approveFollow(@PathVariable Long followerId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        followService.approveFollow(followerId, customUserDetails.getUser().getUserId());
+    public ResponseEntity<?> approveFollow(@PathVariable Long followerId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        FollowDTO follow = followService.approveFollow(followerId, customUserDetails.getUser().getUserId());
 
-        return "팔로우 수락";
+        return ResponseEntity.status(HttpStatus.OK).body(follow);
     }
 
 }

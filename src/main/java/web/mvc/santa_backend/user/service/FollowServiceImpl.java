@@ -9,6 +9,7 @@ import web.mvc.santa_backend.chat.dto.NotificationDTO;
 import web.mvc.santa_backend.chat.repository.NotificationRepository;
 import web.mvc.santa_backend.chat.service.NotificationService;
 import web.mvc.santa_backend.common.enumtype.NotificationType;
+import web.mvc.santa_backend.user.dto.FollowDTO;
 import web.mvc.santa_backend.user.entity.Follows;
 import web.mvc.santa_backend.user.entity.Users;
 import web.mvc.santa_backend.user.repository.FollowRepository;
@@ -29,7 +30,7 @@ public class FollowServiceImpl implements FollowService {
 
     @Transactional
     @Override
-    public void follow(Long followerId, Long followingId) {
+    public FollowDTO follow(Long followerId, Long followingId) {
         // 자기 자신 팔로우 시
         if (followerId.equals(followingId)) throw new RuntimeException("자신을 팔로우 할 수 없습니다.");
 
@@ -64,6 +65,8 @@ public class FollowServiceImpl implements FollowService {
         notificationService.createNotification(notificationDTO);
 
         followRepository.save(follow);
+
+        return modelMapper.map(follow, FollowDTO.class);
     }
 
     @Transactional
@@ -85,14 +88,15 @@ public class FollowServiceImpl implements FollowService {
 
     @Transactional
     @Override
-    public void approveFollow(Long followerId, Long followingId) {
+    public FollowDTO approveFollow(Long followerId, Long followingId) {
         Follows follow = followRepository.findByFollower_UserIdAndFollowing_UserId(followerId, followingId)
                 .orElseThrow(()->new RuntimeException("팔로우 수락 실패"));
-
         if (follow.isPending() == false) throw new RuntimeException("이미 수락한 유저입니다.");
-        follow.setPending(false);
 
+        follow.setPending(false);
         this.increaseFollowCount(followerId, followingId);
+
+        return modelMapper.map(follow, FollowDTO.class);
     }
 
     @Transactional
