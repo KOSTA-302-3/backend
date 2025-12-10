@@ -128,14 +128,14 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public UserResponseDTO updatePrivate(Long id, boolean toPrivate) {
+    public UserResponseDTO updatePrivacy(Long id) {
         Users user = userRepository.findById(id)
                 //.orElseThrow(()->new DMLException(ErrorCode.));
                 .orElseThrow(()->new RuntimeException("수정 실패"));
-        user.setPrivate(toPrivate);
+        user.setPrivate(!user.isPrivate());
 
         // 비공개 -> 공개 전환 시 팔로우 대기 상태의 팔로워들 모두 수락
-        if (toPrivate == false) {
+        if (user.isPrivate()) {
             List<Users> followers = followRepository.findByFollowing_UserIdAndPendingIsTrue(id)
                     .stream()
                     .map(Follows::getFollower)

@@ -100,8 +100,8 @@ public class UserContoller {
 
     @Operation(summary = "공개/비공개 변경", description = "toPrivate: true 시 비공개로 전환 / false 시 공개로 전환")
     @PutMapping("/privacy")
-    public ResponseEntity<?> updatePrivate(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestParam boolean toPrivate) {
-        UserResponseDTO updateUser = userService.updatePrivate(customUserDetails.getUser().getUserId(), toPrivate);
+    public ResponseEntity<?> updatePrivate(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        UserResponseDTO updateUser = userService.updatePrivacy(customUserDetails.getUser().getUserId());
 
         return ResponseEntity.status(HttpStatus.OK).body(updateUser);
     }
@@ -168,11 +168,11 @@ public class UserContoller {
     }
 
     @Operation(summary = "대기 중인 팔로워 조회 (페이징)", description = "현재 유저가 대기 팔로워 수락/거절 선택을 위함")
-    @GetMapping("/{id}/pending/{page}")
-    public ResponseEntity<?> getPendingFollowers(@PathVariable Long id, @PathVariable int page) {
-        Page<UserSimpleDTO> pendings = userService.getPendingFollowers(id, page);
+    @GetMapping("/pending/{page}")
+    public ResponseEntity<?> getPendingFollowers(@PathVariable int page, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        Page<UserSimpleDTO> pendingFollowers = userService.getPendingFollowers(customUserDetails.getUser().getUserId(), page);
 
-        return ResponseEntity.status(HttpStatus.OK).body(pendings);
+        return ResponseEntity.status(HttpStatus.OK).body(pendingFollowers);
     }
 
     @Operation(summary = "followingCount, followerCount 동기화 (관리자용?)",

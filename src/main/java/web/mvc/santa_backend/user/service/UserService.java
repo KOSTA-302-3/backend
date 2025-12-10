@@ -45,7 +45,7 @@ public interface UserService {
     /**
      * 공개/비공개 설정
      */
-    UserResponseDTO updatePrivate(Long id, boolean toPrivate);
+    UserResponseDTO updatePrivacy(Long id);
 
     /**
      * 유저 탈퇴
