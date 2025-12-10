@@ -36,8 +36,8 @@ public class RepliesController {
 
     }
     //댓글쓰기
-    @PostMapping("/댓글쓰기")
-    @Operation(summary = "필터링 킨 전체 게시물 보기")
+    @PostMapping("/createReplies")
+    @Operation(summary = "댓글쓰기")
     ResponseEntity<String> createReplies(@RequestBody RepliesDTO repliesDTO){
         repliesService.createReplies(repliesDTO);
 
@@ -46,8 +46,8 @@ public class RepliesController {
     }
 
     //댓글 수정
-    @PutMapping("/댓글 수정")
-    @Operation(summary = "필터링 킨 전체 게시물 보기")
+    @PutMapping("/updateReplies")
+    @Operation(summary = "댓글 수정")
     ResponseEntity<String> updateReplies(@RequestBody RepliesDTO repliesDTO){
         repliesService.updateReplies(repliesDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body("Update Success");
@@ -63,7 +63,7 @@ public class RepliesController {
     }
 
     @PostMapping("/like")
-    @Operation(summary = "댓글 좋아요")
+    @Operation(summary = "필터링 킨 전체 게시물 보기")
     ResponseEntity<String> likeReplies(@RequestBody LikeDTO likeDTO){
 
 
