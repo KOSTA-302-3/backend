@@ -72,6 +72,8 @@ public class MessageServiceImpl implements MessageService {
     }
 
     private OutboundChatMessageDTO toOutboundChatMessageDTO(Messages messages){
+        long unreadCount = chatroomMemberRepository.countByChatroom_ChatroomIdAndIsBannedAndLastReadLessThan(
+                messages.getChatrooms().getChatroomId(), false, messages.getMessageId());
         OutboundChatMessageDTO outboundChatMessageDTO = OutboundChatMessageDTO.builder()
                 .messageId(messages.getMessageId())
                 .userId(messages.getUserId())
@@ -79,6 +81,7 @@ public class MessageServiceImpl implements MessageService {
                 .payload(messages.getPayload())
                 .createdAt(messages.getCreatedAt())
                 .type(messages.getType())
+                .unreadCount(unreadCount)
                 .build();
         if(messages.getReplyMessage() != null){
             outboundChatMessageDTO.setReplyMessage(toReplyMessageDTO(messages.getReplyMessage()));
