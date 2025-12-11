@@ -10,7 +10,8 @@ import org.springframework.http.HttpStatus;
 @Getter
 @RequiredArgsConstructor
 public enum ErrorCode {
-    DUPLICATED_ID(HttpStatus.BAD_REQUEST, "Duplicated id", "아이디 중복"),
+    DUPLICATED_ID(HttpStatus.BAD_REQUEST, "duplicated id", "아이디 중복"),
+    DUPLICATED_BLOCK(HttpStatus.BAD_REQUEST, "duplicated block", "중복 차단 불가"),
     DUPLICATED_CHAT_MEMBER(HttpStatus.BAD_REQUEST, "Duplicated chatroom member", "중복입장 불가능"),
 
     WRONG_TARGET(HttpStatus.BAD_REQUEST, "wrong target", "자기 자신에게 요청할 수 없음"),

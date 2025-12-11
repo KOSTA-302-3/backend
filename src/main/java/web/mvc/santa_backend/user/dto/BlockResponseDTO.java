@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class BlockResponseDTO {
     private Long blockId;
-    private Users user;
+    private Long userId;
     private BlockType blockType;
     private Long targetId;
     private LocalDateTime createdAt;

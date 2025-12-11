@@ -281,6 +281,7 @@ public class UserServiceImpl implements UserService {
         return List.of();
     }
 
+    @Transactional
     @Override
     public Page<Object> getBlocks(Long id, BlockType type, int page) {
         Pageable pageable = PageRequest.of(page, 10);

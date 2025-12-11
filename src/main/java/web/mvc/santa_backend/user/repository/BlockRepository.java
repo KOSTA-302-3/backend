@@ -17,12 +17,12 @@ public interface BlockRepository extends JpaRepository<Blocks,Long> {
      * @param blockType : 유저/게시물/댓글
      * @param blockId : 차단 대상의 PK
      */
-    Optional<Blocks> findByUser_UserIdAndBlockTypeAndBlockId(Long userId, BlockType blockType, Long blockId);
+    Optional<Blocks> findByUser_UserIdAndBlockTypeAndTargetId(Long userId, BlockType blockType, Long blockId);
 
     /**
      * 차단 중인지 확인
      */
-    boolean existsByUser_UserIdAndBlockTypeAndBlockId(Long userId, BlockType blockType, Long blockId);
+    boolean existsByUser_UserIdAndBlockTypeAndTargetId(Long userId, BlockType blockType, Long blockId);
 
     /**
      * 로그인 한 유저가 차단한 목록 보기
