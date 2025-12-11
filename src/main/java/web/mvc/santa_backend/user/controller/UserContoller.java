@@ -27,19 +27,6 @@ public class UserContoller {
 
     private final UserService userService;
 
-    /* security 로그인 테스트용 */
-    @GetMapping("/test")
-    public String test() {
-        log.info("test called...");
-
-        return "test 입니다.";
-    }
-
-    @GetMapping("/admin")
-    public String admin() {
-        return "admin";
-    }
-
     /* 회원가입 */
     @Operation(summary = "아이디(username) 중복체크")
     @GetMapping("/username/{username}")
