@@ -3,15 +3,20 @@ package web.mvc.santa_backend.user.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.crossstore.ChangeSetPersister;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import web.mvc.santa_backend.common.enumtype.BlockType;
 import web.mvc.santa_backend.common.exception.*;
+import web.mvc.santa_backend.post.entity.Posts;
+import web.mvc.santa_backend.post.entity.Replies;
 import web.mvc.santa_backend.post.repository.PostResository;
 import web.mvc.santa_backend.post.repository.RepliesRepository;
 import web.mvc.santa_backend.user.dto.BlockRequestDTO;
 import web.mvc.santa_backend.user.dto.BlockResponseDTO;
+import web.mvc.santa_backend.user.dto.UserSimpleDTO;
 import web.mvc.santa_backend.user.entity.Blocks;
 import web.mvc.santa_backend.user.entity.Users;
 import web.mvc.santa_backend.user.repository.BlockRepository;
@@ -19,6 +24,8 @@ import web.mvc.santa_backend.user.repository.FollowRepository;
 import web.mvc.santa_backend.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -85,5 +92,66 @@ public class BlockServiceImpl implements BlockService {
     @Override
     public boolean isBlocking(Long userId, BlockType type, Long targetId) {
         return blockRepository.existsByUser_UserIdAndBlockTypeAndTargetId(userId, type, targetId);
+    }
+
+    /* 차단 조회 */
+    @Override
+    public List<Object> getBlocks(Long id, BlockType type) {
+        List<Blocks> blocks = blockRepository.findByUser_UserIdAndBlockType(id, type);
+
+        /*switch (type) {
+            case USER:
+                return Collections.singletonList(blocks.stream().map(block -> {
+                    Users target = userRepository.findById(block.getTargetId())
+                            .orElseThrow(() -> new WrongTargetException(ErrorCode.WRONG_TARGET));
+                    return modelMapper.map(target, UserSimpleDTO.class);
+                }).toList());
+            case POST:
+                return Collections.singletonList(blocks.stream().map(block -> {
+                    Posts target = postRepository.findById(block.getTargetId())
+                            .orElseThrow(() -> new WrongTargetException(ErrorCode.WRONG_TARGET));
+                    return modelMapper.map(target, UserSimpleDTO.class);
+                }).toList());
+            case REPLY:
+                return Collections.singletonList(blocks.stream().map(block -> {
+                    Replies target = repliesRepository.findById(block.getTargetId())
+                            .orElseThrow(() -> new WrongTargetException(ErrorCode.WRONG_TARGET));
+                    return modelMapper.map(target, UserSimpleDTO.class);
+                }).toList());
+            default:
+                throw new InvalidException(ErrorCode.INVALID_TYPE);
+        }*/
+        return null;
+    }
+
+    @Transactional
+    @Override
+    public Page<Object> getBlocks(Long id, BlockType type, int page) {
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<Blocks> blocks = blockRepository.findByUser_UserIdAndBlockType(id, type, pageable);
+
+        // 각 type 에 맞는 DTO 반환
+        switch (type) {
+            case USER:
+                return blocks.map(block -> {
+                    Users target = userRepository.findById(block.getTargetId())
+                            .orElseThrow(()->new WrongTargetException(ErrorCode.WRONG_TARGET));
+                    return modelMapper.map(target, UserSimpleDTO.class);
+                });
+            case POST:
+                return blocks.map(block -> {
+                    Posts target = postRepository.findById(block.getTargetId())
+                            .orElseThrow(()->new WrongTargetException(ErrorCode.WRONG_TARGET));
+                    return modelMapper.map(target, UserSimpleDTO.class);
+                });
+            case REPLY:
+                return blocks.map(block -> {
+                    Replies target = repliesRepository.findById(block.getTargetId())
+                            .orElseThrow(()->new WrongTargetException(ErrorCode.WRONG_TARGET));
+                    return modelMapper.map(target, UserSimpleDTO.class);
+                });
+            default:
+                throw new InvalidException(ErrorCode.INVALID_TYPE);
+        }
     }
 }

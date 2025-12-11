@@ -3,12 +3,14 @@ package web.mvc.santa_backend.user.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 import web.mvc.santa_backend.common.enumtype.BlockType;
 import web.mvc.santa_backend.user.entity.Blocks;
 
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public interface BlockRepository extends JpaRepository<Blocks,Long> {
 
     /**
