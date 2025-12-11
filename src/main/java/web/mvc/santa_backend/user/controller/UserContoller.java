@@ -96,7 +96,7 @@ public class UserContoller {
 
     /* 유저 탈퇴(상태 수정/삭제) */
     @Operation(summary = "유저 탈퇴")
-    @PutMapping("/softdelete")
+    @DeleteMapping("/softdelete")
     public ResponseEntity<?> deactivateUser(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         log.info("deactivateUser/ id: {}", customUserDetails.getUser().getUserId());
         UserResponseDTO deleteUser = userService.deactivateUser(customUserDetails.getUser().getUserId());
