@@ -33,4 +33,6 @@ public interface ChatroomMemberRepository extends JpaRepository<ChatroomMembers,
     boolean existsByChatroom_ChatroomIdAndUser_UserIdAndIsBanned(Long chatroomChatroomId, Long userUserId, boolean isBanned);
 
     void deleteByUser_UserIdAndChatroom_ChatroomId(Long userUserId, Long chatroomChatroomId);
+
+    long countByChatroom_ChatroomIdAndIsBannedAndLastReadLessThan(Long chatroomChatroomId, boolean isBanned, Long lastReadIsLessThan);
 }
