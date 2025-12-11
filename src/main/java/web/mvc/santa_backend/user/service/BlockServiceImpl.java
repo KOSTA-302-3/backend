@@ -1,0 +1,65 @@
+package web.mvc.santa_backend.user.service;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
+import org.springframework.data.crossstore.ChangeSetPersister;
+import org.springframework.stereotype.Service;
+import web.mvc.santa_backend.common.enumtype.BlockType;
+import web.mvc.santa_backend.common.exception.*;
+import web.mvc.santa_backend.user.dto.BlockRequestDTO;
+import web.mvc.santa_backend.user.dto.BlockResponseDTO;
+import web.mvc.santa_backend.user.dto.FollowDTO;
+import web.mvc.santa_backend.user.entity.Blocks;
+import web.mvc.santa_backend.user.entity.Follows;
+import web.mvc.santa_backend.user.entity.Users;
+import web.mvc.santa_backend.user.repository.BlockRepository;
+import web.mvc.santa_backend.user.repository.UserRepository;
+
+import java.time.LocalDateTime;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class BlockServiceImpl implements BlockService {
+
+    private final BlockRepository blockRepository;
+    private final UserRepository userRepository;
+    private final ModelMapper modelMapper;
+
+    @Override
+    public BlockResponseDTO block(Long userId, BlockRequestDTO blockRequestDTO) {
+        // 자기 자신 차단 시
+        if (userId.equals(blockRequestDTO.getTargetId())) throw new WrongTargetException(ErrorCode.WRONG_TARGET);
+
+        // id 에 해당하는 유저, 대상(유저/게시물/댓글) 찾기
+        Users loginUser = userRepository.findById(userId).orElseThrow(()->new NotFoundException(ErrorCode.USER_NOT_FOUND));
+        if (userRepository.existsById(blockRequestDTO.getTargetId())/* ||
+        postRepository.existsById(blockRequestDTO.getTargetId()) ||
+        repliesRepository.existsById(blockRequestDTO.getTargetId())*/)
+            throw new NotFoundException(ErrorCode.TARGET_NOT_FOUND);
+
+        Blocks block = Blocks.builder()
+                .user(loginUser)
+                .blockType(blockRequestDTO.getBlockType())
+                .blockId(blockRequestDTO.getTargetId())
+                .createdAt(LocalDateTime.now())
+                .build();
+        blockRepository.save(block);
+
+        return modelMapper.map(block, BlockResponseDTO.class);
+    }
+
+    @Override
+    public void unblock(Long userId, BlockType type, Long targetId) {
+        Blocks block = blockRepository.findByUser_UserIdAndBlockTypeAndBlockId(userId, type, targetId)
+                .orElseThrow(()->new InvalidException(ErrorCode.INVALID_BLOCK));
+
+        blockRepository.delete(block);
+    }
+
+    @Override
+    public boolean isBlocking(Long userId, BlockType type, Long targetId) {
+        return blockRepository.existsByUser_UserIdAndBlockTypeAndBlockId(userId, type, targetId);
+    }
+}

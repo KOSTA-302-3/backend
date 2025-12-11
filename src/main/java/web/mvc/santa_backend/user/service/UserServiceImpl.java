@@ -9,11 +9,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import web.mvc.santa_backend.common.enumtype.BlockType;
+import web.mvc.santa_backend.user.dto.BlockResponseDTO;
 import web.mvc.santa_backend.user.dto.UserResponseDTO;
 import web.mvc.santa_backend.user.dto.UserRequestDTO;
 import web.mvc.santa_backend.user.dto.UserSimpleDTO;
+import web.mvc.santa_backend.user.entity.Blocks;
 import web.mvc.santa_backend.user.entity.Follows;
 import web.mvc.santa_backend.user.entity.Users;
+import web.mvc.santa_backend.user.repository.BlockRepository;
 import web.mvc.santa_backend.user.repository.FollowRepository;
 import web.mvc.santa_backend.user.repository.UserRepository;
 
@@ -32,6 +36,7 @@ public class UserServiceImpl implements UserService {
     private final CustomService customService;
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
+    private final BlockRepository blockRepository;
 
     @Transactional(readOnly = true)
     @Override
@@ -190,6 +195,7 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteById(id);
     }
 
+    /* 팔로우 조회 */
     @Override
     public List<UserSimpleDTO> getFollowings(Long id) {
         List<Follows> follows = followRepository.findByFollower_UserIdAndFollowing_StateIsTrueAndPendingIsFalse(id);
@@ -217,7 +223,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public Page<UserSimpleDTO> getFollowings(Long id, int page) {
         Pageable pageable = PageRequest.of(page, 10);
-
         Page<Follows> follows = followRepository.findByFollower_UserIdAndFollowing_StateIsTrueAndPendingIsFalse(id, pageable);
 
         // Follows -> Follows.following (Users) -> UserSimpleDTO
@@ -230,7 +235,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public Page<UserSimpleDTO> getFollowers(Long id, int page) {
         Pageable pageable = PageRequest.of(page, 10);
-
         Page<Follows> follows = followRepository.findByFollowing_UserIdAndFollower_StateIsTrueAndPendingIsFalse(id, pageable);
 
         // Follows -> Follows.following (Users) -> UserSimpleDTO
@@ -243,7 +247,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public Page<UserSimpleDTO> getPendingFollowers(Long id, int page) {
         Pageable pageable = PageRequest.of(page, 10);
-
         Page<Follows> follows = followRepository.findByFollowing_UserIdAndPendingIsTrue(id, pageable);
 
         // Follows -> Follows.following (Users) -> UserSimpleDTO
@@ -258,6 +261,26 @@ public class UserServiceImpl implements UserService {
         // TODO
         // 모든 유저 (or 지정 유저) 불러오기
         // follows 테이블로부터 getFollowingCount, getFollowerCount
+        return null;
+    }
+
+    /* 차단 조회 */
+    @Override
+    public List<Object> getBlocks(Long id, BlockType type) {
+        return List.of();
+    }
+
+    @Override
+    public Page<Object> getBlocks(Long id, BlockType type, int page) {
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<Blocks> blocks = blockRepository.findByUser_UserIdAndBlockType(id, type, pageable);
+
+        //blocks.map(block -> modelMapper.map(block, BlockResponseDTO.class));
+
+        if (type == BlockType.USER) ;   //Page<UserSimpleDTO>
+        else if (type == BlockType.POST) ;  //Page<PostDTO>
+        else if (type == BlockType.REPLY) ; //Page<ReplyDTO>
+
         return null;
     }
 }
