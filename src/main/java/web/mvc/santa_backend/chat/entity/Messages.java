@@ -43,11 +43,4 @@ public class Messages {
     @Column(nullable = false)
     private MessageType type = MessageType.TEXT;
 
-    @Builder.Default
-    @Column(nullable = false, columnDefinition = "bigint default 0")
-    private Long readCount = 0L;
-
-    @Builder.Default
-    @Column(nullable = false, columnDefinition = "bigint default 0")
-    private Long totalMembers = 0L;
 }
