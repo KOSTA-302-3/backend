@@ -62,22 +62,4 @@ public interface UserService {
      * 유저 삭제
      */
     void deleteUser(Long id);
-
-    /* 팔로우 조회 관련 */
-    List<UserSimpleDTO> getFollowings(Long id);
-
-    List<UserSimpleDTO> getFollowers(Long id);
-
-    Page<UserSimpleDTO> getFollowings(Long id, int page);
-
-    Page<UserSimpleDTO> getFollowers(Long id, int page);
-
-    Page<UserSimpleDTO> getPendingFollowers(Long id, int page);
-
-    /* followCount 수 동기화(TODO 위치 수정 예정) */
-    List<UserResponseDTO> updateFollowCounts();
-
-    /* 차단 조회 */
-    List<Object> getBlocks(Long id, BlockType type);
-    Page<Object> getBlocks(Long id, BlockType type, int page);
 }

@@ -3,16 +3,20 @@ package web.mvc.santa_backend.user.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import web.mvc.santa_backend.chat.dto.NotificationDTO;
-import web.mvc.santa_backend.chat.repository.NotificationRepository;
 import web.mvc.santa_backend.chat.service.NotificationService;
 import web.mvc.santa_backend.common.enumtype.BlockType;
 import web.mvc.santa_backend.common.enumtype.NotificationType;
 import web.mvc.santa_backend.common.exception.ErrorCode;
 import web.mvc.santa_backend.common.exception.InvalidException;
 import web.mvc.santa_backend.user.dto.FollowDTO;
+import web.mvc.santa_backend.user.dto.UserResponseDTO;
+import web.mvc.santa_backend.user.dto.UserSimpleDTO;
 import web.mvc.santa_backend.user.entity.Follows;
 import web.mvc.santa_backend.user.entity.Users;
 import web.mvc.santa_backend.user.repository.BlockRepository;
@@ -20,6 +24,7 @@ import web.mvc.santa_backend.user.repository.FollowRepository;
 import web.mvc.santa_backend.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -125,4 +130,74 @@ public class FollowServiceImpl implements FollowService {
         userRepository.decreaseFollowingCount(followerId);
         userRepository.decreaseFollowerCount(followingId);
     }
+
+    /* 팔로우 조회 */
+    @Override
+    public List<UserSimpleDTO> getFollowings(Long id) {
+        List<Follows> follows = followRepository.findByFollower_UserIdAndFollowing_StateIsTrueAndPendingIsFalse(id);
+
+        // Follows -> Follows.following (Users) -> UserSimpleDTO
+        List<UserSimpleDTO> followings = follows.stream()
+                .map(follow -> modelMapper.map(follow.getFollowing(), UserSimpleDTO.class))
+                .toList();
+
+        return followings;
+    }
+
+    @Override
+    public Page<UserSimpleDTO> getFollowings(Long id, int page) {
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<Follows> follows = followRepository.findByFollower_UserIdAndFollowing_StateIsTrueAndPendingIsFalse(id, pageable);
+
+        // Follows -> Follows.following (Users) -> UserSimpleDTO
+        Page<UserSimpleDTO> followings = follows
+                .map(follow -> modelMapper.map(follow.getFollowing(), UserSimpleDTO.class));
+
+        return followings;
+    }
+
+    @Override
+    public List<UserSimpleDTO> getFollowers(Long id) {
+        List<Follows> follows = followRepository.findByFollowing_UserIdAndFollower_StateIsTrueAndPendingIsFalse(id);
+
+        // Follows -> Follows.following (Users) -> UserSimpleDTO
+        List<UserSimpleDTO> followers = follows.stream()
+                .map(follow -> modelMapper.map(follow.getFollower(), UserSimpleDTO.class))
+                .toList();
+
+        return followers;
+    }
+
+    @Override
+    public Page<UserSimpleDTO> getFollowers(Long id, int page) {
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<Follows> follows = followRepository.findByFollowing_UserIdAndFollower_StateIsTrueAndPendingIsFalse(id, pageable);
+
+        // Follows -> Follows.following (Users) -> UserSimpleDTO
+        Page<UserSimpleDTO> followers = follows
+                .map(follow -> modelMapper.map(follow.getFollower(), UserSimpleDTO.class));
+
+        return followers;
+    }
+
+    @Override
+    public Page<UserSimpleDTO> getPendingFollowers(Long id, int page) {
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<Follows> follows = followRepository.findByFollowing_UserIdAndPendingIsTrue(id, pageable);
+
+        // Follows -> Follows.following (Users) -> UserSimpleDTO
+        Page<UserSimpleDTO> followers = follows
+                .map(follow -> modelMapper.map(follow.getFollower(), UserSimpleDTO.class));
+
+        return followers;
+    }
+
+    @Override
+    public List<UserResponseDTO> updateFollowCounts() {
+        // TODO
+        // 모든 유저 (or 지정 유저) 불러오기
+        // follows 테이블로부터 getFollowingCount, getFollowerCount
+        return null;
+    }
+
 }
