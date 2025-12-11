@@ -9,6 +9,7 @@ import web.mvc.santa_backend.chat.dto.NotificationDTO;
 import web.mvc.santa_backend.chat.repository.NotificationRepository;
 import web.mvc.santa_backend.chat.service.NotificationService;
 import web.mvc.santa_backend.common.enumtype.NotificationType;
+import web.mvc.santa_backend.user.dto.FollowDTO;
 import web.mvc.santa_backend.user.entity.Follows;
 import web.mvc.santa_backend.user.entity.Users;
 import web.mvc.santa_backend.user.repository.FollowRepository;
@@ -29,7 +30,7 @@ public class FollowServiceImpl implements FollowService {
 
     @Transactional
     @Override
-    public void follow(Long followerId, Long followingId) {
+    public FollowDTO follow(Long followerId, Long followingId) {
         // 자기 자신 팔로우 시
         if (followerId.equals(followingId)) throw new RuntimeException("자신을 팔로우 할 수 없습니다.");
 
@@ -51,8 +52,7 @@ public class FollowServiceImpl implements FollowService {
                 .build();
 
         if (following.isPrivate() == false) {   // 공개 계정일 경우만 count 증가
-            userRepository.increaseFollowingCount(followerId);  // 현재 유저의 팔로잉 수 증가
-            userRepository.increaseFollowerCount(followingId);  // 팔로우 당한 유저의 팔로워 수 증가
+            this.increaseFollowCount(followerId, followingId);
         }
 
         // 알림
@@ -65,6 +65,8 @@ public class FollowServiceImpl implements FollowService {
         notificationService.createNotification(notificationDTO);
 
         followRepository.save(follow);
+
+        return modelMapper.map(follow, FollowDTO.class);
     }
 
     @Transactional
@@ -74,8 +76,7 @@ public class FollowServiceImpl implements FollowService {
                 .orElseThrow(()->new RuntimeException("팔로우하지 않는 유저 언팔로우 요청"));
 
         // count 감소
-        userRepository.decreaseFollowingCount(followerId);
-        userRepository.decreaseFollowerCount(followingId);
+        this.decreaseFollowCount(followerId, followingId);
 
         followRepository.delete(follow);
     }
@@ -87,15 +88,30 @@ public class FollowServiceImpl implements FollowService {
 
     @Transactional
     @Override
-    public void approveFollow(Long followerId, Long followingId) {
+    public FollowDTO approveFollow(Long followerId, Long followingId) {
         Follows follow = followRepository.findByFollower_UserIdAndFollowing_UserId(followerId, followingId)
                 .orElseThrow(()->new RuntimeException("팔로우 수락 실패"));
-
         if (follow.isPending() == false) throw new RuntimeException("이미 수락한 유저입니다.");
-        follow.setPending(false);
 
+        follow.setPending(false);
+        this.increaseFollowCount(followerId, followingId);
+
+        return modelMapper.map(follow, FollowDTO.class);
+    }
+
+    @Transactional
+    @Override
+    public void increaseFollowCount(Long followerId, Long followingId) {
         // count 증가
         userRepository.increaseFollowingCount(followerId);  // 현재 유저의 팔로잉 수 증가
         userRepository.increaseFollowerCount(followingId);  // 팔로우 당한 유저의 팔로워 수 증가
+    }
+
+    @Transactional
+    @Override
+    public void decreaseFollowCount(Long followerId, Long followingId) {
+        // count 감소
+        userRepository.decreaseFollowingCount(followerId);
+        userRepository.decreaseFollowerCount(followingId);
     }
 }

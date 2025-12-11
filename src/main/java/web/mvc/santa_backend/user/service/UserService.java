@@ -43,6 +43,11 @@ public interface UserService {
     UserResponseDTO updateUsers(Long id, UserRequestDTO userDTO);
 
     /**
+     * 공개/비공개 설정
+     */
+    UserResponseDTO updatePrivacy(Long id);
+
+    /**
      * 유저 탈퇴
      */
     UserResponseDTO deactivateUser(Long id);
@@ -67,4 +72,6 @@ public interface UserService {
     Page<UserSimpleDTO> getFollowers(Long id, int page);
 
     Page<UserSimpleDTO> getPendingFollowers(Long id, int page);
+
+    List<UserResponseDTO> updateFollowCounts();
 }

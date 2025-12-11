@@ -28,6 +28,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final FollowRepository followRepository;
+    private final FollowService followService;
     private final CustomService customService;
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
@@ -97,8 +98,6 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(()->new RuntimeException("해당 유저가 없습니다."));
 
         UserResponseDTO userResponseDTO = modelMapper.map(user, UserResponseDTO.class);
-        userResponseDTO.setFollowingList(this.getFollowings(id));
-        userResponseDTO.setFollowerList(this.getFollowers(id));
 
         return userResponseDTO;
     }
@@ -117,13 +116,34 @@ public class UserServiceImpl implements UserService {
                 //.orElseThrow(()->new DMLException(ErrorCode.));
                 .orElseThrow(()->new RuntimeException("수정 실패"));
 
-        // TODO: save로수정
         user.setUsername(userRequestDTO.getUsername());
         user.setProfileImage(userRequestDTO.getProfileImage());
         user.setDescription(userRequestDTO.getDescription());
         user.setLevel(userRequestDTO.getLevel());
-        user.setPrivate(userRequestDTO.isPrivate());
+        //user.setPrivate(userRequestDTO.isPrivate());
         user.setPassword(passwordEncoder.encode(userRequestDTO.getPassword())); // TODO: 비밀번호 암호화 수준 확인 및 이전 비밀번호 불가
+
+        return modelMapper.map(user, UserResponseDTO.class);
+    }
+
+    @Transactional
+    @Override
+    public UserResponseDTO updatePrivacy(Long id) {
+        Users user = userRepository.findById(id)
+                //.orElseThrow(()->new DMLException(ErrorCode.));
+                .orElseThrow(()->new RuntimeException("수정 실패"));
+        user.setPrivate(!user.isPrivate());
+
+        // 비공개 -> 공개 전환 시 팔로우 대기 상태의 팔로워들 모두 수락
+        if (user.isPrivate()) {
+            List<Users> followers = followRepository.findByFollowing_UserIdAndPendingIsTrue(id)
+                    .stream()
+                    .map(Follows::getFollower)
+                    .toList();
+            for (Users follower : followers) {
+                followService.approveFollow(follower.getUserId(), id);
+            }
+        }
 
         return modelMapper.map(user, UserResponseDTO.class);
     }
@@ -231,5 +251,13 @@ public class UserServiceImpl implements UserService {
                 .map(follow -> modelMapper.map(follow.getFollower(), UserSimpleDTO.class));
 
         return followers;
+    }
+
+    @Override
+    public List<UserResponseDTO> updateFollowCounts() {
+        // TODO
+        // 모든 유저 (or 지정 유저) 불러오기
+        // follows 테이블로부터 getFollowingCount, getFollowerCount
+        return null;
     }
 }

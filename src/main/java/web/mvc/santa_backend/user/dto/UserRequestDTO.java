@@ -23,6 +23,6 @@ public class UserRequestDTO {
     private int level;
     // 수정 시
     //@JsonProperty("isPrivate")
-    private boolean isPrivate;
-    private boolean state;
+    //private boolean isPrivate;    // setPrivate, setPublic 로 관리
+    //private boolean state;        // deactivateUser, reactivateUser 로 관리
 }
