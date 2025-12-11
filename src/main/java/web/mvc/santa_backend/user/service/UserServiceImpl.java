@@ -10,6 +10,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import web.mvc.santa_backend.common.enumtype.BlockType;
+import web.mvc.santa_backend.common.exception.ErrorCode;
+import web.mvc.santa_backend.common.exception.InvalidException;
+import web.mvc.santa_backend.common.exception.WrongTargetException;
+import web.mvc.santa_backend.post.entity.Posts;
+import web.mvc.santa_backend.post.entity.Replies;
+import web.mvc.santa_backend.post.repository.PostResository;
+import web.mvc.santa_backend.post.repository.RepliesRepository;
 import web.mvc.santa_backend.user.dto.BlockResponseDTO;
 import web.mvc.santa_backend.user.dto.UserResponseDTO;
 import web.mvc.santa_backend.user.dto.UserRequestDTO;
@@ -31,12 +38,16 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final PostResository postResository;
+    private final RepliesRepository repliesRepository;
     private final FollowRepository followRepository;
+    private final BlockRepository blockRepository;
+
     private final FollowService followService;
     private final CustomService customService;
+
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
-    private final BlockRepository blockRepository;
 
     @Transactional(readOnly = true)
     @Override
@@ -276,11 +287,28 @@ public class UserServiceImpl implements UserService {
         Page<Blocks> blocks = blockRepository.findByUser_UserIdAndBlockType(id, type, pageable);
 
         //blocks.map(block -> modelMapper.map(block, BlockResponseDTO.class));
-
-        if (type == BlockType.USER) ;   //Page<UserSimpleDTO>
-        else if (type == BlockType.POST) ;  //Page<PostDTO>
-        else if (type == BlockType.REPLY) ; //Page<ReplyDTO>
-
-        return null;
+        // 각 type 에 맞는 DTO 반환
+        switch (type) {
+            case USER:
+                return blocks.map(block -> {
+                    Users target = userRepository.findById(block.getTargetId())
+                            .orElseThrow(()->new WrongTargetException(ErrorCode.WRONG_TARGET));
+                    return modelMapper.map(target, UserSimpleDTO.class);
+                });
+            case POST:
+                return blocks.map(block -> {
+                    Posts target = postResository.findById(block.getTargetId())
+                            .orElseThrow(()->new WrongTargetException(ErrorCode.WRONG_TARGET));
+                    return modelMapper.map(target, UserSimpleDTO.class);
+                });
+            case REPLY:
+                return blocks.map(block -> {
+                    Replies target = repliesRepository.findById(block.getTargetId())
+                            .orElseThrow(()->new WrongTargetException(ErrorCode.WRONG_TARGET));
+                    return modelMapper.map(target, UserSimpleDTO.class);
+                });
+            default:
+                throw new InvalidException(ErrorCode.INVALID_TYPE);
+        }
     }
 }
