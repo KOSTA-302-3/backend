@@ -14,6 +14,8 @@ import web.mvc.santa_backend.common.enumtype.BlockType;
 import web.mvc.santa_backend.common.enumtype.NotificationType;
 import web.mvc.santa_backend.common.exception.ErrorCode;
 import web.mvc.santa_backend.common.exception.InvalidException;
+import web.mvc.santa_backend.common.exception.NotFoundException;
+import web.mvc.santa_backend.common.exception.WrongTargetException;
 import web.mvc.santa_backend.user.dto.FollowDTO;
 import web.mvc.santa_backend.user.dto.UserResponseDTO;
 import web.mvc.santa_backend.user.dto.UserSimpleDTO;
@@ -42,14 +44,14 @@ public class FollowServiceImpl implements FollowService {
     @Override
     public FollowDTO follow(Long followerId, Long followingId) {
         // 자기 자신 팔로우 시
-        if (followerId.equals(followingId)) throw new RuntimeException("자신을 팔로우 할 수 없습니다.");
+        if (followerId.equals(followingId)) throw new WrongTargetException(ErrorCode.WRONG_TARGET);
 
         // id 에 해당하는 유저 찾기
-        Users follower = userRepository.findById(followerId).orElseThrow(()->new RuntimeException("Follower not found"));
-        Users following = userRepository.findById(followingId).orElseThrow(()->new RuntimeException("Following not found"));
+        Users follower = userRepository.findById(followerId).orElseThrow(()->new NotFoundException(ErrorCode.USER_NOT_FOUND));
+        Users following = userRepository.findById(followingId).orElseThrow(()->new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
         // 해당 유저가 비활성화(탈퇴) 상태이면 (state=false)
-        if (following.isState() == false) throw new RuntimeException("탈퇴한 유저입니다.");
+        if (following.isState() == false) throw new NotFoundException(ErrorCode.USER_DEACTIVATED);
         // 이미 팔로우 한 유저라면 (잘못된 접근)
         if (followRepository.existsByFollower_UserIdAndFollowing_UserId(followerId, followingId))
             throw new RuntimeException("이미 팔로우 중입니다.");
@@ -87,7 +89,7 @@ public class FollowServiceImpl implements FollowService {
     @Override
     public void unfollow(Long followerId, Long followingId) {
         Follows follow = followRepository.findByFollower_UserIdAndFollowing_UserId(followerId, followingId)
-                .orElseThrow(()->new RuntimeException("팔로우하지 않는 유저 언팔로우 요청"));
+                .orElseThrow(()->new InvalidException(ErrorCode.INVALID_UNFOLLOW));
 
         // count 감소
         this.decreaseFollowCount(followerId, followingId);
@@ -105,8 +107,8 @@ public class FollowServiceImpl implements FollowService {
     @Override
     public FollowDTO approveFollow(Long followerId, Long followingId) {
         Follows follow = followRepository.findByFollower_UserIdAndFollowing_UserId(followerId, followingId)
-                .orElseThrow(()->new RuntimeException("팔로우 수락 실패"));
-        if (follow.isPending() == false) throw new RuntimeException("이미 수락한 유저입니다.");
+                .orElseThrow(()->new NotFoundException(ErrorCode.TARGET_NOT_FOUND));
+        if (follow.isPending() == false) throw new InvalidException(ErrorCode.INVALID_APPROVE);
 
         follow.setPending(false);
         this.increaseFollowCount(followerId, followingId);
