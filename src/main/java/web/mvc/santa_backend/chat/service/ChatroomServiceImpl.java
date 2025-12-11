@@ -8,9 +8,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import web.mvc.santa_backend.chat.dto.ChatroomDTO;
+import web.mvc.santa_backend.chat.dto.ChatroomMemberDTO;
+import web.mvc.santa_backend.chat.entity.ChatroomMembers;
 import web.mvc.santa_backend.chat.entity.Chatrooms;
 import web.mvc.santa_backend.chat.repository.ChatroomMemberRepository;
 import web.mvc.santa_backend.chat.repository.ChatroomRepository;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -84,6 +89,10 @@ public class ChatroomServiceImpl implements ChatroomService {
     }
 
     private ChatroomDTO toDTO(Chatrooms chatrooms) {
+        List<ChatroomMemberDTO> chatroomMemberDTOS =
+                chatrooms.getChatroomMembers().stream()
+                        .map(c -> toDTO(c))   // 변환
+                        .toList();
         return ChatroomDTO.builder()
                 .chatroomId(chatrooms.getChatroomId())
                 .name(chatrooms.getName())
@@ -93,6 +102,20 @@ public class ChatroomServiceImpl implements ChatroomService {
                 .isDeleted(chatrooms.isDeleted())
                 .imageUrl(chatrooms.getImageUrl())
                 .description(chatrooms.getDescription())
+                .chatroomMembers(chatroomMemberDTOS)
+                .build();
+    }
+
+    private ChatroomMemberDTO toDTO(ChatroomMembers chatroomMembers) {
+        return ChatroomMemberDTO.builder()
+                .chatroomMemberId(chatroomMembers.getChatroomMemeberId())
+                .userId(chatroomMembers.getUser().getUserId())
+                .chatroomId(chatroomMembers.getChatroom().getChatroomId())
+                .startRead(chatroomMembers.getStartRead() != null ? chatroomMembers.getStartRead() : 0)
+                .lastRead(chatroomMembers.getLastRead() != null ? chatroomMembers.getLastRead() : 0)
+                .noteOff(chatroomMembers.isNoteOff())
+                .role(chatroomMembers.getRole())
+                .isBanned(chatroomMembers.isBanned())
                 .build();
     }
 }

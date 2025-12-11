@@ -107,9 +107,7 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
 
     @Override
     public void deleteChatroomMember(Long userId, Long chatroomId) {
-        Users user = Users.builder().userId(userId).build();
-        Chatrooms chatroom = Chatrooms.builder().chatroomId(chatroomId).build();
-        chatroomMemberRepository.deleteByUserAndChatroom(user, chatroom);
+        chatroomMemberRepository.deleteByUser_UserIdAndChatroom_ChatroomId(userId, chatroomId);
     }
 
     private ChatroomMembers toEntity(ChatroomMemberDTO chatroomMemberDTO) {
@@ -140,9 +138,7 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
     }
 
     private void checkChatMember(Long chatroomId, Long userId){
-        Chatrooms chatroom = Chatrooms.builder().chatroomId(chatroomId).build();
-        Users user = Users.builder().userId(userId).build();
-        boolean result = chatroomMemberRepository.existsByChatroomAndUserAndIsBanned(chatroom, user, false);
+        boolean result = chatroomMemberRepository.existsByChatroom_ChatroomIdAndUser_UserIdAndIsBanned(chatroomId, userId, false);
         if(!result){
             throw new ChatMemberNotFoundException(ErrorCode.NOT_CHATMEMBER);
         }
