@@ -13,6 +13,8 @@ import web.mvc.santa_backend.post.repository.ImageSourcesRepository;
 import web.mvc.santa_backend.post.repository.PostResository;
 import web.mvc.santa_backend.post.repository.dbtest.MongoTestRepositiry;
 
+import java.util.Optional;
+
 @Service
 
 public class DbTestService {
@@ -31,12 +33,25 @@ public class DbTestService {
     //레디스에 같은 데이터가 있으면 db접근 안하고 없으면한다 출력문을 확인해보자
     @Cacheable(value = "post" , key = "#postId")
     public PostDTO getPostsByid(Long postId){
+        Pageable pageable = PageRequest.of(0,5);
+
+
         System.out.println("접근");
-        return new PostDTO(
-                postResository.findById(postId).get()
-                ,hashTagsRepository.findAllByPostsPostId(postId)
-                ,imageSourcesRepository.findAllByPostsPostId(postId)
-        );
+
+        Optional<PostDTO> post = postResository.findById(postId).map(posts -> new PostDTO(
+                posts.getPostId(),
+                posts.getCreateUserId(),
+                posts.getCreateAt(),
+                posts.getContent(),
+                posts.getPostLevel(),
+                posts.getLikeCount(),
+                posts.isContentVisible(),
+                posts.getHashTags().stream().map(hash -> hash.getTag()).toList(),
+                posts.getImageSources().stream().map(img -> img.getSource()).toList()
+
+        ));
+
+        return post.get();
     };
 
     public Page<MongoTestEntity> mongoTest(){

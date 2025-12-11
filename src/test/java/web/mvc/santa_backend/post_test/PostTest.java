@@ -9,7 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import web.mvc.santa_backend.post.entity.Posts;
 import web.mvc.santa_backend.post.repository.PostResository;
-import web.mvc.santa_backend.post.service.PostService;
+import web.mvc.santa_backend.post.service.PostServiceImpl;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -20,7 +20,7 @@ import java.util.Scanner;
 public class PostTest {
 
     @Autowired
-    PostService postService;
+    PostServiceImpl postService;
     @Autowired
     PostResository postResository;
 
@@ -53,7 +53,7 @@ public class PostTest {
 
         postResository.save(Posts.builder().
                 createUserId(1L)
-                .create_at(
+                .createAt(
                         LocalDateTime.now()
                 ).likeCount(0L).postLevel(0L).contentVisible(false).
                 build()
@@ -70,7 +70,7 @@ public class PostTest {
         postResository.save(Posts.builder().
                 postId(10L).
                 createUserId(1L).
-                create_at(
+                createAt(
                         LocalDateTime.now()
                 ).likeCount(3L).postLevel(7L).contentVisible(false).
                 build()
@@ -153,20 +153,12 @@ public class PostTest {
     }
 
     @Test
-    void bb() {
-        // 1. 가짜 입력값 설정 (예: "10"을 입력한다고 가정)
-        String input = "10";
-        InputStream in = new ByteArrayInputStream(input.getBytes());
-        System.setIn(in); // System.in을 가짜 입력 스트림으로 교체
+    void followPostsTest() {
+        Pageable pageable = PageRequest.of(0, 5);
+        Long st = System.currentTimeMillis();
+        System.out.println(postResository.findAllByPostIdAndFollow(1L,pageable).stream().toList());
+        System.out.println(System.currentTimeMillis()-st);
 
-        // 2. 스캐너 실행
-        Scanner sc = new Scanner(System.in);
-        int i = sc.nextInt();
-
-        System.out.println("입력받은 값: " + i); // 10 출력됨
-
-        // (선택) 테스트가 끝나면 System.in을 원래대로 돌려놓는 것이 좋음
-        System.setIn(System.in);
     }
 
 

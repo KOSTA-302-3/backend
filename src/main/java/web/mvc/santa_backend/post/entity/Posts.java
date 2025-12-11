@@ -28,7 +28,7 @@ public class Posts {
 
     @CreatedDate
     @Column(nullable = false)
-    private  LocalDateTime create_at;
+    private  LocalDateTime createAt;
     @Column(nullable = true, columnDefinition = "text")
     private String content;
 
@@ -41,6 +41,21 @@ public class Posts {
     @Column(nullable = false)
     @ColumnDefault("false")
     private   boolean contentVisible;
+
+    @OneToMany(mappedBy = "posts", fetch = FetchType.LAZY)
+    private List<HashTags> hashTags = new ArrayList<>();
+
+    @OneToMany(mappedBy = "posts", fetch = FetchType.LAZY)
+    private List<ImageSources> imageSources = new ArrayList<>();
+
+
+    public void increaseLikeCount(){
+        this.likeCount++;
+    }
+
+    public void decreaseLikeCount(){
+        this.likeCount--;
+    }
 
 
 

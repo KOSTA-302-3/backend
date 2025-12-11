@@ -27,8 +27,8 @@ public class MongoTestEntity {
     private Long likeCount;
     private Long postLevel;
     private boolean contentVisible;
-    private List<ImageSources> imgList;
-    private List<HashTags> hashTagsList;
+    private List<String> imgList;
+    private List<String> hashTagsList;
 
 
 }
