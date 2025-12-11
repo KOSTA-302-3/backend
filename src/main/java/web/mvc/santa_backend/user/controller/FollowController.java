@@ -26,7 +26,7 @@ public class FollowController {
     public ResponseEntity<?> follow(@RequestBody Long followingId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         FollowDTO follow = followService.follow(customUserDetails.getUser().getUserId(), followingId);
 
-        return ResponseEntity.status(HttpStatus.OK).body(follow);
+        return ResponseEntity.status(HttpStatus.CREATED).body(follow);
     }
 
     @Operation(summary = "언팔로우 및 팔로우 거절", description = "언팔로우 / 비공개 유저에게 온 팔로우 요청을 거절 (둘 다 레코드 삭제)")

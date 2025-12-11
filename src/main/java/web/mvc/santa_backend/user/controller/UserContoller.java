@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import web.mvc.santa_backend.common.enumtype.BlockType;
 import web.mvc.santa_backend.common.security.CustomUserDetails;
 import web.mvc.santa_backend.user.dto.UserResponseDTO;
 import web.mvc.santa_backend.user.dto.UserRequestDTO;
@@ -95,7 +96,7 @@ public class UserContoller {
 
     /* 유저 탈퇴(상태 수정/삭제) */
     @Operation(summary = "유저 탈퇴")
-    @PutMapping("/softdelete")
+    @DeleteMapping("/softdelete")
     public ResponseEntity<?> deactivateUser(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         log.info("deactivateUser/ id: {}", customUserDetails.getUser().getUserId());
         UserResponseDTO deleteUser = userService.deactivateUser(customUserDetails.getUser().getUserId());
@@ -162,6 +163,7 @@ public class UserContoller {
         return ResponseEntity.status(HttpStatus.OK).body(pendingFollowers);
     }
 
+    /* followCount 동기화 (관리자에서 처리?) */
     @Operation(summary = "followingCount, followerCount 동기화 (관리자용?)",
             description = "Follows 의 레코드 수로부터 Users_followingCount, followerCount 맞추기" +
                     "return: 팔로우 수가 맞지 않았던 유저들 반환")
@@ -170,5 +172,14 @@ public class UserContoller {
         List<UserResponseDTO> syncUsers = userService.updateFollowCounts();
 
         return ResponseEntity.status(HttpStatus.OK).body(syncUsers);
+    }
+
+    /* 차단 조회 */
+    @Operation(summary = "차단한 유저 목록 조회 (페이징)", description = "로그인한 유저의 차단 목록을 보는 것")
+    @GetMapping("/block/{type}/{page}")
+    public ResponseEntity<?> getBlocks(@PathVariable BlockType type, @PathVariable int page, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        Page<Object> blocks = userService.getBlocks(customUserDetails.getUser().getUserId(), type, page);
+
+        return ResponseEntity.status(HttpStatus.OK).body(blocks);
     }
 }

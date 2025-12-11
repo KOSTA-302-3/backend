@@ -3,6 +3,7 @@ package web.mvc.santa_backend.user.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
+import web.mvc.santa_backend.common.enumtype.BlockType;
 import web.mvc.santa_backend.user.dto.UserResponseDTO;
 import web.mvc.santa_backend.user.dto.UserRequestDTO;
 import web.mvc.santa_backend.user.dto.UserSimpleDTO;
@@ -73,5 +74,10 @@ public interface UserService {
 
     Page<UserSimpleDTO> getPendingFollowers(Long id, int page);
 
+    /* followCount 수 동기화(TODO 위치 수정 예정) */
     List<UserResponseDTO> updateFollowCounts();
+
+    /* 차단 조회 */
+    List<Object> getBlocks(Long id, BlockType type);
+    Page<Object> getBlocks(Long id, BlockType type, int page);
 }

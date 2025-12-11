@@ -1,7 +1,6 @@
 package web.mvc.santa_backend.post.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import web.mvc.santa_backend.post.entity.Liked;
 import web.mvc.santa_backend.user.entity.Likes;
 import web.mvc.santa_backend.user.entity.Users;
 

@@ -8,10 +8,14 @@ import org.springframework.transaction.annotation.Transactional;
 import web.mvc.santa_backend.chat.dto.NotificationDTO;
 import web.mvc.santa_backend.chat.repository.NotificationRepository;
 import web.mvc.santa_backend.chat.service.NotificationService;
+import web.mvc.santa_backend.common.enumtype.BlockType;
 import web.mvc.santa_backend.common.enumtype.NotificationType;
+import web.mvc.santa_backend.common.exception.ErrorCode;
+import web.mvc.santa_backend.common.exception.InvalidException;
 import web.mvc.santa_backend.user.dto.FollowDTO;
 import web.mvc.santa_backend.user.entity.Follows;
 import web.mvc.santa_backend.user.entity.Users;
+import web.mvc.santa_backend.user.repository.BlockRepository;
 import web.mvc.santa_backend.user.repository.FollowRepository;
 import web.mvc.santa_backend.user.repository.UserRepository;
 
@@ -24,6 +28,7 @@ public class FollowServiceImpl implements FollowService {
 
     private final FollowRepository followRepository;
     private final UserRepository userRepository;
+    private final BlockRepository blockRepository;
     private final ModelMapper modelMapper;
     private final NotificationService notificationService;
 
@@ -43,6 +48,9 @@ public class FollowServiceImpl implements FollowService {
         // 이미 팔로우 한 유저라면 (잘못된 접근)
         if (followRepository.existsByFollower_UserIdAndFollowing_UserId(followerId, followingId))
             throw new RuntimeException("이미 팔로우 중입니다.");
+        // 차단 당했다면 팔로우 불가
+        if (blockRepository.existsByUser_UserIdAndBlockTypeAndTargetId(followingId, BlockType.USER, followerId))
+            throw new InvalidException(ErrorCode.INVALID_FOLLOW);
 
         Follows follow = Follows.builder()
                 .follower(follower)
@@ -65,6 +73,7 @@ public class FollowServiceImpl implements FollowService {
         notificationService.createNotification(notificationDTO);
 
         followRepository.save(follow);
+        log.info("user {} followed user {}", followerId, followingId);
 
         return modelMapper.map(follow, FollowDTO.class);
     }
@@ -79,6 +88,7 @@ public class FollowServiceImpl implements FollowService {
         this.decreaseFollowCount(followerId, followingId);
 
         followRepository.delete(follow);
+        log.info("user {} unfollowed user {}", followerId, followingId);
     }
 
     @Override
@@ -95,6 +105,7 @@ public class FollowServiceImpl implements FollowService {
 
         follow.setPending(false);
         this.increaseFollowCount(followerId, followingId);
+        log.info("user {} approved the follow request from user {}", followerId, followingId);
 
         return modelMapper.map(follow, FollowDTO.class);
     }
