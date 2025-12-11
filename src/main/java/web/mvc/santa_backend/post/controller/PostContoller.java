@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import web.mvc.santa_backend.post.dto.LikeDTO;
 import web.mvc.santa_backend.post.dto.PostDTO;
+import web.mvc.santa_backend.post.entity.HashTags;
 import web.mvc.santa_backend.post.entity.Posts;
 import web.mvc.santa_backend.post.service.LikeServiceImpl;
 import web.mvc.santa_backend.post.service.PostServiceImpl;
@@ -33,7 +34,7 @@ public class PostContoller {
     @Operation(summary = "필터링 끈 전체 게시물 보기")
     ResponseEntity<Page<PostDTO>> getAllPostsWithOffFilter(int pageNo) {
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(postService.getAllPostsWithOffFilter(pageNo));
+        return ResponseEntity.status(HttpStatus.OK).body(postService.getAllPostsWithOffFilter(pageNo));
     }
 
     //필터링 킨 전체 게시물 보기
@@ -41,7 +42,7 @@ public class PostContoller {
     @GetMapping("/getAllOnFilter")
     @Operation(summary = "필터링 킨 전체 게시물 보기")
     ResponseEntity<Page<PostDTO>> getAllPostsWithOnFilter(Long level, int pageNo) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(postService.getAllPostsWithOnFilter(level, pageNo));
+        return ResponseEntity.status(HttpStatus.OK).body(postService.getAllPostsWithOnFilter(level, pageNo));
 
     }
 
@@ -49,7 +50,7 @@ public class PostContoller {
     @Operation(summary = "필터링 끈 팔로우 게시물 보기")
     @GetMapping("/getFollowOffFilter")
     ResponseEntity<Page<PostDTO>> getFollowPostsWithOffFilter(@RequestParam Long userId,@RequestParam int pageNo) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(postService.getFollowPostsWithOffFilter(userId, pageNo));
+        return ResponseEntity.status(HttpStatus.OK).body(postService.getFollowPostsWithOffFilter(userId, pageNo));
     }
 
     //필터링 킨 팔로우 게시물 보기
@@ -57,14 +58,14 @@ public class PostContoller {
     @GetMapping("/getFollowOnFilter")
     ResponseEntity<Page<PostDTO>> getFollowPostsWithOnFilter(@RequestParam Long userId,@RequestParam Long postLevel,@RequestParam int pageNo) {
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(postService.getFollowPostsWithOnFilter(userId,postLevel, pageNo));
+        return ResponseEntity.status(HttpStatus.OK).body(postService.getFollowPostsWithOnFilter(userId,postLevel, pageNo));
     }
 
     @Operation(summary = "특정 유저 게시물 보기")
     @GetMapping("/getPostsByUserId")
     ResponseEntity<Page<PostDTO>> getPostsByUserId(@RequestParam Long userId,@RequestParam int pageNo) {
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(postService.getPostsByUserId(userId, pageNo));
+        return ResponseEntity.status(HttpStatus.OK).body(postService.getPostsByUserId(userId, pageNo));
     }
 
 
@@ -83,7 +84,7 @@ public class PostContoller {
     @Operation(summary = "게시물 수정")
     ResponseEntity<String> updatePosts(@RequestBody PostDTO postDTO) {
         postService.updatePosts(postDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Update Success");
+        return ResponseEntity.status(HttpStatus.OK).body("Update Success");
 
     }
 
@@ -92,27 +93,27 @@ public class PostContoller {
     @Operation(summary = "게시물 삭제")
     ResponseEntity<String> deletePosts(@RequestBody PostDTO postDTO) {
         postService.deletePosts(postDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Delete Success");
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Delete Success");
 
     }
 
     @PostMapping(value = "/imageUpload/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "게시물 작성")
-    Posts createPosts(@RequestPart List<MultipartFile> files,
+    @Operation(summary = "이미지 작성")
+    ResponseEntity<String> createPosts(@RequestPart List<MultipartFile> files,
                       @PathVariable Long postId) {
 
         postService.imgUpload(files, postId);
 
-        return null;
+        return ResponseEntity.status(HttpStatus.CREATED).body("이미지 업로드 완료");
     }
 
     @PostMapping(value = "/hashTagsInsert/{postId}")
     @Operation(summary = "해시태그 작성")
-    Posts insertHashTag(String hashTags, @PathVariable Long postId) {
+    ResponseEntity<String> insertHashTag(String hashTags, @PathVariable Long postId) {
 
 
         postService.insertHashTags(hashTags, postId);
-        return null;
+        return ResponseEntity.status(HttpStatus.CREATED).body("해그태그 작성완료");
     }
 
     @PostMapping("/like")
@@ -120,9 +121,7 @@ public class PostContoller {
     ResponseEntity<String> likePost(@RequestBody LikeDTO likeDTO){
 
 
-
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(
+        return ResponseEntity.status(HttpStatus.OK).body(
                 likeService.postReplies(likeDTO.getTargetId(), likeDTO.getUserId())
         );
     }

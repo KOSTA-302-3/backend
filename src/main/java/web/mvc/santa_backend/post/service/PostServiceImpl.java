@@ -1,9 +1,12 @@
 package web.mvc.santa_backend.post.service;
 
+import jakarta.security.auth.message.AuthException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,8 +40,9 @@ public class PostServiceImpl implements PostService{
 
 
         Pageable pageable = PageRequest.of(pageNo - 1, 5);
-        Page<Posts> page = postRepository.findAll(pageable);
-
+        Page<Posts> page = postRepository.findAllAndAndContentVisibleTrue(pageable);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println(authentication.getName());
         Page<PostDTO> dtoPage = page.map(posts ->
                 new PostDTO(
                         posts.getPostId(),
@@ -71,7 +75,7 @@ public class PostServiceImpl implements PostService{
     public Page<PostDTO> getAllPostsWithOnFilter(Long level, int pageNo) {
 
         Pageable pageable = PageRequest.of(pageNo - 1, 5);
-        Page<Posts> page = postRepository.findAllByPostLevelBetween(0L, level, pageable);
+        Page<Posts> page = postRepository.findAllByPostLevelBetweenAndContentVisibleTrue(0L, level, pageable);
 
         Page<PostDTO> pageDTO = page.map(posts -> new PostDTO(
                 posts.getPostId(),
@@ -94,7 +98,6 @@ public class PostServiceImpl implements PostService{
     public Page<PostDTO> getFollowPostsWithOffFilter(Long userId, int pageNo) {
         Pageable pageable = PageRequest.of(pageNo-1,5);
         Page<Posts> page =postRepository.findAllByPostIdAndFollow(userId,pageable);
-
 
         Page<PostDTO> pageDTO = page.map(posts -> new PostDTO(
                 posts.getPostId(),
@@ -145,7 +148,6 @@ public class PostServiceImpl implements PostService{
 
         Page<Posts> page =postRepository.findAllByCreateUserId(userId,pageable);
 
-
         Page<PostDTO> pageDTO = page.map(posts -> new PostDTO(
                 posts.getPostId(),
                 posts.getCreateUserId(),
@@ -186,9 +188,11 @@ public class PostServiceImpl implements PostService{
         Posts post = postRepository.findById(posts.getPostId()).get();
 
         for(String imgUrl : posts.getImageSourcesList()){
-            imageSourcesRepository.delete(
-                    imageSourcesRepository.findBySource(imgUrl).orElseThrow(() -> new RuntimeException("에러"))
-            );
+
+                imageSourcesRepository.delete(
+                        imageSourcesRepository.findBySource(imgUrl).orElseThrow(() -> new RuntimeException("에러"))
+                );
+
         }
         for(String hash : posts.getHashTagsList()){
             hashTagsRepository.delete(
@@ -235,12 +239,8 @@ public class PostServiceImpl implements PostService{
                             build()
             );
         imageList.add(imageSources);
-
         }
-
         postRepository.findById(postId).get().setImageSources(imageList);
-
-
     }
 
     @Transactional
