@@ -16,8 +16,9 @@ public enum ErrorCode {
 
     WRONG_TARGET(HttpStatus.BAD_REQUEST, "wrong target", "자기 자신에게 요청할 수 없음"),
 
-    INVALID_FOLLOW(HttpStatus.BAD_REQUEST, "invalid follow", "팔로우하지 않은 유저 언팔로우 불가"),
-    INVALID_BLOCK(HttpStatus.BAD_REQUEST, "invalid block", "차단하지 않은 유저 차단 해제 불가"),
+    INVALID_FOLLOW(HttpStatus.BAD_REQUEST, "invalid follow", "차단당한 유저 팔로우 불가"),
+    INVALID_UNFOLLOW(HttpStatus.BAD_REQUEST, "invalid unfollow", "팔로우하지 않은 유저 언팔로우 불가"),
+    INVALID_UNBLOCK(HttpStatus.BAD_REQUEST, "invalid unblock", "차단하지 않은 유저 차단 해제 불가"),
     INVALID_TYPE(HttpStatus.BAD_REQUEST, "invalid type", "유효하지 않은 타입"),
 
     CHATROOM_NOT_FOUND(HttpStatus.BAD_REQUEST, "chatroom not found", "채팅방이 없음"),
