@@ -89,6 +89,80 @@ public class PostServiceImpl implements PostService{
         return pageDTO;
     }
 
+    //map(new::postDTO)로 하려했으나 참조테이블 특정 컬럼 조회해야해서 이게 최선인거같다..
+    @Override
+    public Page<PostDTO> getFollowPostsWithOffFilter(Long userId, int pageNo) {
+        Pageable pageable = PageRequest.of(pageNo-1,5);
+        Page<Posts> page =postRepository.findAllByPostIdAndFollow(userId,pageable);
+
+
+        Page<PostDTO> pageDTO = page.map(posts -> new PostDTO(
+                posts.getPostId(),
+                posts.getCreateUserId(),
+                posts.getCreateAt(),
+                posts.getContent(),
+                posts.getLikeCount(),
+                posts.getPostLevel(),
+                posts.isContentVisible(),
+                posts.getHashTags().stream().map(hashTags -> hashTags.getTag()).toList(),
+                posts.getImageSources().stream().map(imageSources -> imageSources.getSource()).toList()
+        ));
+
+        return pageDTO;
+    }
+
+
+
+
+    @Override
+    public Page<PostDTO> getFollowPostsWithOnFilter(Long userId, Long postLevel, int pageNo) {
+        Pageable pageable = PageRequest.of(pageNo-1,5);
+
+
+        Page<Posts> page =postRepository.findAllByPostIdAndFollowOnFilter(userId,postLevel,pageable);
+
+        //map(new::postDTO로 하려했으나 참조테이블 특정 컬럼 조회해야해서 이게 최선인거같다..
+        Page<PostDTO> pageDTO = page.map(posts -> new PostDTO(
+                posts.getPostId(),
+                posts.getCreateUserId(),
+                posts.getCreateAt(),
+                posts.getContent(),
+                posts.getLikeCount(),
+                posts.getPostLevel(),
+                posts.isContentVisible(),
+                posts.getHashTags().stream().map(hashTags -> hashTags.getTag()).toList(),
+                posts.getImageSources().stream().map(imageSources -> imageSources.getSource()).toList()
+        ));
+
+        return pageDTO;
+    }
+
+    @Override
+    public Page<PostDTO> getPostsByUserId(Long userId, int pageNo) {
+
+        Pageable pageable = PageRequest.of(pageNo-1,5);
+
+
+        Page<Posts> page =postRepository.findAllByCreateUserId(userId,pageable);
+
+
+        Page<PostDTO> pageDTO = page.map(posts -> new PostDTO(
+                posts.getPostId(),
+                posts.getCreateUserId(),
+                posts.getCreateAt(),
+                posts.getContent(),
+                posts.getLikeCount(),
+                posts.getPostLevel(),
+                posts.isContentVisible(),
+                posts.getHashTags().stream().map(hashTags -> hashTags.getTag()).toList(),
+                posts.getImageSources().stream().map(imageSources -> imageSources.getSource()).toList()
+        ));
+
+        return pageDTO;
+
+
+    }
+
     @Transactional
     public void createPosts(PostDTO posts) {
 
@@ -131,17 +205,6 @@ public class PostServiceImpl implements PostService{
         post.setContentVisible(posts.isContentVisible());
         post.setHashTags(hashTagsRepository.findAllByPostsPostId(posts.getPostId()));
         post.setImageSources(imageSourcesRepository.findAllByPostsPostId(posts.getPostId()));
-
-
-//        postRepository.save(Posts.builder().
-//                postId(posts.getPostId()).
-//                createUserId(posts.getCreateUserId()).
-//                createAt(posts.getCreateAt()).
-//                content(posts.getContent()).
-//                likeCount(posts.getLikeCount()).
-//                postLevel(posts.getPostLevel()).contentVisible(false).
-//                build()
-//        );
     }
 
     @Transactional

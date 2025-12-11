@@ -53,7 +53,7 @@ public class MongoTest {
 
             mongoTestRepositiry.save(MongoTestEntity.builder()
                             .postId(post.getPostId())
-                            .create_at(post.getCreate_at())
+                            .create_at(post.getCreateAt())
                             .createUserId(post.getCreateUserId())
                             .content(post.getContent())
                             .likeCount(post.getLikeCount())

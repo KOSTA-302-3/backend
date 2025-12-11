@@ -48,18 +48,26 @@ public class PostContoller {
     //필터링 끈 팔로우 게시물 보기
     @Operation(summary = "필터링 끈 팔로우 게시물 보기")
     @GetMapping("/getFollowOffFilter")
-    List<Posts> getFollowPostsWithOffFilter() {
-
-        return null;
+    ResponseEntity<Page<PostDTO>> getFollowPostsWithOffFilter(@RequestParam Long userId,@RequestParam int pageNo) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(postService.getFollowPostsWithOffFilter(userId, pageNo));
     }
 
     //필터링 킨 팔로우 게시물 보기
     @Operation(summary = "필터링 킨 팔로우 게시물 보기")
     @GetMapping("/getFollowOnFilter")
-    List<Posts> getFollowPostsWithOnFilter() {
+    ResponseEntity<Page<PostDTO>> getFollowPostsWithOnFilter(@RequestParam Long userId,@RequestParam Long postLevel,@RequestParam int pageNo) {
 
-        return null;
+        return ResponseEntity.status(HttpStatus.CREATED).body(postService.getFollowPostsWithOnFilter(userId,postLevel, pageNo));
     }
+
+    @Operation(summary = "특정 유저 게시물 보기")
+    @GetMapping("/getPostsByUserId")
+    ResponseEntity<Page<PostDTO>> getPostsByUserId(@RequestParam Long userId,@RequestParam int pageNo) {
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(postService.getPostsByUserId(userId, pageNo));
+    }
+
+
 
     //게시물 작성
     @PostMapping(value = "/createPosts")
