@@ -11,12 +11,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import web.mvc.santa_backend.common.enumtype.BlockType;
+import web.mvc.santa_backend.common.enumtype.ReportType;
 import web.mvc.santa_backend.common.security.CustomUserDetails;
 import web.mvc.santa_backend.user.dto.UserResponseDTO;
 import web.mvc.santa_backend.user.dto.UserRequestDTO;
 import web.mvc.santa_backend.user.dto.UserSimpleDTO;
 import web.mvc.santa_backend.user.service.BlockService;
 import web.mvc.santa_backend.user.service.FollowService;
+import web.mvc.santa_backend.user.service.ReportService;
 import web.mvc.santa_backend.user.service.UserService;
 
 import java.util.List;
@@ -31,6 +33,7 @@ public class UserContoller {
     private final UserService userService;
     private final FollowService followService;
     private final BlockService blockService;
+    private final ReportService reportService;
 
     /* 회원가입 */
     @Operation(summary = "아이디(username) 중복체크")
@@ -179,11 +182,20 @@ public class UserContoller {
     }
 
     /* 차단 조회 */
-    @Operation(summary = "차단한 유저 목록 조회 (페이징)", description = "로그인한 유저의 차단 목록을 보는 것")
+    @Operation(summary = "차단 목록 조회 (페이징)", description = "로그인한 유저의 차단 목록을 보는 것")
     @GetMapping("/block/{type}/{page}")
     public ResponseEntity<?> getBlocks(@PathVariable BlockType type, @PathVariable int page, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         Page<Object> blocks = blockService.getBlocks(customUserDetails.getUser().getUserId(), type, page);
 
         return ResponseEntity.status(HttpStatus.OK).body(blocks);
+    }
+
+    /* 신고 조회 */
+    @Operation(summary = "신고 목록 조회 (페이징)", description = "로그인한 유저의 신고 목록을 보는 것")
+    @GetMapping("/report/{type}/{page}")
+    public ResponseEntity<?> getReports(@PathVariable ReportType type, @PathVariable int page, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        Page<Object> reports = reportService.getReportsByUserId(customUserDetails.getUser().getUserId(), type, page);
+
+        return ResponseEntity.status(HttpStatus.OK).body(reports);
     }
 }

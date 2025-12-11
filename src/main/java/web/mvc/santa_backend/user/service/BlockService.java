@@ -23,7 +23,9 @@ public interface BlockService {
      */
     boolean isBlocking(Long userId, BlockType type, Long targetId);
 
-    /* 차단 조회 */
-    List<Object> getBlocks(Long id, BlockType type);
+    /**
+     * 로그인 한 유저의 차단 목록 조회 (페이징)
+     */
     Page<Object> getBlocks(Long id, BlockType type, int page);
+    List<Object> getBlocks(Long id, BlockType type);
 }

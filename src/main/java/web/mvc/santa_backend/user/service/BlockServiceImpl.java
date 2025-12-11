@@ -96,36 +96,6 @@ public class BlockServiceImpl implements BlockService {
 
     /* 차단 조회 */
     @Override
-    public List<Object> getBlocks(Long id, BlockType type) {
-        List<Blocks> blocks = blockRepository.findByUser_UserIdAndBlockType(id, type);
-
-        /*switch (type) {
-            case USER:
-                return Collections.singletonList(blocks.stream().map(block -> {
-                    Users target = userRepository.findById(block.getTargetId())
-                            .orElseThrow(() -> new WrongTargetException(ErrorCode.WRONG_TARGET));
-                    return modelMapper.map(target, UserSimpleDTO.class);
-                }).toList());
-            case POST:
-                return Collections.singletonList(blocks.stream().map(block -> {
-                    Posts target = postRepository.findById(block.getTargetId())
-                            .orElseThrow(() -> new WrongTargetException(ErrorCode.WRONG_TARGET));
-                    return modelMapper.map(target, UserSimpleDTO.class);
-                }).toList());
-            case REPLY:
-                return Collections.singletonList(blocks.stream().map(block -> {
-                    Replies target = repliesRepository.findById(block.getTargetId())
-                            .orElseThrow(() -> new WrongTargetException(ErrorCode.WRONG_TARGET));
-                    return modelMapper.map(target, UserSimpleDTO.class);
-                }).toList());
-            default:
-                throw new InvalidException(ErrorCode.INVALID_TYPE);
-        }*/
-        return null;
-    }
-
-    @Transactional
-    @Override
     public Page<Object> getBlocks(Long id, BlockType type, int page) {
         Pageable pageable = PageRequest.of(page, 10);
         Page<Blocks> blocks = blockRepository.findByUser_UserIdAndBlockType(id, type, pageable);
@@ -153,5 +123,34 @@ public class BlockServiceImpl implements BlockService {
             default:
                 throw new InvalidException(ErrorCode.INVALID_TYPE);
         }
+    }
+
+    @Override
+    public List<Object> getBlocks(Long id, BlockType type) {
+        List<Blocks> blocks = blockRepository.findByUser_UserIdAndBlockType(id, type);
+
+        /*switch (type) {
+            case USER:
+                return Collections.singletonList(blocks.stream().map(block -> {
+                    Users target = userRepository.findById(block.getTargetId())
+                            .orElseThrow(() -> new WrongTargetException(ErrorCode.WRONG_TARGET));
+                    return modelMapper.map(target, UserSimpleDTO.class);
+                }).toList());
+            case POST:
+                return Collections.singletonList(blocks.stream().map(block -> {
+                    Posts target = postRepository.findById(block.getTargetId())
+                            .orElseThrow(() -> new WrongTargetException(ErrorCode.WRONG_TARGET));
+                    return modelMapper.map(target, UserSimpleDTO.class);
+                }).toList());
+            case REPLY:
+                return Collections.singletonList(blocks.stream().map(block -> {
+                    Replies target = repliesRepository.findById(block.getTargetId())
+                            .orElseThrow(() -> new WrongTargetException(ErrorCode.WRONG_TARGET));
+                    return modelMapper.map(target, UserSimpleDTO.class);
+                }).toList());
+            default:
+                throw new InvalidException(ErrorCode.INVALID_TYPE);
+        }*/
+        return null;
     }
 }
