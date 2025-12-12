@@ -2,7 +2,6 @@ package web.mvc.santa_backend.chat.service;
 
 import org.springframework.data.domain.Page;
 import web.mvc.santa_backend.chat.dto.ChatroomDTO;
-import web.mvc.santa_backend.chat.entity.Chatrooms;
 
 public interface ChatroomService {
     /**
@@ -14,9 +13,11 @@ public interface ChatroomService {
      * String password(비밀번호가 있는지)
      * String imageUrl(대표이미지가 있는지)
      * String description(상세 설명이 있는지)
+     *
      * @param chatroomDTO
+     * @return
      */
-    void createChatroom(ChatroomDTO chatroomDTO);
+    Long createChatroom(ChatroomDTO chatroomDTO);
 
     /**
      * userId, word(검색시 입력한 단어)로 chatrooms를 가지고 오는 메서드
@@ -35,7 +36,7 @@ public interface ChatroomService {
      * 수정할 내용만 DTO에 입력
      * @param chatroomDTO
      */
-    public void updateChatroom(ChatroomDTO chatroomDTO);
+    public void updateChatroom(ChatroomDTO chatroomDTO, Long userId);
 
     /**
      * 채팅방의 isDelete 상태를 true로 변경(소프트 딜리트)
