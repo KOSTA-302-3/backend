@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Send Slack Notification
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.PR_BOT_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           USER_MAP_JSON: ${{ secrets.USER_MAP }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_TITLE: ${{ github.event.pull_request.title }}
@@ -22,7 +22,6 @@ jobs:
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}
           PR_MERGED: ${{ github.event.pull_request.merged }}
           REQUESTED_REVIEWER: ${{ github.event.requested_reviewer.login }}
-          # opened 이벤트일 때, 이미 할당된 리뷰어 목록을 가져옴 (JSON Array 형태)
           REQUESTED_REVIEWERS_LIST: ${{ toJson(github.event.pull_request.requested_reviewers) }}
         run: |
           # 1. Draft PR 체크
@@ -46,15 +45,9 @@ jobs:
           PR_STATUS=""
           MENTION_TARGET=""
 
-          # ========================================================
           # 3. 상황별 처리 로직
-          # ========================================================
-
           if [ "$PR_ACTION" == "opened" ]; then
-            # [중복 방지 핵심 로직]
-            # opened 이벤트인데, 이미 리뷰어가 지정되어 있다면(목록 길이가 0보다 크면)
-            # 곧이어 review_requested 이벤트가 발생할 것이므로 여기선 알림을 스킵합니다.
-            
+            # 중복 방지 로직
             REVIEWER_COUNT=$(echo "$REQUESTED_REVIEWERS_LIST" | jq '. | length')
             if [ "$REVIEWER_COUNT" -gt 0 ]; then
               echo "이미 리뷰어가 지정된 상태로 PR이 열렸습니다. review_requested 이벤트에서 알림을 보냅니다."
@@ -62,7 +55,7 @@ jobs:
             fi
 
             PR_STATUS="*새 PR이 생성되었습니다!*"
-            MENTION_TARGET="" # 리뷰어 없으므로 멘션 없음
+            MENTION_TARGET=""
 
           elif [ "$PR_ACTION" == "ready_for_review" ]; then
             PR_STATUS="*리뷰 준비 완료! (Draft 해제)*"
@@ -108,5 +101,13 @@ jobs:
               text: "\($status)\n*PR 제목:* \($title) (#\($number))\n*작성자:* <@\($author_id)>\n\($mention)\n*링크:* \($url)"
             }')
 
-          # 5. 전송
-          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" "$SLACK_WEBHOOK_URL"
+          # 5. 전송 (안전 장치 추가)
+          # URL 앞뒤 공백 제거
+          CLEAN_WEBHOOK_URL=$(echo "$SLACK_WEBHOOK_URL" | xargs)
+
+          if [ -z "$CLEAN_WEBHOOK_URL" ]; then
+             echo "Error: SLACK_WEBHOOK_URL 시크릿이 비어있습니다."
+             exit 1
+          fi
+
+          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" "$CLEAN_WEBHOOK_URL"
