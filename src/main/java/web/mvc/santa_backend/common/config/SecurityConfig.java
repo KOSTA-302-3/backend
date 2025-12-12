@@ -13,9 +13,11 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import web.mvc.santa_backend.admin.repository.AdminRepository;
 import web.mvc.santa_backend.common.filter.JWTFilter;
 import web.mvc.santa_backend.common.filter.LoginFilter;
 import web.mvc.santa_backend.common.security.JWTUtil;
+import web.mvc.santa_backend.user.repository.UserRepository;
 
 @Configuration
 @EnableWebSecurity
@@ -27,6 +29,8 @@ public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
 
     private final JWTUtil jwtUtil;
+    private final AdminRepository adminRepository;
+    private final UserRepository userRepository;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
@@ -79,15 +83,17 @@ public class SecurityConfig {
 
         // 필터 추가(교체)
         // UsernamePasswordAuthenticationFilter 는 form login(security의 기본 로그인)을 진행하는 필터
+        // 필터 추가(교체)
+        // UsernamePasswordAuthenticationFilter 는 form login(security의 기본 로그인)을 진행하는 필터
         // form login을 위에서 disable 했고, 우리는 이 필터를 상속받은 LoginFilter로 jwt 방식 로그인을 할 것
         // addFilterAt:  UsernamePasswordAuthenticationFilter 자리에 LoginFilter 가 실행되도록 설정
         http.addFilterAt(
                 new LoginFilter(
-                        this.authenticationManager(authenticationConfiguration),    // AuthenticationManager
-                        jwtUtil),
+                        this.authenticationManager(authenticationConfiguration),
+                        jwtUtil,
+                        adminRepository,
+                        userRepository),
                 UsernamePasswordAuthenticationFilter.class);
-
-        // LoginFilter(Authentication 담당) 이전에 JWTFilter(JWT 검증) 실행
         http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
 
         return http.build();
