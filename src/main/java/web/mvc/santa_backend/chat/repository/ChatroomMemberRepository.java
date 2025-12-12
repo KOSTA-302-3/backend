@@ -26,10 +26,6 @@ public interface ChatroomMemberRepository extends JpaRepository<ChatroomMembers,
 
     Optional<ChatroomMembers> findByUserAndChatroom(Users user, Chatrooms chatroom);
 
-    boolean existsByChatroomAndUserAndIsBanned(Chatrooms chatroom, Users user, boolean isBanned);
-
-    void deleteByUserAndChatroom(Users user, Chatrooms chatroom);
-
     boolean existsByChatroom_ChatroomIdAndUser_UserIdAndIsBanned(Long chatroomChatroomId, Long userUserId, boolean isBanned);
 
     void deleteByUser_UserIdAndChatroom_ChatroomId(Long userUserId, Long chatroomChatroomId);
@@ -39,6 +35,4 @@ public interface ChatroomMemberRepository extends JpaRepository<ChatroomMembers,
     Long countChatroomMembersByChatroom_ChatroomIdAndIsBanned(Long chatroomChatroomId, boolean isBanned);
 
     long countByChatroom_ChatroomIdAndIsBanned(Long chatroomChatroomId, boolean isBanned);
-
-    List<ChatroomMembers> findByChatroom_ChatroomIdAndIsBanned(Long chatroomChatroomId, boolean isBanned);
 }
