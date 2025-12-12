@@ -10,10 +10,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import web.mvc.santa_backend.common.enumtype.BlockType;
+import web.mvc.santa_backend.common.enumtype.ReportType;
 import web.mvc.santa_backend.common.security.CustomUserDetails;
 import web.mvc.santa_backend.user.dto.UserResponseDTO;
 import web.mvc.santa_backend.user.dto.UserRequestDTO;
 import web.mvc.santa_backend.user.dto.UserSimpleDTO;
+import web.mvc.santa_backend.user.service.BlockService;
+import web.mvc.santa_backend.user.service.FollowService;
+import web.mvc.santa_backend.user.service.ReportService;
 import web.mvc.santa_backend.user.service.UserService;
 
 import java.util.List;
@@ -26,6 +31,9 @@ import java.util.List;
 public class UserContoller {
 
     private final UserService userService;
+    private final FollowService followService;
+    private final BlockService blockService;
+    private final ReportService reportService;
 
     /* 회원가입 */
     @Operation(summary = "아이디(username) 중복체크")
@@ -95,7 +103,7 @@ public class UserContoller {
 
     /* 유저 탈퇴(상태 수정/삭제) */
     @Operation(summary = "유저 탈퇴")
-    @PutMapping("/softdelete")
+    @DeleteMapping("/softdelete")
     public ResponseEntity<?> deactivateUser(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         log.info("deactivateUser/ id: {}", customUserDetails.getUser().getUserId());
         UserResponseDTO deleteUser = userService.deactivateUser(customUserDetails.getUser().getUserId());
@@ -125,7 +133,7 @@ public class UserContoller {
     @Operation(summary = "팔로워 조회 (전체 리스트)")
     @GetMapping("/{id}/followers")
     public ResponseEntity<?> getFollowers(@PathVariable Long id) {
-        List<UserSimpleDTO> followers = userService.getFollowers(id);
+        List<UserSimpleDTO> followers = followService.getFollowers(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(followers);
     }
@@ -133,7 +141,7 @@ public class UserContoller {
     @Operation(summary = "팔로잉 조회 (전체 리스트)")
     @GetMapping("/{id}/followings")
     public ResponseEntity<?> getFollowings(@PathVariable Long id) {
-        List<UserSimpleDTO> followings = userService.getFollowings(id);
+        List<UserSimpleDTO> followings = followService.getFollowings(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(followings);
     }
@@ -141,7 +149,7 @@ public class UserContoller {
     @Operation(summary = "팔로워 조회 (페이징)")
     @GetMapping("/{id}/followers/{page}")
     public ResponseEntity<?> getFollowers(@PathVariable Long id, @PathVariable int page) {
-        Page<UserSimpleDTO> followers = userService.getFollowers(id, page);
+        Page<UserSimpleDTO> followers = followService.getFollowers(id, page);
 
         return ResponseEntity.status(HttpStatus.OK).body(followers);
     }
@@ -149,7 +157,7 @@ public class UserContoller {
     @Operation(summary = "팔로잉 조회 (페이징)")
     @GetMapping("/{id}/followings/{page}")
     public ResponseEntity<?> getFollowings(@PathVariable Long id, @PathVariable int page) {
-        Page<UserSimpleDTO> followings = userService.getFollowings(id, page);
+        Page<UserSimpleDTO> followings = followService.getFollowings(id, page);
 
         return ResponseEntity.status(HttpStatus.OK).body(followings);
     }
@@ -157,18 +165,37 @@ public class UserContoller {
     @Operation(summary = "대기 중인 팔로워 조회 (페이징)", description = "현재 유저가 대기 팔로워 수락/거절 선택을 위함")
     @GetMapping("/pending/{page}")
     public ResponseEntity<?> getPendingFollowers(@PathVariable int page, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        Page<UserSimpleDTO> pendingFollowers = userService.getPendingFollowers(customUserDetails.getUser().getUserId(), page);
+        Page<UserSimpleDTO> pendingFollowers = followService.getPendingFollowers(customUserDetails.getUser().getUserId(), page);
 
         return ResponseEntity.status(HttpStatus.OK).body(pendingFollowers);
     }
 
+    /* followCount 동기화 (관리자에서 처리?) */
     @Operation(summary = "followingCount, followerCount 동기화 (관리자용?)",
             description = "Follows 의 레코드 수로부터 Users_followingCount, followerCount 맞추기" +
                     "return: 팔로우 수가 맞지 않았던 유저들 반환")
     @GetMapping("/sync")
     public ResponseEntity<?> sync() {
-        List<UserResponseDTO> syncUsers = userService.updateFollowCounts();
+        List<UserResponseDTO> syncUsers = followService.updateFollowCounts();
 
         return ResponseEntity.status(HttpStatus.OK).body(syncUsers);
+    }
+
+    /* 차단 조회 */
+    @Operation(summary = "차단 목록 조회 (페이징)", description = "로그인한 유저의 차단 목록을 보는 것")
+    @GetMapping("/block/{type}/{page}")
+    public ResponseEntity<?> getBlocks(@PathVariable BlockType type, @PathVariable int page, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        Page<Object> blocks = blockService.getBlocks(customUserDetails.getUser().getUserId(), type, page);
+
+        return ResponseEntity.status(HttpStatus.OK).body(blocks);
+    }
+
+    /* 신고 조회 */
+    @Operation(summary = "신고 목록 조회 (페이징)", description = "로그인한 유저의 신고 목록을 보는 것")
+    @GetMapping("/report/{type}/{page}")
+    public ResponseEntity<?> getReports(@PathVariable ReportType type, @PathVariable int page, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        Page<Object> reports = reportService.getReportsByUserId(customUserDetails.getUser().getUserId(), type, page);
+
+        return ResponseEntity.status(HttpStatus.OK).body(reports);
     }
 }

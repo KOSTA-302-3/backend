@@ -1,6 +1,11 @@
 package web.mvc.santa_backend.user.service;
 
+import org.springframework.data.domain.Page;
 import web.mvc.santa_backend.user.dto.FollowDTO;
+import web.mvc.santa_backend.user.dto.UserResponseDTO;
+import web.mvc.santa_backend.user.dto.UserSimpleDTO;
+
+import java.util.List;
 
 public interface FollowService {
     /**
@@ -27,7 +32,21 @@ public interface FollowService {
      */
     FollowDTO approveFollow(Long followerId, Long followingId);
 
+    /* 팔로워, 팔로잉 수 증가/감소 */
     void increaseFollowCount(Long followerId, Long followingId);
-
     void decreaseFollowCount(Long followerId, Long followingId);
+
+
+    /* 팔로우 조회 관련 */
+    List<UserSimpleDTO> getFollowings(Long id);
+    Page<UserSimpleDTO> getFollowings(Long id, int page);
+
+    List<UserSimpleDTO> getFollowers(Long id);
+    Page<UserSimpleDTO> getFollowers(Long id, int page);
+
+    Page<UserSimpleDTO> getPendingFollowers(Long id, int page);
+
+    /* followCount 수 동기화(TODO 위치 수정 예정) */
+    List<UserResponseDTO> updateFollowCounts();
+
 }
