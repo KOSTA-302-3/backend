@@ -22,6 +22,7 @@ public enum ErrorCode {
     INVALID_UNBLOCK(HttpStatus.BAD_REQUEST, "invalid unblock", "차단하지 않은 유저 차단 해제 불가"),
     INVALID_APPROVE(HttpStatus.BAD_REQUEST, "invalid approve", "이미 수락한 유저"),
     INVALID_TYPE(HttpStatus.BAD_REQUEST, "invalid type", "유효하지 않은 타입"),
+    INVALID_REPORT(HttpStatus.BAD_REQUEST, "invalid report", "12시간이 지나지 않은 상태에서 재신고 시도"),
 
     CHATROOM_NOT_FOUND(HttpStatus.BAD_REQUEST, "chatroom not found", "채팅방이 없음"),
     USER_NOT_FOUND(HttpStatus.BAD_REQUEST, "user not found", "유저가 존재하지 않음"),

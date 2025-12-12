@@ -14,7 +14,7 @@ public interface ReportService {
     /**
      * 신고 확인
      */
-    boolean checkReport(Long userId, ReportType type, Long targetId);
+    boolean isReporting(Long userId, ReportType type, Long targetId);
 
     /**
      * 로그인 한 유저의 신고 목록 조회 (페이징)

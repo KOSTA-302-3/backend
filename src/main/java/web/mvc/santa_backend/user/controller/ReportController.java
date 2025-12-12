@@ -35,7 +35,7 @@ public class ReportController {
     @Operation(summary = "신고 확인")
     @GetMapping("/{type}/{targetId}")
     public ResponseEntity<?> checkReport(@PathVariable ReportType type, @PathVariable Long targetId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        boolean isReporting = reportService.checkReport(customUserDetails.getUser().getUserId(), type, targetId);
+        boolean isReporting = reportService.isReporting(customUserDetails.getUser().getUserId(), type, targetId);
 
         return ResponseEntity.status(HttpStatus.OK).body(isReporting);
     }

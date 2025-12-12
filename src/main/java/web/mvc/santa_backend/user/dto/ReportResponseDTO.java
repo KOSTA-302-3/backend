@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ReportResponseDTO {
     private Long reportId;
-    private UserSimpleDTO user;
+    private Long userId;
     private ReportType reportType;
     private Long targetId;
     private String content;

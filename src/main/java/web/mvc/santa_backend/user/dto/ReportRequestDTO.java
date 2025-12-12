@@ -9,7 +9,6 @@ import web.mvc.santa_backend.common.enumtype.ReportType;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReportRequestDTO {
-    private Long userId;
     private ReportType reportType;
     private Long targetId;
     private String content;
