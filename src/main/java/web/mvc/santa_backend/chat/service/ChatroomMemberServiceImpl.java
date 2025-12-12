@@ -36,6 +36,7 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
     private final UserRepository userRepository;
     private final ChatroomManager chatroomManager;
     private final MessageService messageService;
+    private final MessageRepository messageRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -72,18 +73,23 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
 
         //기존 참여자인지 확인
         result = chatroomMemberRepository.existsByChatroom_ChatroomIdAndUser_UserIdAndIsBanned(chatroomMemberDTO.getChatroomId(), chatroomMemberDTO.getUserId(), false);
-        //참여자가 아니라면 참여멤버 테이블에 레코드 추가
+        //기존 참여자가 아니라면 참여멤버 테이블에 레코드 추가
         if(!result){
             //참여자가 0명이라면 방을 만든사람 -> 즉 Admin
             long count = chatroomMemberRepository.countByChatroom_ChatroomIdAndIsBanned(chatroomMemberDTO.getChatroomId(), false);
             if(count == 0){
                 chatroomMemberDTO.setRole(UserRole.ADMIN);
-            }else {
+            }else { //참여자가 0명이 아니라면 기존 채팅방에 참여하는 사람 -> 즉 User
                 chatroomMemberDTO.setRole(UserRole.USER);
             }
+            //참여멤버 테이블에 레코드 추가
             ChatroomMembers chatroomMember = createChatroomMember(chatroomMemberDTO);
+            //메모리로 관리되는 채팅방에 현재 접속자의 세션 추가
             chatroomManager.addSession(webSocketSession);
+            //username을 가지고 오기 위해서 find
             Users user = userRepository.findById(chatroomMember.getUser().getUserId()).orElseThrow(() -> new UserNotFoundException(ErrorCode.USER_NOT_FOUND));
+
+            //username님 입장 이라는 메시지를 공지티압으로 db에 저장 후 out메시지 DTO로 받아오기
             InboundChatMessageDTO message = InboundChatMessageDTO.builder()
                     .userId(chatroomMember.getUser().getUserId())
                     .chatroomId(chatroomMember.getChatroom().getChatroomId())
@@ -91,9 +97,13 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
                     .type(MessageType.NOTICE)
                     .build();
             OutboundChatMessageDTO outMessage = messageService.createMessage(message);
-            log.info(outMessage.toString());
+
+            //현재 채팅방에 접속하고 있는 모든 사람에게 메시지 broadcast
             chatroomManager.broadcast(outMessage);
         }else {
+            Long latestMessageId = messageRepository.findLatestMessageId(chatroomMemberDTO.getChatroomId());
+            chatroomMemberDTO.setLastRead(latestMessageId);
+            updateChatroomMember(chatroomMemberDTO.getUserId(), chatroomMemberDTO);
             chatroomManager.addSession(webSocketSession);
         }
 

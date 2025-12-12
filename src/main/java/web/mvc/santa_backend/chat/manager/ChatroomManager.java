@@ -83,4 +83,9 @@ public class ChatroomManager {
     public Map<Long, WebSocketSession> getRoomSessions(Long roomId) {
         return chatRooms.getOrDefault(roomId, Map.of());
     }
+
+    public int countRoomMembers(Long roomId) {
+        Map<Long, WebSocketSession> roomSessions = chatRooms.get(roomId);
+        return roomSessions != null ? roomSessions.size() : 0;
+    }
 }

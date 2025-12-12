@@ -65,7 +65,6 @@ public class WebsocketHandler extends TextWebSocketHandler {
         messageDTO.setUserId(userId);
         
         //메시지를 DB에 저장하면서 저장된 메시지를 다시 out객체로 가지고 옴
-        //TODO 이 과정에서 방에 실제 접속중인 사람의 lastRead를 update
         OutboundChatMessageDTO outMessageDTO = messageService.createMessage(messageDTO);
 
         //메시지를 채팅방에 있는 모든 사람들에게 broadcast.
@@ -81,6 +80,8 @@ public class WebsocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         log.info("afterConnectionClosed");
-
+        Long roomId = (Long) session.getAttributes().get("roomId");
+        Long userId = (Long) session.getAttributes().get("userId");
+        chatroomManager.removeSession(roomId, userId);
     }
 }
