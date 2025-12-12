@@ -31,7 +31,7 @@ public interface BlockRepository extends JpaRepository<Blocks,Long> {
      * @param id : 현재 로그인 한 유저
      * @param type : 유저/게시물/댓글
      */
-    List<Blocks> findByUser_UserIdAndBlockType(Long id, BlockType type);
     Page<Blocks> findByUser_UserIdAndBlockType(Long id, BlockType type, Pageable pageable);
+    List<Blocks> findByUser_UserIdAndBlockType(Long id, BlockType type);
 
 }
