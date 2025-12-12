@@ -49,8 +49,4 @@ public class ChatroomMembers {
     @Builder.Default
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean isBanned = false;
-
-    @OneToMany(mappedBy = "chatroomMember", fetch = FetchType.LAZY)
-    private List<Messages> messages;
-
 }

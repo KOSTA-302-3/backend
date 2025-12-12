@@ -36,9 +36,4 @@ public class UserResponseDTO {
     private LocalDateTime deletedAt;
 
     private CustomDTO customDTO;
-    private List<UserSimpleDTO> followingList;
-    private List<UserSimpleDTO> followerList;
-    private List<UserSimpleDTO> blockedList;
-    private List<UserSimpleDTO> reportedUserList;
-    private List<PostDTO> reportedPostList;
 }
