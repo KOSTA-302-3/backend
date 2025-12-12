@@ -40,7 +40,7 @@ public class CustomController {
     @PostMapping("/badge")
     public ResponseEntity<?> buyBadges(@RequestBody Long badgeId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         Long userId = customUserDetails.getUser().getUserId();
-        UserBadgeDTO ubDTO = badgeService.buyBadge(badgeId, userId);
+        UserBadgeDTO ubDTO = badgeService.buyBadge(userId, badgeId);
 
         return ResponseEntity.status(HttpStatus.OK).body(ubDTO);
     }
@@ -57,8 +57,25 @@ public class CustomController {
     @PostMapping("/color")
     public ResponseEntity<?> buyColors(@RequestBody Long colorId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         Long userId = customUserDetails.getUser().getUserId();
-        UserColorDTO ucDTO = colorService.buyColor(colorId, userId);
+        UserColorDTO ucDTO = colorService.buyColor(userId, colorId);
 
         return ResponseEntity.status(HttpStatus.OK).body(ucDTO);
+    }
+
+    /* 배지/색상 추가 (관리자용) (TODO 위치변경) */
+    @Operation(summary = "배지 추가")
+    @PostMapping("/admin/badge")
+    public ResponseEntity<?> addBadge(@RequestBody BadgeDTO badgeDTO) {
+        BadgeDTO badge = badgeService.addBadge(badgeDTO);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(badge);
+    }
+
+    @Operation(summary = "색상 추가")
+    @PostMapping("/admin/color")
+    public ResponseEntity<?> addColor(@RequestBody ColorDTO colorDTO) {
+        ColorDTO color = colorService.addColor(colorDTO);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(color);
     }
 }

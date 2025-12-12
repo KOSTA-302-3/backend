@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.transaction.annotation.Transactional;
 import web.mvc.santa_backend.common.enumtype.CustomItemType;
 import web.mvc.santa_backend.common.exception.ErrorCode;
 import web.mvc.santa_backend.common.exception.NotFoundException;
@@ -19,6 +19,7 @@ import web.mvc.santa_backend.user.repository.UserColorRepository;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 @Slf4j
 public class CustomServiceImpl implements CustomService {
 

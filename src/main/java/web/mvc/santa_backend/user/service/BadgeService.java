@@ -19,4 +19,9 @@ public interface BadgeService {
      * 배지 구매
      */
     UserBadgeDTO buyBadge(Long userId, Long badgeId);
+
+    /**
+     * 배치 추가 (관리자용)
+     */
+    BadgeDTO addBadge(BadgeDTO badgeDTO);
 }

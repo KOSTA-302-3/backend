@@ -67,4 +67,12 @@ public class BadgeServiceImpl implements BadgeService {
 
         return modelMapper.map(saved, UserBadgeDTO.class);
     }
+
+    @Override
+    public BadgeDTO addBadge(BadgeDTO badgeDTO) {
+        Badges newBadge = modelMapper.map(badgeDTO, Badges.class);
+        newBadge.setBadgeId(null);
+
+        return modelMapper.map(badgeRepository.save(newBadge), BadgeDTO.class);
+    }
 }

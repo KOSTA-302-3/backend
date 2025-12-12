@@ -65,4 +65,12 @@ public class ColorServiceImpl implements ColorService {
 
         return modelMapper.map(saved, UserColorDTO.class);
     }
+
+    @Override
+    public ColorDTO addColor(ColorDTO colorDTO) {
+        Colors newColor = modelMapper.map(colorDTO, Colors.class);
+        newColor.setColorId(null);
+
+        return modelMapper.map(colorRepository.save(newColor), ColorDTO.class);
+    }
 }

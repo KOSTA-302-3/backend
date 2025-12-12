@@ -21,4 +21,9 @@ public interface ColorService {
      * 색상 구매
      */
     UserColorDTO buyColor(Long userId, Long colorId);
+
+    /**
+     * 색상 추가 (관리자용)
+     */
+    ColorDTO addColor(ColorDTO colorDTO);
 }
