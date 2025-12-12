@@ -11,15 +11,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import web.mvc.santa_backend.common.enumtype.BlockType;
+import web.mvc.santa_backend.common.enumtype.CustomItemType;
 import web.mvc.santa_backend.common.enumtype.ReportType;
 import web.mvc.santa_backend.common.security.CustomUserDetails;
+import web.mvc.santa_backend.user.dto.CustomDTO;
 import web.mvc.santa_backend.user.dto.UserResponseDTO;
 import web.mvc.santa_backend.user.dto.UserRequestDTO;
 import web.mvc.santa_backend.user.dto.UserSimpleDTO;
-import web.mvc.santa_backend.user.service.BlockService;
-import web.mvc.santa_backend.user.service.FollowService;
-import web.mvc.santa_backend.user.service.ReportService;
-import web.mvc.santa_backend.user.service.UserService;
+import web.mvc.santa_backend.user.service.*;
 
 import java.util.List;
 
@@ -31,9 +30,12 @@ import java.util.List;
 public class UserContoller {
 
     private final UserService userService;
+    private final CustomService customService;
     private final FollowService followService;
     private final BlockService blockService;
     private final ReportService reportService;
+    private final BadgeService badgeService;
+    private final ColorService colorService;
 
     /* 회원가입 */
     @Operation(summary = "아이디(username) 중복체크")
@@ -128,6 +130,30 @@ public class UserContoller {
 
         return "유저 삭제 완료";
     }
+
+    /* Custom 프로필 꾸미기 */
+    @Operation(summary = "커스텀(배지/색상) 보유 목록 조회")
+    @GetMapping("/custom/{type}/{page}")
+    public ResponseEntity<?> getCustoms(@PathVariable CustomItemType type, @PathVariable int page, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        Long userId = customUserDetails.getUser().getUserId();
+
+        Page<?> customs = switch (type) {
+            case BADGE -> badgeService.getBadgesByUserId(userId, page);
+            case COLOR -> colorService.getColorsByUserId(userId, page);
+        };
+
+        return ResponseEntity.status(HttpStatus.OK).body(customs);
+    }
+
+    @Operation(summary = "프로필 커스텀(배지/색상) 바꾸기")
+    @PutMapping("/custom/{type}/{id}")
+    public ResponseEntity<?> changeCustom(@PathVariable CustomItemType type, @PathVariable Long id, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        Long userId = customUserDetails.getUser().getUserId();
+        CustomDTO customDTO = customService.updateCustom(type, userId, id);
+
+        return ResponseEntity.status(HttpStatus.OK).body(customDTO);
+    }
+
 
     /* 팔로우 관련 조회 */
     @Operation(summary = "팔로워 조회 (전체 리스트)")

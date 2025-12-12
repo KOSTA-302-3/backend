@@ -48,7 +48,7 @@ public class ReportServiceImpl implements ReportService {
         Long targetId = reportRequestDTO.getTargetId();
 
         this.isReportable(userId, type, targetId);  // orElseThrow 로 처리
-        Users loginUser = userRepository.findById(userId).orElse(null);
+        Users loginUser = userRepository.findById(userId).get();
 
         Reports report = Reports.builder()
                 .user(loginUser)
