@@ -31,7 +31,7 @@ jobs:
           REQUESTED_REVIEWER="${{ github.event.requested_reviewer.login }}"
     
           # Secret에서 JSON 로드
-          USER_MAP_JSON='${{ secrets.USER_MAP }}'
+          USER_MAP_JSON=${{ secrets.USER_MAP }}
     
           # GitHub ID → Slack ID 변환 함수
           get_slack_id() {
