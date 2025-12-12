@@ -1,0 +1,47 @@
+name: Notify Slack on PR Events
+
+on:
+  pull_request:
+    types: [opened, closed, review_requested]
+    branches:
+      - '**'
+
+jobs:
+  notify-slack:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send Slack Notification
+        run: |
+          EVENT="${{ github.event.action }}"
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          PR_AUTHOR="${{ github.event.pull_request.user.login }}"
+          
+          # 기본 메시지
+          MESSAGE=""
+
+          if [ "$EVENT" = "opened" ]; then
+            MESSAGE="*PR 오픈 알림*\n*제목:* ${PR_TITLE} (#${PR_NUMBER})\n*작성자:* ${PR_AUTHOR}\n*링크:* ${PR_URL}"
+          
+          elif [ "$EVENT" = "closed" ]; then
+            # 머지 여부 체크
+            if ${{ github.event.pull_request.merged }}; then
+              MESSAGE="*PR 머지 완료*\n*제목:* ${PR_TITLE} (#${PR_NUMBER})\n*작성자:* ${PR_AUTHOR}\n*링크:* ${PR_URL}"
+            else
+              MESSAGE="*PR 닫힘 알림 (미머지)*\n*제목:* ${PR_TITLE} (#${PR_NUMBER})\n*작성자:* ${PR_AUTHOR}\n*링크:* ${PR_URL}"
+            fi
+
+          elif [ "$EVENT" = "review_requested" ]; then
+            REQUESTED_REVIEWER="${{ github.event.requested_reviewer.login }}"
+            MESSAGE="*리뷰 요청 알림*\n*제목:* ${PR_TITLE} (#${PR_NUMBER})\n*작성자:* ${PR_AUTHOR}\n*리뷰어:* ${REQUESTED_REVIEWER}\n*링크:* ${PR_URL}"
+          fi
+
+          # Slack Webhook 호출
+          curl -X POST \
+               -H 'Content-type: application/json' \
+               --data "{
+                 \"text\": \"${MESSAGE}\"
+               }" \
+               ${{ secrets.PR_BOT_TOKEN }}
