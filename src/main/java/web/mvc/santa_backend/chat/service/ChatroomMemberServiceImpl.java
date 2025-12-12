@@ -4,11 +4,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.socket.WebSocketSession;
+import web.mvc.santa_backend.chat.dto.ChatroomDTO;
 import web.mvc.santa_backend.chat.dto.ChatroomMemberDTO;
+import web.mvc.santa_backend.chat.dto.InboundChatMessageDTO;
+import web.mvc.santa_backend.chat.dto.OutboundChatMessageDTO;
 import web.mvc.santa_backend.chat.entity.ChatroomMembers;
 import web.mvc.santa_backend.chat.entity.Chatrooms;
+import web.mvc.santa_backend.chat.manager.ChatroomManager;
 import web.mvc.santa_backend.chat.repository.ChatroomMemberRepository;
 import web.mvc.santa_backend.chat.repository.ChatroomRepository;
+import web.mvc.santa_backend.chat.repository.MessageRepository;
+import web.mvc.santa_backend.common.enumtype.MessageType;
 import web.mvc.santa_backend.common.enumtype.UserRole;
 import web.mvc.santa_backend.common.exception.*;
 import web.mvc.santa_backend.user.dto.UserSimpleDTO;
@@ -17,15 +24,19 @@ import web.mvc.santa_backend.user.repository.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Transactional
+@Transactional(rollbackFor = Exception.class)
 public class ChatroomMemberServiceImpl implements ChatroomMemberService {
     private final ChatroomMemberRepository chatroomMemberRepository;
     private final ChatroomRepository chatroomRepository;
     private final UserRepository userRepository;
+    private final ChatroomManager chatroomManager;
+    private final MessageService messageService;
+    private final MessageRepository messageRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -51,9 +62,56 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
         return userSimpleDTOList;
     }
 
+    @Override
+    public void enterChatroom(ChatroomMemberDTO chatroomMemberDTO, WebSocketSession webSocketSession) {
+        //Banned상태인지 확인
+        boolean result = chatroomMemberRepository.existsByChatroom_ChatroomIdAndUser_UserIdAndIsBanned(chatroomMemberDTO.getChatroomId(), chatroomMemberDTO.getUserId(), true);
+        if(result){
+            //TODO 예외 만들기
+            throw new RuntimeException("강퇴당한 유저는 재입장이 불가능합니다.");
+        }
+
+        //기존 참여자인지 확인
+        result = chatroomMemberRepository.existsByChatroom_ChatroomIdAndUser_UserIdAndIsBanned(chatroomMemberDTO.getChatroomId(), chatroomMemberDTO.getUserId(), false);
+        //기존 참여자가 아니라면 참여멤버 테이블에 레코드 추가
+        if(!result){
+            //참여자가 0명이라면 방을 만든사람 -> 즉 Admin
+            long count = chatroomMemberRepository.countByChatroom_ChatroomIdAndIsBanned(chatroomMemberDTO.getChatroomId(), false);
+            if(count == 0){
+                chatroomMemberDTO.setRole(UserRole.ADMIN);
+            }else { //참여자가 0명이 아니라면 기존 채팅방에 참여하는 사람 -> 즉 User
+                chatroomMemberDTO.setRole(UserRole.USER);
+            }
+            //참여멤버 테이블에 레코드 추가
+            ChatroomMembers chatroomMember = createChatroomMember(chatroomMemberDTO);
+            //메모리로 관리되는 채팅방에 현재 접속자의 세션 추가
+            chatroomManager.addSession(webSocketSession);
+            //username을 가지고 오기 위해서 find
+            Users user = userRepository.findById(chatroomMember.getUser().getUserId()).orElseThrow(() -> new UserNotFoundException(ErrorCode.USER_NOT_FOUND));
+
+            //username님 입장 이라는 메시지를 공지티압으로 db에 저장 후 out메시지 DTO로 받아오기
+            InboundChatMessageDTO message = InboundChatMessageDTO.builder()
+                    .userId(chatroomMember.getUser().getUserId())
+                    .chatroomId(chatroomMember.getChatroom().getChatroomId())
+                    .payload(user.getUsername() + "님 입장")
+                    .type(MessageType.NOTICE)
+                    .build();
+            OutboundChatMessageDTO outMessage = messageService.createMessage(message);
+
+            //현재 채팅방에 접속하고 있는 모든 사람에게 메시지 broadcast
+            chatroomManager.broadcast(outMessage);
+        }else {
+            Long latestMessageId = messageRepository.findLatestMessageId(chatroomMemberDTO.getChatroomId());
+            chatroomMemberDTO.setLastRead(latestMessageId);
+            updateChatroomMember(chatroomMemberDTO.getUserId(), chatroomMemberDTO);
+            chatroomManager.addSession(webSocketSession);
+        }
+
+    }
+
 
     @Override
-    public void createChatroomMember(ChatroomMemberDTO chatroomMemberDTO) {
+    public ChatroomMembers createChatroomMember(ChatroomMemberDTO chatroomMemberDTO) {
         //방이 있는지 확인
         Chatrooms chatroom = chatroomRepository.findById(chatroomMemberDTO.getChatroomId()).orElseThrow(() -> new ChatroomNotFoundException(ErrorCode.CHATROOM_NOT_FOUND));
         //유저가 실제로 있는지 확인
@@ -64,8 +122,8 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
         }
         //엔티티 변환
         ChatroomMembers chatroomMember = toEntity(chatroomMemberDTO);
-        //저장
-        chatroomMemberRepository.save(chatroomMember);
+        //저장 및 리턴
+        return chatroomMemberRepository.save(chatroomMember);
     }
 
     @Override
@@ -82,7 +140,6 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
         Users user = Users.builder().userId(chatroomMemberDTO.getUserId()).build();
         ChatroomMembers chatroomMember = chatroomMemberRepository.findByUserAndChatroom(user, currentChatroom).orElseThrow(() -> new ChatMemberNotFoundException(ErrorCode.CHATMEMBER_NOT_FOUND));
 
-        //TODO 관리자가 아닐시에 에러 날리도록 변경해야함
         //최근 읽은 글 업데이트
         if(chatroomMemberDTO.getLastRead() != null){
             chatroomMember.setLastRead(chatroomMemberDTO.getLastRead());
@@ -107,7 +164,18 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
 
     @Override
     public void deleteChatroomMember(Long userId, Long chatroomId) {
+        //TODO 인증처리
         chatroomMemberRepository.deleteByUser_UserIdAndChatroom_ChatroomId(userId, chatroomId);
+    }
+
+    @Override
+    public boolean checkChatroomMember(Long userId, Long chatroomId) {
+        return chatroomMemberRepository.existsByChatroom_ChatroomIdAndUser_UserIdAndIsBanned(chatroomId, userId, false);
+    }
+
+    @Override
+    public Long countChatroomMember(Long chatroomId) {
+        return chatroomMemberRepository.countChatroomMembersByChatroom_ChatroomIdAndIsBanned(chatroomId, false);
     }
 
     private ChatroomMembers toEntity(ChatroomMemberDTO chatroomMemberDTO) {
@@ -118,6 +186,8 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
         return ChatroomMembers.builder()
                 .chatroom(chatroom)
                 .user(user)
+                .startRead(chatroomMemberDTO.getStartRead()!=null ? chatroomMemberDTO.getStartRead() : 0)
+                .lastRead(chatroomMemberDTO.getLastRead()!=null ? chatroomMemberDTO.getLastRead() : 0)
                 .noteOff(chatroomMemberDTO.getNoteOff()!=null ? chatroomMemberDTO.getNoteOff() : false)
                 .role(chatroomMemberDTO.getRole()!=null ? chatroomMemberDTO.getRole() : UserRole.USER)
                 .isBanned(chatroomMemberDTO.getIsBanned()!=null ? chatroomMemberDTO.getIsBanned() : false)

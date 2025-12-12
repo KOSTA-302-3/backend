@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.socket.WebSocketSession;
 import web.mvc.santa_backend.chat.dto.InboundChatMessageDTO;
 import web.mvc.santa_backend.chat.dto.OutboundChatMessageDTO;
 import web.mvc.santa_backend.chat.dto.ReadUpdateDTO;
@@ -15,11 +16,14 @@ import web.mvc.santa_backend.chat.dto.ReplyMessageDTO;
 import web.mvc.santa_backend.chat.entity.ChatroomMembers;
 import web.mvc.santa_backend.chat.entity.Chatrooms;
 import web.mvc.santa_backend.chat.entity.Messages;
+import web.mvc.santa_backend.chat.manager.ChatroomManager;
 import web.mvc.santa_backend.chat.repository.ChatroomMemberRepository;
 import web.mvc.santa_backend.chat.repository.MessageRepository;
 import web.mvc.santa_backend.common.enumtype.MessageType;
 import web.mvc.santa_backend.common.exception.ChatMemberNotFoundException;
 import web.mvc.santa_backend.common.exception.ErrorCode;
+
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +32,7 @@ import web.mvc.santa_backend.common.exception.ErrorCode;
 public class MessageServiceImpl implements MessageService {
     private final MessageRepository messageRepository;
     private final ChatroomMemberRepository chatroomMemberRepository;
+    private final ChatroomManager chatroomManager;
 
     @Override
     @Transactional(readOnly = true)
@@ -44,8 +49,26 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public OutboundChatMessageDTO createMessage(InboundChatMessageDTO inboundChatMessageDTO) {
+        //방에 있는지 검증
         checkChatMember(inboundChatMessageDTO.getChatroomId(),inboundChatMessageDTO.getUserId());
+        //온 메시지 바로 DB에 저장
         Messages message = messageRepository.save(fromInboundMessageDTOToEntity(inboundChatMessageDTO));
+        
+        //저장된 메시지의 id와, 채팅방id를 추출
+        Long lastMessage = message.getMessageId();
+        Long roomId = message.getChatrooms().getChatroomId();
+        
+        //메모리에 저장되어있는 채팅방을 가지고와서
+        Map<Long, WebSocketSession> roomSessions = chatroomManager.getRoomSessions(roomId);
+        
+        //저장되어있는 사람들의 userId(key값)으로 lastRead를 업데이트
+        //즉. 현재 실제 접속중인 사람들의 lastRead를 실시간으로 업데이트함
+        roomSessions.keySet().forEach(userId -> {
+            ChatroomMembers chatroomMembers = chatroomMemberRepository.findByChatroom_ChatroomIdAndUser_UserId(roomId, userId).orElseThrow(() -> new ChatMemberNotFoundException(ErrorCode.NOT_CHATMEMBER));
+            chatroomMembers.setLastRead(lastMessage);
+        });
+        
+        //OutMessageDTO로 바꿔서 리턴
         return toOutboundChatMessageDTO(message);
     }
 

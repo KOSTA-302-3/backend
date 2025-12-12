@@ -34,8 +34,11 @@ public class ChatroomMembers {
     @JoinColumn(name="user_id", nullable = false)
     private Users user;
 
-    private Long startRead;
-    private Long lastRead;
+    @Column(nullable = false, columnDefinition = "bigint default 0")
+    private Long startRead = 0L;
+
+    @Column(nullable = false, columnDefinition = "bigint default 0")
+    private Long lastRead = 0L;
 
     @Builder.Default
     @Column(nullable = false, columnDefinition = "boolean default false")

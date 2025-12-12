@@ -1,6 +1,9 @@
 package web.mvc.santa_backend.chat.service;
 
+import org.springframework.web.socket.WebSocketSession;
+import web.mvc.santa_backend.chat.dto.ChatroomDTO;
 import web.mvc.santa_backend.chat.dto.ChatroomMemberDTO;
+import web.mvc.santa_backend.chat.entity.ChatroomMembers;
 import web.mvc.santa_backend.user.dto.UserSimpleDTO;
 
 import java.util.List;
@@ -17,7 +20,13 @@ public interface ChatroomMemberService {
     public List<UserSimpleDTO> getChatroomMembers(Long chatroomId, boolean isBanned, Long userId);
 
     /**
-     * user가 채팅방에 참여하는 메서드(채팅 멤버가 추가되는 메서드)
+     * 유저의 채팅방 입장메서드
+     * @param chatroomMemberDTO
+     */
+    void enterChatroom(ChatroomMemberDTO chatroomMemberDTO, WebSocketSession session);
+    
+    /**
+     * 참여멤버를 DB에 추가하는 메서드
      * 필수 파라미터
      * Long userId
      * Long chatroomId
@@ -26,7 +35,7 @@ public interface ChatroomMemberService {
      * UserRole role(역할, admin/user, default user)
      * @param chatroomMemberDTO 필수 파라미터 Long userId, Long chatroomId, 선택 파라미터 boolean noteOff, UserRole role
      */
-    void createChatroomMember(ChatroomMemberDTO chatroomMemberDTO);
+    ChatroomMembers createChatroomMember(ChatroomMemberDTO chatroomMemberDTO);
 
     /**
      * 자신의 상태를 변경하는 메서드
@@ -47,4 +56,14 @@ public interface ChatroomMemberService {
      * @param chatroomId
      */
     void deleteChatroomMember(Long userId, Long chatroomId);
+
+    /**
+     * 채팅방에 현재 참여중인 유저인지, 처음 참여하는 유저인지를 확인하기 위한 메서드
+     * @param userId
+     * @param chatroomId
+     * @return
+     */
+    boolean checkChatroomMember(Long userId, Long chatroomId);
+
+    Long countChatroomMember(Long chatroomId);
 }
