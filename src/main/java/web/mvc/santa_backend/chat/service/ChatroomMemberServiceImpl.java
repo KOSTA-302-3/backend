@@ -101,7 +101,9 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
             //현재 채팅방에 접속하고 있는 모든 사람에게 메시지 broadcast
             chatroomManager.broadcast(outMessage);
         }else {
+            //입장한 채팅방의 가장 최근 messageId를 가지고와서,
             Long latestMessageId = messageRepository.findLatestMessageId(chatroomMemberDTO.getChatroomId());
+            //입장
             chatroomMemberDTO.setLastRead(latestMessageId);
             updateChatroomMember(chatroomMemberDTO.getUserId(), chatroomMemberDTO);
             chatroomManager.addSession(webSocketSession);
@@ -120,6 +122,13 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
         if(chatroomMemberRepository.existsByChatroomAndUser(chatroom,user)){
             throw new DuplicateChatMemberException(ErrorCode.DUPLICATED_CHAT_MEMBER);
         }
+        //입장한 방의 가장 최신 messageId를 가지고 옴, null일 수 있지만 entity변환시 0으로 바꾸기 때문에 상관없음
+        Long latestMessageId = messageRepository.findLatestMessageId(chatroomMemberDTO.getChatroomId());
+        
+        //입장한 순간의 메시지id 기록(이 사람은 여기서부터 메시지를 읽을 수 있음. 입장 전의 메시지는 확인하지 못함)
+        chatroomMemberDTO.setStartRead(latestMessageId);
+        //입장한 순간 lastRead를 최신화
+        chatroomMemberDTO.setLastRead(latestMessageId);
         //엔티티 변환
         ChatroomMembers chatroomMember = toEntity(chatroomMemberDTO);
         //저장 및 리턴

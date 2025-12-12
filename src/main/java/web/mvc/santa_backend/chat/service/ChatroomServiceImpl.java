@@ -47,12 +47,16 @@ public class ChatroomServiceImpl implements ChatroomService {
         }else if(userId==null && word!=null){
             chatrooms = chatroomRepository.findByWord(word, pageable);
         }else if(userId!=null && word==null){
-            chatrooms = chatroomMemberRepository.findByUserId(userId, pageable);
+            chatrooms = chatroomMemberRepository.findByUserId(userId, false, pageable);
         }else if(userId!=null && word!=null){
-            chatrooms = chatroomMemberRepository.findByUserIdAndWord(userId, word, pageable);
+            chatrooms = chatroomMemberRepository.findByUserIdAndWord(userId, word, false, pageable);
         }
 
-        Page<ChatroomDTO> chatroomDTOS = chatrooms.map(n -> toDTO(n));
+        Page<ChatroomDTO> chatroomDTOS = chatrooms.map((n) -> {
+            long count = chatroomMemberRepository.countByChatroom_ChatroomIdAndIsBanned(n.getChatroomId(), false);
+            ChatroomDTO chatroomDTO = toDTO(n, count);
+            return chatroomDTO;
+        });
 
         return chatroomDTOS;
     }
@@ -99,11 +103,7 @@ public class ChatroomServiceImpl implements ChatroomService {
                 .build();
     }
 
-    private ChatroomDTO toDTO(Chatrooms chatrooms) {
-        List<ChatroomMemberDTO> chatroomMemberDTOS =
-                chatrooms.getChatroomMembers().stream()
-                        .map(c -> toDTO(c))   // 변환
-                        .toList();
+    private ChatroomDTO toDTO(Chatrooms chatrooms, long count) {
         return ChatroomDTO.builder()
                 .chatroomId(chatrooms.getChatroomId())
                 .name(chatrooms.getName())
@@ -113,20 +113,7 @@ public class ChatroomServiceImpl implements ChatroomService {
                 .isDeleted(chatrooms.isDeleted())
                 .imageUrl(chatrooms.getImageUrl())
                 .description(chatrooms.getDescription())
-                .chatroomMembers(chatroomMemberDTOS)
-                .build();
-    }
-
-    private ChatroomMemberDTO toDTO(ChatroomMembers chatroomMembers) {
-        return ChatroomMemberDTO.builder()
-                .chatroomMemberId(chatroomMembers.getChatroomMemeberId())
-                .userId(chatroomMembers.getUser().getUserId())
-                .chatroomId(chatroomMembers.getChatroom().getChatroomId())
-                .startRead(chatroomMembers.getStartRead() != null ? chatroomMembers.getStartRead() : 0)
-                .lastRead(chatroomMembers.getLastRead() != null ? chatroomMembers.getLastRead() : 0)
-                .noteOff(chatroomMembers.isNoteOff())
-                .role(chatroomMembers.getRole())
-                .isBanned(chatroomMembers.isBanned())
+                .countMember(count)
                 .build();
     }
 }

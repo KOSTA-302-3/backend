@@ -25,5 +25,5 @@ public class ChatroomDTO {
     private Boolean isDeleted = false;
     private String imageUrl;
     private String description;
-    private List<ChatroomMemberDTO> chatroomMembers;
+    private long countMember;
 }
