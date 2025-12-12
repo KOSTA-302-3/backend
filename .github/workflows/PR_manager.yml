@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Send Slack Notification
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.PR_BOT_TOKEN }}
           USER_MAP_JSON: ${{ secrets.USER_MAP }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_TITLE: ${{ github.event.pull_request.title }}
