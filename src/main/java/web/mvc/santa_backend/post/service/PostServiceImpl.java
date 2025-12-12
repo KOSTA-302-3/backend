@@ -18,6 +18,7 @@ import web.mvc.santa_backend.post.entity.Posts;
 import web.mvc.santa_backend.post.repository.HashTagsRepository;
 import web.mvc.santa_backend.post.repository.ImageSourcesRepository;
 import web.mvc.santa_backend.post.repository.PostResository;
+import web.mvc.santa_backend.user.repository.UserRepository;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,6 +35,9 @@ public class PostServiceImpl implements PostService{
     private ImageSourcesRepository imageSourcesRepository;
     @Autowired
     private S3Uploader s3Uploader;
+    @Autowired
+    private UserRepository userRepository;
+
 
     @Transactional
     public Page<PostDTO> getAllPostsWithOffFilter(int pageNo) {
@@ -46,7 +50,7 @@ public class PostServiceImpl implements PostService{
         Page<PostDTO> dtoPage = page.map(posts ->
                 new PostDTO(
                         posts.getPostId(),
-                        posts.getCreateUserId(),
+                        userRepository.findById(posts.getCreateUserId()).get().getUsername(),
                         posts.getCreateAt(),
                         posts.getContent(),
                         posts.getLikeCount(),
@@ -79,7 +83,7 @@ public class PostServiceImpl implements PostService{
 
         Page<PostDTO> pageDTO = page.map(posts -> new PostDTO(
                 posts.getPostId(),
-                posts.getCreateUserId(),
+                userRepository.findById(posts.getCreateUserId()).get().getUsername(),
                 posts.getCreateAt(),
                 posts.getContent(),
                 posts.getLikeCount(),
@@ -88,8 +92,6 @@ public class PostServiceImpl implements PostService{
                 posts.getHashTags().stream().map(hashTags -> hashTags.getTag()).toList(),
                 posts.getImageSources().stream().map(imageSources -> imageSources.getSource()).toList()
         ));
-
-
         return pageDTO;
     }
 
@@ -101,7 +103,7 @@ public class PostServiceImpl implements PostService{
 
         Page<PostDTO> pageDTO = page.map(posts -> new PostDTO(
                 posts.getPostId(),
-                posts.getCreateUserId(),
+                userRepository.findById(posts.getCreateUserId()).get().getUsername(),
                 posts.getCreateAt(),
                 posts.getContent(),
                 posts.getLikeCount(),
@@ -127,7 +129,7 @@ public class PostServiceImpl implements PostService{
         //map(new::postDTO로 하려했으나 참조테이블 특정 컬럼 조회해야해서 이게 최선인거같다..
         Page<PostDTO> pageDTO = page.map(posts -> new PostDTO(
                 posts.getPostId(),
-                posts.getCreateUserId(),
+                userRepository.findById(posts.getCreateUserId()).get().getUsername(),
                 posts.getCreateAt(),
                 posts.getContent(),
                 posts.getLikeCount(),
@@ -150,7 +152,7 @@ public class PostServiceImpl implements PostService{
 
         Page<PostDTO> pageDTO = page.map(posts -> new PostDTO(
                 posts.getPostId(),
-                posts.getCreateUserId(),
+                userRepository.findById(posts.getCreateUserId()).get().getUsername(),
                 posts.getCreateAt(),
                 posts.getContent(),
                 posts.getLikeCount(),

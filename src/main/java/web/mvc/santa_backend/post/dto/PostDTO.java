@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 public class PostDTO {
     private Long postId;
-    private Long createUserId;
+    private String createUserName;
     private LocalDateTime createAt;
     private String content;
     private Long likeCount;

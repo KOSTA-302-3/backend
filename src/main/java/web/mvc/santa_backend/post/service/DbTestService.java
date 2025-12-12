@@ -40,7 +40,7 @@ public class DbTestService {
 
         Optional<PostDTO> post = postResository.findById(postId).map(posts -> new PostDTO(
                 posts.getPostId(),
-                posts.getCreateUserId(),
+                "",
                 posts.getCreateAt(),
                 posts.getContent(),
                 posts.getPostLevel(),
