@@ -21,7 +21,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "ChatroomMemberController API", description = "채팅방 멤버 관리용 테스트 컨트롤러")
+@Tag(name = "ChatroomMemberController API", description = "채팅방 멤버 관리용 컨트롤러")
 public class ChatroomMemberController {
     private final ChatroomMemberService chatroomMemberService;
 

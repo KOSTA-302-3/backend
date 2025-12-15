@@ -2,6 +2,7 @@ package web.mvc.santa_backend.chat.service;
 
 import org.springframework.data.domain.Page;
 import web.mvc.santa_backend.chat.dto.ChatroomDTO;
+import web.mvc.santa_backend.chat.dto.ChatroomRequestDTO;
 
 public interface ChatroomService {
     /**
@@ -14,10 +15,10 @@ public interface ChatroomService {
      * String imageUrl(대표이미지가 있는지)
      * String description(상세 설명이 있는지)
      *
-     * @param chatroomDTO
+     * @param chatroomRequestDTO
      * @return
      */
-    Long createChatroom(ChatroomDTO chatroomDTO);
+    Long createChatroom(ChatroomRequestDTO chatroomRequestDTO);
 
     /**
      * userId, word(검색시 입력한 단어)로 chatrooms를 가지고 오는 메서드

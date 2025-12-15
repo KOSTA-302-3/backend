@@ -23,6 +23,7 @@ public enum ErrorCode {
     INVALID_APPROVE(HttpStatus.BAD_REQUEST, "invalid approve", "이미 수락한 유저"),
     INVALID_TYPE(HttpStatus.BAD_REQUEST, "invalid type", "유효하지 않은 타입"),
     INVALID_REPORT(HttpStatus.BAD_REQUEST, "invalid report", "12시간이 지나지 않은 상태에서 재신고 시도"),
+    INVALID_USER(HttpStatus.BAD_REQUEST, "invalid user", "로그인한 유저와 다른 유저"),
     INVALID_BUY(HttpStatus.BAD_REQUEST, "invalid buy", "포인트 부족"),
 
     ITEM_NOT_FOUND(HttpStatus.BAD_REQUEST, "item not found", "아이템이 존재하지 않음"),

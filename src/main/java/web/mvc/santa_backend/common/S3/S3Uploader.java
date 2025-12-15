@@ -21,7 +21,7 @@ public class S3Uploader {
     @Value("${aws.s3.bucket}")
     private String bucketName;
 
-    @Value("${aws.region}")
+    @Value("${spring.cloud.aws.region.static}")
     private String region;
 
     public String uploadFile(MultipartFile file, String path) throws IOException {
@@ -31,7 +31,6 @@ public class S3Uploader {
                 PutObjectRequest.builder()
                         .bucket(bucketName)
                         .key(key)
-                        .acl(ObjectCannedACL.PUBLIC_READ)
                         .contentType(file.getContentType())
                         .contentDisposition("inline")
                         .build()

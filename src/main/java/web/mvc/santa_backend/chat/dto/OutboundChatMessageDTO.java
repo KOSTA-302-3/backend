@@ -20,4 +20,6 @@ public class OutboundChatMessageDTO {
     private LocalDateTime createdAt;
     private MessageType type;
     private Long unreadCount;
+    //유저id로는 user를 특정하기 어려운 관계로..
+    private String username;
 }
