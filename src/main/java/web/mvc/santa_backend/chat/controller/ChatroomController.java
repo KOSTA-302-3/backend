@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import web.mvc.santa_backend.chat.dto.ChatroomDTO;
+import web.mvc.santa_backend.chat.dto.ChatroomRequestDTO;
 import web.mvc.santa_backend.chat.service.ChatroomMemberService;
 import web.mvc.santa_backend.chat.service.ChatroomService;
 import web.mvc.santa_backend.common.exception.ErrorCode;
@@ -26,10 +27,10 @@ public class ChatroomController {
     private final ChatroomMemberService chatroomMemberService;
 
     @PostMapping("/api/chatroom")
-    public ResponseEntity<?> createChatroom(@RequestBody ChatroomDTO chatroomDTO,
+    public ResponseEntity<?> createChatroom(@RequestBody ChatroomRequestDTO chatroomRequestDTO,
                                             @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         Long userId = customUserDetails.getUser().getUserId();
-        Long chatroomId = chatroomService.createChatroom(chatroomDTO);
+        Long chatroomId = chatroomService.createChatroom(chatroomRequestDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(chatroomId);
     }
 
@@ -61,7 +62,7 @@ public class ChatroomController {
         return ResponseEntity.status(HttpStatus.OK).body("ok");
     }
 
-    @PutMapping("api/chatroom/delete/{chatroomId}")
+    @DeleteMapping("api/chatroom/{chatroomId}")
     public ResponseEntity<?> deleteChatroom(@PathVariable Long chatroomId) {
         chatroomService.deleteChatroom(chatroomId);
         return ResponseEntity.status(HttpStatus.OK).body("ok");

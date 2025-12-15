@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import web.mvc.santa_backend.chat.dto.ChatroomDTO;
 import web.mvc.santa_backend.chat.dto.ChatroomMemberDTO;
+import web.mvc.santa_backend.chat.dto.ChatroomRequestDTO;
 import web.mvc.santa_backend.chat.entity.ChatroomMembers;
 import web.mvc.santa_backend.chat.entity.Chatrooms;
 import web.mvc.santa_backend.chat.repository.ChatroomMemberRepository;
@@ -30,8 +31,8 @@ public class ChatroomServiceImpl implements ChatroomService {
     private final ChatroomMemberRepository chatroomMemberRepository;
 
     @Override
-    public Long createChatroom(ChatroomDTO chatroomDTO) {
-        Chatrooms chatrooms = toEntity(chatroomDTO);
+    public Long createChatroom(ChatroomRequestDTO chatroomRequestDTO) {
+        Chatrooms chatrooms = toEntity(chatroomRequestDTO);
         Chatrooms save = chatroomRepository.save(chatrooms);
         return save.getChatroomId();
     }
@@ -93,13 +94,13 @@ public class ChatroomServiceImpl implements ChatroomService {
         chatroom.setDeleted(true);
     }
 
-    private Chatrooms toEntity(ChatroomDTO chatroomDTO) {
+    private Chatrooms toEntity(ChatroomRequestDTO chatroomRequestDTO) {
         return Chatrooms.builder()
-                .name(chatroomDTO.getName())
-                .isPrivate(chatroomDTO.getIsPrivate() != null ? chatroomDTO.getIsPrivate() : false)
-                .password(chatroomDTO.getPassword())
-                .imageUrl(chatroomDTO.getImageUrl() != null ?  chatroomDTO.getImageUrl() : "")
-                .description(chatroomDTO.getDescription())
+                .name(chatroomRequestDTO.getName())
+                .isPrivate(chatroomRequestDTO.getIsPrivate() != null ? chatroomRequestDTO.getIsPrivate() : false)
+                .password(chatroomRequestDTO.getPassword())
+                .imageUrl(chatroomRequestDTO.getImageUrl() != null ?  chatroomRequestDTO.getImageUrl() : "")
+                .description(chatroomRequestDTO.getDescription())
                 .build();
     }
 
