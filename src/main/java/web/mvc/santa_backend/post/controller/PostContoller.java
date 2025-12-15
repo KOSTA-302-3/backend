@@ -6,8 +6,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import web.mvc.santa_backend.common.security.CustomUserDetails;
 import web.mvc.santa_backend.post.dto.LikeDTO;
 import web.mvc.santa_backend.post.dto.PostDTO;
 import web.mvc.santa_backend.post.entity.HashTags;
@@ -32,7 +34,11 @@ public class PostContoller {
     @ResponseBody
     @GetMapping("/getAllOffFilter")
     @Operation(summary = "필터링 끈 전체 게시물 보기")
-    ResponseEntity<Page<PostDTO>> getAllPostsWithOffFilter(int pageNo) {
+    ResponseEntity<Page<PostDTO>> getAllPostsWithOffFilter(int pageNo, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+        System.out.println(
+                "Call"
+        );
 
         return ResponseEntity.status(HttpStatus.OK).body(postService.getAllPostsWithOffFilter(pageNo));
     }
@@ -41,7 +47,10 @@ public class PostContoller {
     @ResponseBody
     @GetMapping("/getAllOnFilter")
     @Operation(summary = "필터링 킨 전체 게시물 보기")
-    ResponseEntity<Page<PostDTO>> getAllPostsWithOnFilter(Long level, int pageNo) {
+    ResponseEntity<Page<PostDTO>> getAllPostsWithOnFilter(Long level, int pageNo, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        if (customUserDetails.getAuthorities() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
         return ResponseEntity.status(HttpStatus.OK).body(postService.getAllPostsWithOnFilter(level, pageNo));
 
     }
@@ -49,25 +58,30 @@ public class PostContoller {
     //필터링 끈 팔로우 게시물 보기
     @Operation(summary = "필터링 끈 팔로우 게시물 보기")
     @GetMapping("/getFollowOffFilter")
-    ResponseEntity<Page<PostDTO>> getFollowPostsWithOffFilter(@RequestParam Long userId,@RequestParam int pageNo) {
+    ResponseEntity<Page<PostDTO>> getFollowPostsWithOffFilter(@RequestParam Long userId, @RequestParam int pageNo, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        if (customUserDetails.getAuthorities() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
         return ResponseEntity.status(HttpStatus.OK).body(postService.getFollowPostsWithOffFilter(userId, pageNo));
     }
 
     //필터링 킨 팔로우 게시물 보기
     @Operation(summary = "필터링 킨 팔로우 게시물 보기")
     @GetMapping("/getFollowOnFilter")
-    ResponseEntity<Page<PostDTO>> getFollowPostsWithOnFilter(@RequestParam Long userId,@RequestParam Long postLevel,@RequestParam int pageNo) {
+    ResponseEntity<Page<PostDTO>> getFollowPostsWithOnFilter(@RequestParam Long userId, @RequestParam Long postLevel, @RequestParam int pageNo,@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        if (customUserDetails.getAuthorities() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
 
-        return ResponseEntity.status(HttpStatus.OK).body(postService.getFollowPostsWithOnFilter(userId,postLevel, pageNo));
+        return ResponseEntity.status(HttpStatus.OK).body(postService.getFollowPostsWithOnFilter(userId, postLevel, pageNo));
     }
 
     @Operation(summary = "특정 유저 게시물 보기")
     @GetMapping("/getPostsByUserId")
-    ResponseEntity<Page<PostDTO>> getPostsByUserId(@RequestParam Long userId,@RequestParam int pageNo) {
+    ResponseEntity<Page<PostDTO>> getPostsByUserId(@RequestParam Long userId, @RequestParam int pageNo) {
 
         return ResponseEntity.status(HttpStatus.OK).body(postService.getPostsByUserId(userId, pageNo));
     }
-
 
 
     //게시물 작성
@@ -100,7 +114,7 @@ public class PostContoller {
     @PostMapping(value = "/imageUpload/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "이미지 작성")
     ResponseEntity<String> createPosts(@RequestPart List<MultipartFile> files,
-                      @PathVariable Long postId) {
+                                       @PathVariable Long postId) {
 
         postService.imgUpload(files, postId);
 
@@ -118,12 +132,19 @@ public class PostContoller {
 
     @PostMapping("/like")
     @Operation(summary = "게시물 좋아요")
-    ResponseEntity<String> likePost(@RequestBody LikeDTO likeDTO){
+    ResponseEntity<String> likePost(@RequestBody LikeDTO likeDTO) {
 
 
         return ResponseEntity.status(HttpStatus.OK).body(
                 likeService.postReplies(likeDTO.getTargetId(), likeDTO.getUserId())
         );
+    }
+
+    @GetMapping("testCode")
+    public String testA(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        System.out.println("Call!");
+        System.out.println(customUserDetails.getUsername());
+        return customUserDetails.getUsername();
     }
 
 
