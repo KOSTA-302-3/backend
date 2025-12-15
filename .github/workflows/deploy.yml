@@ -1,3 +1,4 @@
+# 백앤드 + nginx ( https, 무중단 배포용 )
 name: Deploy Santa to EC2
 
 on:
@@ -23,7 +24,7 @@ jobs:
           chmod +x gradlew
           ./gradlew clean bootJar
 
-      # 1. 파일 전송 (JAR, Dockerfile, Script) -> EC2
+      # 파일 전송 (JAR, Dockerfile, Script) -> EC2
       - name: Copy files to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -35,7 +36,7 @@ jobs:
           target: "/home/ubuntu/santa"
           strip_components: 0
 
-      # 2. 배포 스크립트 실행
+      # 배포 스크립트 실행
       - name: Execute Deploy Script
         uses: appleboy/ssh-action@v1.0.3
         with:
