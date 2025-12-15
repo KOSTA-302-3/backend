@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "bans")
-public class AdminEntity {
+public class Bans {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

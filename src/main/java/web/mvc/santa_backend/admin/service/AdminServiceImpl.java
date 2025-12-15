@@ -9,8 +9,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import web.mvc.santa_backend.admin.dto.AdminDTO;
-import web.mvc.santa_backend.admin.entity.AdminEntity;
-import web.mvc.santa_backend.admin.repository.AdminRepository;
+import web.mvc.santa_backend.admin.entity.Bans;
+import web.mvc.santa_backend.admin.repository.BansRepository;
 import web.mvc.santa_backend.user.dto.UserResponseDTO;
 import web.mvc.santa_backend.user.dto.UserSimpleDTO;
 import web.mvc.santa_backend.user.entity.Users;
@@ -29,7 +29,7 @@ public class AdminServiceImpl implements AdminService {
 
     private final UserService userService;
     private final UserRepository userRepository;
-    private final AdminRepository adminRepository;
+    private final BansRepository bansRepository;
 
     /**
      * 전체 유저 목록 조회
@@ -52,15 +52,11 @@ public class AdminServiceImpl implements AdminService {
     }
 
     /**
-     * 유저 상세 조회 (정지 기간 만료 시 자동 해제)
+     * 유저 상세 조회
      */
     @Override
     public UserResponseDTO getUserDetail(Long userId) {
         log.info("getUserDetail/ userId: {}", userId);
-        
-        // 정지 기간 체크 및 자동 해제
-        checkAndReleaseBan(userId);
-        
         return userService.getUserById(userId);
     }
 
@@ -84,14 +80,14 @@ public class AdminServiceImpl implements AdminService {
         }
         
         // 정지 기록 생성
-        AdminEntity ban = AdminEntity.builder()
+        Bans ban = Bans.builder()
                 .user(user)
                 .category(category)
                 .detail(detail)
                 .finishedAt(finishedAt)
                 .build();
         
-        AdminEntity savedBan = adminRepository.save(ban);
+        Bans savedBan = bansRepository.save(ban);
         
         // 유저 정지 처리
         user.setState(false);
@@ -134,7 +130,7 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public List<AdminDTO> getUserBans(Long userId) {
         log.info("getUserBans/ userId: {}", userId);
-        return adminRepository.findByUser_UserId(userId).stream()
+        return bansRepository.findByUser_UserId(userId).stream()
                 .map(ban -> AdminDTO.builder()
                         .banId(ban.getBanId())
                         .userId(ban.getUser().getUserId())
@@ -144,29 +140,5 @@ public class AdminServiceImpl implements AdminService {
                         .finishedAt(ban.getFinishedAt())
                         .build())
                 .collect(Collectors.toList());
-    }
-    
-    /**
-     * 정지 기간 확인 후 자동 해제 (Admin 전용)
-     */
-    @Transactional
-    public void checkAndReleaseBan(Long userId) {
-        Users user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
-        
-        if (!user.isState()) { // 정지 상태인 경우만 체크
-            LocalDateTime now = LocalDateTime.now();
-            List<AdminEntity> userBans = adminRepository.findByUser_UserId(userId);
-            
-            // 모든 정지가 만료되었는지 확인
-            boolean allExpired = userBans.stream()
-                    .allMatch(ban -> ban.getFinishedAt().isAfter(now));
-            
-            if (allExpired && !userBans.isEmpty()) {
-                user.setState(true);
-                userRepository.save(user);
-                log.info("유저 정지 자동 해제: userId={}, username={}", user.getUserId(), user.getUsername());
-            }
-        }
     }
 }

@@ -11,14 +11,19 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import web.mvc.santa_backend.admin.entity.Bans;
+import web.mvc.santa_backend.admin.repository.BansRepository;
 import web.mvc.santa_backend.common.security.CustomUserDetails;
 import web.mvc.santa_backend.common.security.JWTUtil;
 import web.mvc.santa_backend.user.entity.Users;
+import web.mvc.santa_backend.user.repository.UserRepository;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -26,10 +31,15 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
+    private final BansRepository bansRepository;
+    private final UserRepository userRepository;
 
-    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil) {
+    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil,
+                      BansRepository bansRepository, UserRepository userRepository) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
+        this.bansRepository = bansRepository;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -70,6 +80,21 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         //UserDetailsService
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        
+        // 로그인 시 정지 기간 체크 및 자동 해제
+        Users user = customUserDetails.getUser();
+        checkAndReleaseBan(user);
+        
+        // 정지 상태면 로그인 차단
+        if (!user.isState()) {
+            response.setContentType("text/html;charset=UTF-8");
+            response.setStatus(403);
+            Map<String, Object> errorMap = new HashMap<>();
+            errorMap.put("errMsg", "정지된 계정입니다. 관리자에게 문의하세요.");
+            Gson gson = new Gson();
+            response.getWriter().print(gson.toJson(errorMap));
+            return;
+        }
 
         /*
         하나의 유저가 여러개의 권한을 가질수 있어서 collection으로 반환
@@ -94,7 +119,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.addHeader("Authorization", "Bearer " + token);
 
         Map<String, Object> map = new HashMap<>();
-        Users user = customUserDetails.getUser();
         map.put("userId", user.getUserId());
         map.put("username", user.getUsername());
         map.put("role", user.getRole().toString());
@@ -127,5 +151,25 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         Gson gson= new Gson();
         String arr = gson.toJson(map);
         response.getWriter().print(arr);
+    }
+    
+    /**
+     * 정지 기간 확인 후 자동 해제
+     */
+    private void checkAndReleaseBan(Users user) {
+        if (!user.isState()) { // 정지 상태인 경우만 체크
+            LocalDateTime now = LocalDateTime.now();
+            List<Bans> userBans = bansRepository.findByUser_UserId(user.getUserId());
+            
+            // 모든 정지가 만료되었는지 확인
+            boolean allExpired = userBans.stream()
+                    .allMatch(ban -> ban.getFinishedAt().isBefore(now));
+            
+            if (allExpired && !userBans.isEmpty()) {
+                user.setState(true);
+                userRepository.save(user);
+                log.info("로그인 시 유저 정지 자동 해제: userId={}, username={}", user.getUserId(), user.getUsername());
+            }
+        }
     }
 }

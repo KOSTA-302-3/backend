@@ -13,7 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import web.mvc.santa_backend.admin.repository.AdminRepository;
+import web.mvc.santa_backend.admin.repository.BansRepository;
 import web.mvc.santa_backend.common.filter.JWTFilter;
 import web.mvc.santa_backend.common.filter.LoginFilter;
 import web.mvc.santa_backend.common.security.JWTUtil;
@@ -29,7 +29,7 @@ public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
 
     private final JWTUtil jwtUtil;
-    private final AdminRepository adminRepository;
+    private final BansRepository bansRepository;
     private final UserRepository userRepository;
 
     @Bean
@@ -78,7 +78,9 @@ public class SecurityConfig {
                         .requestMatchers("/test").authenticated()
                         // POST 요청 인증 필요
                         //.requestMatchers(HttpMethod.POST, "/posts").authenticated()
-                        .requestMatchers("/api/admin").hasRole("ADMIN")
+                        
+                        .requestMatchers("/api/admin/**").permitAll()  // 테스트용 임시 허용
+                        //.requestMatchers("/api/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());
 
         // 필터 추가(교체)
@@ -91,7 +93,7 @@ public class SecurityConfig {
                 new LoginFilter(
                         this.authenticationManager(authenticationConfiguration),
                         jwtUtil,
-                        adminRepository,
+                        bansRepository,
                         userRepository),
                 UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
