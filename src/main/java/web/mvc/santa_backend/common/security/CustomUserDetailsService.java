@@ -29,6 +29,6 @@ public class CustomUserDetailsService implements UserDetailsService {
             return new CustomUserDetails(user);
         }
 
-        return null;
+        throw new UsernameNotFoundException("해당유저를 찾을수 없습니다.");
     }
 }

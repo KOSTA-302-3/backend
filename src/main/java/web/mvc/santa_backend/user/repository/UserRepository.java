@@ -32,6 +32,7 @@ public interface UserRepository extends JpaRepository<Users, Long> {
     @Query("select u from Users u left join fetch u.custom c where u.userId = :id")
     Optional<Users> findWithCustomById(Long id);
 
+
     /* 팔로우 관련 cnt 증감 */
     @Modifying
     @Query("update Users u set u.followingCount = u.followingCount + 1 where u.userId = :userId")
