@@ -76,8 +76,7 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/swagger-resources/**",
-                                "/webjars/**",
-                                "/login"
+                                "/webjars/**"
                         ).permitAll()
                         // GET 요청 누구나 접근 가능
                         //.requestMatchers(HttpMethod.GET, "/api/user/**").permitAll()
