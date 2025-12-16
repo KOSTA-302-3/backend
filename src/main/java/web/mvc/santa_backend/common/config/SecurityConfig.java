@@ -60,15 +60,13 @@ public class SecurityConfig {
 
 
         // 모두 허용 (임시)
-        //http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
-
+        http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
 
         // 경로별 인가 작업 (필요한 거 추가!)
+        /*
         http.authorizeHttpRequests((auth) ->
                 auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        .requestMatchers("/index", "/api/user", "/api/user/**").permitAll()
+                        .requestMatchers("/index", "/api/user", "/api/user/**", "/ws/**").permitAll()
                         // swagger 설정
                         .requestMatchers(
                                 "/v3/api-docs",
@@ -87,6 +85,7 @@ public class SecurityConfig {
                         //.requestMatchers(HttpMethod.POST, "/posts").authenticated()
                         .requestMatchers("/api/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());
+         */
 
 
         // 필터 추가(교체)
