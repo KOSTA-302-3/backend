@@ -9,13 +9,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import web.mvc.santa_backend.chat.dto.ChatroomDTO;
 import web.mvc.santa_backend.chat.dto.ChatroomMemberDTO;
+import web.mvc.santa_backend.chat.dto.ChatroomRequestDTO;
 import web.mvc.santa_backend.chat.entity.ChatroomMembers;
 import web.mvc.santa_backend.chat.entity.Chatrooms;
 import web.mvc.santa_backend.chat.repository.ChatroomMemberRepository;
 import web.mvc.santa_backend.chat.repository.ChatroomRepository;
+import web.mvc.santa_backend.common.enumtype.UserRole;
+import web.mvc.santa_backend.common.exception.ChatMemberNotFoundException;
+import web.mvc.santa_backend.common.exception.ChatroomNotFoundException;
+import web.mvc.santa_backend.common.exception.ErrorCode;
+import web.mvc.santa_backend.common.exception.ForbiddenException;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -26,9 +31,10 @@ public class ChatroomServiceImpl implements ChatroomService {
     private final ChatroomMemberRepository chatroomMemberRepository;
 
     @Override
-    public void createChatroom(ChatroomDTO chatroomDTO) {
-        Chatrooms chatrooms = toEntity(chatroomDTO);
-        chatroomRepository.save(chatrooms);
+    public Long createChatroom(ChatroomRequestDTO chatroomRequestDTO) {
+        Chatrooms chatrooms = toEntity(chatroomRequestDTO);
+        Chatrooms save = chatroomRepository.save(chatrooms);
+        return save.getChatroomId();
     }
 
     @Override
@@ -42,19 +48,29 @@ public class ChatroomServiceImpl implements ChatroomService {
         }else if(userId==null && word!=null){
             chatrooms = chatroomRepository.findByWord(word, pageable);
         }else if(userId!=null && word==null){
-            chatrooms = chatroomMemberRepository.findByUserId(userId, pageable);
+            chatrooms = chatroomMemberRepository.findByUserId(userId, false, pageable);
         }else if(userId!=null && word!=null){
-            chatrooms = chatroomMemberRepository.findByUserIdAndWord(userId, word, pageable);
+            chatrooms = chatroomMemberRepository.findByUserIdAndWord(userId, word, false, pageable);
         }
 
-        Page<ChatroomDTO> chatroomDTOS = chatrooms.map(n -> toDTO(n));
+        Page<ChatroomDTO> chatroomDTOS = chatrooms.map((n) -> {
+            long count = chatroomMemberRepository.countByChatroom_ChatroomIdAndIsBanned(n.getChatroomId(), false);
+            ChatroomDTO chatroomDTO = toDTO(n, count);
+            return chatroomDTO;
+        });
 
         return chatroomDTOS;
     }
 
     @Override
-    public void updateChatroom(ChatroomDTO chatroomDTO) {
-        Chatrooms chatroom = chatroomRepository.findById(chatroomDTO.getChatroomId()).orElseThrow(() -> new RuntimeException());
+    public void updateChatroom(ChatroomDTO chatroomDTO, Long userId) {
+        ChatroomMembers chatroomMember = chatroomMemberRepository.findByChatroom_ChatroomIdAndUser_UserId(chatroomDTO.getChatroomId(), userId)
+                .orElseThrow(() -> new ChatMemberNotFoundException(ErrorCode.CHATMEMBER_NOT_FOUND));
+        if(!chatroomMember.getRole().equals(UserRole.ADMIN)){
+            throw new ForbiddenException(ErrorCode.NOT_CHATROOM_ADMIN);
+        }
+
+        Chatrooms chatroom = chatroomRepository.findById(chatroomDTO.getChatroomId()).orElseThrow(() -> new ChatroomNotFoundException(ErrorCode.CHATROOM_NOT_FOUND));
         if(chatroomDTO.getName()!=null){
             chatroom.setName(chatroomDTO.getName());
         }
@@ -74,25 +90,21 @@ public class ChatroomServiceImpl implements ChatroomService {
 
     @Override
     public void deleteChatroom(Long id) {
-        Chatrooms chatroom = chatroomRepository.findById(id).orElseThrow(() -> new RuntimeException());
+        Chatrooms chatroom = chatroomRepository.findById(id).orElseThrow(() -> new ChatroomNotFoundException(ErrorCode.CHATROOM_NOT_FOUND));
         chatroom.setDeleted(true);
     }
 
-    private Chatrooms toEntity(ChatroomDTO chatroomDTO) {
+    private Chatrooms toEntity(ChatroomRequestDTO chatroomRequestDTO) {
         return Chatrooms.builder()
-                .name(chatroomDTO.getName())
-                .isPrivate(chatroomDTO.getIsPrivate() != null ? chatroomDTO.getIsPrivate() : false)
-                .password(chatroomDTO.getPassword())
-                .imageUrl(chatroomDTO.getImageUrl() != null ?  chatroomDTO.getImageUrl() : "")
-                .description(chatroomDTO.getDescription())
+                .name(chatroomRequestDTO.getName())
+                .isPrivate(chatroomRequestDTO.getIsPrivate() != null ? chatroomRequestDTO.getIsPrivate() : false)
+                .password(chatroomRequestDTO.getPassword())
+                .imageUrl(chatroomRequestDTO.getImageUrl() != null ?  chatroomRequestDTO.getImageUrl() : "")
+                .description(chatroomRequestDTO.getDescription())
                 .build();
     }
 
-    private ChatroomDTO toDTO(Chatrooms chatrooms) {
-        List<ChatroomMemberDTO> chatroomMemberDTOS =
-                chatrooms.getChatroomMembers().stream()
-                        .map(c -> toDTO(c))   // 변환
-                        .toList();
+    private ChatroomDTO toDTO(Chatrooms chatrooms, long count) {
         return ChatroomDTO.builder()
                 .chatroomId(chatrooms.getChatroomId())
                 .name(chatrooms.getName())
@@ -102,20 +114,7 @@ public class ChatroomServiceImpl implements ChatroomService {
                 .isDeleted(chatrooms.isDeleted())
                 .imageUrl(chatrooms.getImageUrl())
                 .description(chatrooms.getDescription())
-                .chatroomMembers(chatroomMemberDTOS)
-                .build();
-    }
-
-    private ChatroomMemberDTO toDTO(ChatroomMembers chatroomMembers) {
-        return ChatroomMemberDTO.builder()
-                .chatroomMemberId(chatroomMembers.getChatroomMemeberId())
-                .userId(chatroomMembers.getUser().getUserId())
-                .chatroomId(chatroomMembers.getChatroom().getChatroomId())
-                .startRead(chatroomMembers.getStartRead() != null ? chatroomMembers.getStartRead() : 0)
-                .lastRead(chatroomMembers.getLastRead() != null ? chatroomMembers.getLastRead() : 0)
-                .noteOff(chatroomMembers.isNoteOff())
-                .role(chatroomMembers.getRole())
-                .isBanned(chatroomMembers.isBanned())
+                .countMember(count)
                 .build();
     }
 }

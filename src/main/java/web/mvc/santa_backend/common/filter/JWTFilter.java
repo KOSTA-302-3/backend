@@ -2,6 +2,7 @@ package web.mvc.santa_backend.common.filter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,28 +26,57 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         // request에서 Authorization 헤더 찾기
-        String authorization= request.getHeader("Authorization");
+//        String authorization= request.getHeader("Authorization");
+//
+//        // Authorization 헤더 검증
+//        if (authorization == null || !authorization.startsWith("Bearer ")) {
+//
+//            System.out.println("token null");
+//            filterChain.doFilter(request, response);
+//
+//            // 조건이 해당되면 메소드 종료 (필수)
+//            return;
+//        }
+//
+//        System.out.println("authorization now");
+//        // Bearer 부분 제거 후 순수 토큰만 획득
+//        String token = authorization.split(" ")[1];
+//
+//        // 토큰 소멸 시간 검증
+//        if (jwtUtil.isExpired(token)) {
+//            System.out.println("token expired");
+//            filterChain.doFilter(request, response);
+//
+//            // 조건이 해당되면 메소드 종료 (필수)
+//            return;
+//        }
 
-        // Authorization 헤더 검증
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
+        String token = null;
+        // 2. 쿠키 바구니에서 "Authorization" 찾기
+        Cookie[] cookies = request.getCookies();
 
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                // 쿠키 이름이 "Authorization"인 것을 찾음
+                if ("Authorization".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+
+        if (token == null) {
             System.out.println("token null");
             filterChain.doFilter(request, response);
-
-            // 조건이 해당되면 메소드 종료 (필수)
             return;
         }
 
         System.out.println("authorization now");
-        // Bearer 부분 제거 후 순수 토큰만 획득
-        String token = authorization.split(" ")[1];
 
-        // 토큰 소멸 시간 검증
         if (jwtUtil.isExpired(token)) {
             System.out.println("token expired");
             filterChain.doFilter(request, response);
-
-            // 조건이 해당되면 메소드 종료 (필수)
             return;
         }
 

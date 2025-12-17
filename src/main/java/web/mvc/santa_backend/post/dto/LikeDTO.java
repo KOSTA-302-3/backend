@@ -10,5 +10,4 @@ import lombok.NoArgsConstructor;
 public class LikeDTO {
     private Long targetId;
     private Long userId;
-
 }

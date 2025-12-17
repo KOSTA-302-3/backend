@@ -32,7 +32,7 @@ public class RepliesController {
         Page<RepliesDTO> replies= repliesService.findReplies(id,pageNo);
 
         System.out.println(System.currentTimeMillis()-st);
-        return ResponseEntity.status(HttpStatus.CREATED).body(replies);
+        return ResponseEntity.status(HttpStatus.OK).body(replies);
 
     }
     //댓글쓰기
@@ -50,7 +50,7 @@ public class RepliesController {
     @Operation(summary = "댓글 수정")
     ResponseEntity<String> updateReplies(@RequestBody RepliesDTO repliesDTO){
         repliesService.updateReplies(repliesDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Update Success");
+        return ResponseEntity.status(HttpStatus.OK).body("Update Success");
 
     }
 
@@ -59,26 +59,16 @@ public class RepliesController {
     @Operation(summary = "댓글 삭제")
     ResponseEntity<String> deleteReplies(@RequestBody RepliesDTO repliesDTO){
         repliesService.deleteReplies(repliesDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Delete Success");
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Delete Success");
     }
 
     @PostMapping("/like")
-    @Operation(summary = "필터링 킨 전체 게시물 보기")
+    @Operation(summary = "댓글 좋아요")
     ResponseEntity<String> likeReplies(@RequestBody LikeDTO likeDTO){
-
-
-
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(
+        return ResponseEntity.status(HttpStatus.OK).body(
                 likeService.likeReplies(likeDTO.getTargetId(),likeDTO.getUserId())
         );
     }
-
-
-
-
-
-
 
 }
 

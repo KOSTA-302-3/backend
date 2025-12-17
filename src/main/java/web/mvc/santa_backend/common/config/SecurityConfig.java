@@ -14,10 +14,16 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import web.mvc.santa_backend.admin.repository.BansRepository;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import web.mvc.santa_backend.common.filter.JWTFilter;
 import web.mvc.santa_backend.common.filter.LoginFilter;
 import web.mvc.santa_backend.common.security.JWTUtil;
 import web.mvc.santa_backend.user.repository.UserRepository;
+
+import java.util.Collections;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -53,15 +59,18 @@ public class SecurityConfig {
         // disable 설정하면 security의 UsernamePasswordAuthenticationFilter 비활성화
         http.formLogin((auth) -> auth.disable());
 
+        http.cors(cors->cors.configurationSource(corsConfigurationSource()));
+
+
 
         // 모두 허용 (임시)
-        //http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
-
+        http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
 
         // 경로별 인가 작업 (필요한 거 추가!)
+        /*
         http.authorizeHttpRequests((auth) ->
                 auth
-                        .requestMatchers("/index", "/api/user", "/api/user/**").permitAll()
+                        .requestMatchers("/index", "/api/user", "/api/user/**", "/ws/**").permitAll()
                         // swagger 설정
                         .requestMatchers(
                                 "/v3/api-docs",
@@ -82,6 +91,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").permitAll()  // 테스트용 임시 허용
                         //.requestMatchers("/api/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());
+         */
+
 
         // 필터 추가(교체)
         // UsernamePasswordAuthenticationFilter 는 form login(security의 기본 로그인)을 진행하는 필터
@@ -100,4 +111,24 @@ public class SecurityConfig {
 
         return http.build();
     }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+
+        configuration.setAllowedMethods(Collections.singletonList("*"));
+
+        configuration.setAllowedHeaders(Collections.singletonList("*"));
+
+        configuration.setAllowCredentials(true);
+
+        configuration.setExposedHeaders(List.of("Authorization"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
 }

@@ -21,7 +21,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "ChatroomMemberController API", description = "채팅방 멤버 관리용 테스트 컨트롤러")
+@Tag(name = "ChatroomMemberController API", description = "채팅방 멤버 관리용 컨트롤러")
 public class ChatroomMemberController {
     private final ChatroomMemberService chatroomMemberService;
 
@@ -50,6 +50,7 @@ public class ChatroomMemberController {
 
     @DeleteMapping("/api/chatmember/{chatroomId}")
     public ResponseEntity<?> deleteChatroomMember(@PathVariable Long chatroomId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        //TODO 현재는 채팅방 나가기. 정도의 메서드. 관리자가 차단을 해제하거나 할 때 써야할 메서드를 따로 놓을건지 아니면 이 메서드로 다 쓸건지..
         Long userId = customUserDetails.getUser().getUserId();
         chatroomMemberService.deleteChatroomMember(userId, chatroomId);
         return ResponseEntity.status(HttpStatus.OK).build();
