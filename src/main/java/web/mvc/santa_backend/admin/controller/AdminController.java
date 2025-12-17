@@ -8,10 +8,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import web.mvc.santa_backend.admin.dto.AdminDTO;
+import web.mvc.santa_backend.admin.dto.BansDTO;
+import web.mvc.santa_backend.admin.dto.SuspendRequestDTO;
 import web.mvc.santa_backend.admin.service.AdminService;
 import web.mvc.santa_backend.user.dto.UserResponseDTO;
 import web.mvc.santa_backend.user.dto.UserSimpleDTO;
+import web.mvc.santa_backend.user.service.UserService;
 
 import java.util.List;
 
@@ -23,6 +25,7 @@ import java.util.List;
 public class AdminController {
 
     private final AdminService adminService;
+    private final UserService userService;
 
     /**
      * 전체 유저 목록 조회
@@ -42,7 +45,7 @@ public class AdminController {
     @GetMapping("/users/detail/{userId}")
     public ResponseEntity<?> getUserDetail(@PathVariable Long userId) {
         log.info("getUserDetail/ userId: {}", userId);
-        UserResponseDTO user = adminService.getUserDetail(userId);
+        UserResponseDTO user = userService.getUserById(userId);
         return ResponseEntity.status(HttpStatus.OK).body(user);
     }
 
@@ -53,11 +56,9 @@ public class AdminController {
     @PostMapping("/users/{userId}/suspend")
     public ResponseEntity<?> suspendUser(
             @PathVariable Long userId,
-            @RequestParam int days,
-            @RequestParam String category,
-            @RequestParam(required = false) String detail) {
-        log.info("suspendUser/ userId: {}, days: {}, category: {}", userId, days, category);
-        AdminDTO ban = adminService.suspendUser(userId, days, category, detail);
+            @RequestBody SuspendRequestDTO requestDTO) {
+        log.info("suspendUser/ userId: {}, days: {}, category: {}", userId, requestDTO.getDays(), requestDTO.getCategory());
+        BansDTO ban = adminService.suspendUser(userId, requestDTO.getDays(), requestDTO.getCategory(), requestDTO.getDetail());
         return ResponseEntity.status(HttpStatus.CREATED).body(ban);
     }
 
@@ -90,7 +91,7 @@ public class AdminController {
     @GetMapping("/users/{userId}/bans")
     public ResponseEntity<?> getUserBans(@PathVariable Long userId) {
         log.info("getUserBans/ userId: {}", userId);
-        List<AdminDTO> bans = adminService.getUserBans(userId);
+        List<BansDTO> bans = adminService.getUserBans(userId);
         return ResponseEntity.status(HttpStatus.OK).body(bans);
     }
 }

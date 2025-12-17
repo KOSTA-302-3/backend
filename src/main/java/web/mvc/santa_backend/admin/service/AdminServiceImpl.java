@@ -8,7 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import web.mvc.santa_backend.admin.dto.AdminDTO;
+import web.mvc.santa_backend.admin.dto.BansDTO;
 import web.mvc.santa_backend.admin.entity.Bans;
 import web.mvc.santa_backend.admin.repository.BansRepository;
 import web.mvc.santa_backend.user.dto.UserResponseDTO;
@@ -52,19 +52,10 @@ public class AdminServiceImpl implements AdminService {
     }
 
     /**
-     * 유저 상세 조회
-     */
-    @Override
-    public UserResponseDTO getUserDetail(Long userId) {
-        log.info("getUserDetail/ userId: {}", userId);
-        return userService.getUserById(userId);
-    }
-
-    /**
      * 유저 정지
      */
     @Override
-    public AdminDTO suspendUser(Long userId, int days, String category, String detail) {
+    public BansDTO suspendUser(Long userId, int days, String category, String detail) {
         log.info("suspendUser/ userId: {}, days: {}, category: {}", userId, days, category);
         
         Users user = userRepository.findById(userId)
@@ -89,11 +80,9 @@ public class AdminServiceImpl implements AdminService {
         
         Bans savedBan = bansRepository.save(ban);
         
-        // 유저 정지 처리
-        user.setState(false);
-        userRepository.save(user);
+        // 정지는 bans 테이블만 사용, state는 건드리지 않음 (탈퇴와 별개)
         
-        return AdminDTO.builder()
+        return BansDTO.builder()
                 .banId(savedBan.getBanId())
                 .userId(savedBan.getUser().getUserId())
                 .category(savedBan.getCategory())
@@ -104,15 +93,16 @@ public class AdminServiceImpl implements AdminService {
     }
 
     /**
-     * 유저 정지 해제
+     * 유저 정지 해제 (정지 내역 삭제)
      */
     @Override
     public void activateUser(Long userId) {
         log.info("activateUser/ userId: {}", userId);
-        Users user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
-        user.setState(true);
-        userRepository.save(user);
+        List<Bans> userBans = bansRepository.findByUser_UserId(userId);
+        if (!userBans.isEmpty()) {
+            bansRepository.deleteAll(userBans);
+            log.info("유저 정지 내역 삭제 완료: userId={}", userId);
+        }
     }
 
     /**
@@ -128,10 +118,10 @@ public class AdminServiceImpl implements AdminService {
      * 유저 정지 내역 조회
      */
     @Override
-    public List<AdminDTO> getUserBans(Long userId) {
+    public List<BansDTO> getUserBans(Long userId) {
         log.info("getUserBans/ userId: {}", userId);
         return bansRepository.findByUser_UserId(userId).stream()
-                .map(ban -> AdminDTO.builder()
+                .map(ban -> BansDTO.builder()
                         .banId(ban.getBanId())
                         .userId(ban.getUser().getUserId())
                         .category(ban.getCategory())

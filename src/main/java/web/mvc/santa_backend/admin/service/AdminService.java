@@ -1,7 +1,7 @@
 package web.mvc.santa_backend.admin.service;
 
 import org.springframework.data.domain.Page;
-import web.mvc.santa_backend.admin.dto.AdminDTO;
+import web.mvc.santa_backend.admin.dto.BansDTO;
 import web.mvc.santa_backend.user.dto.UserResponseDTO;
 import web.mvc.santa_backend.user.dto.UserSimpleDTO;
 
@@ -15,17 +15,12 @@ public interface AdminService {
     Page<UserSimpleDTO> getAllUsers(int page);
     
     /**
-     * 유저 상세 조회
-     */
-    UserResponseDTO getUserDetail(Long userId);
-    
-    /**
      * 유저 정지 (기간별)
      */
-    AdminDTO suspendUser(Long userId, int days, String category, String detail);
+    BansDTO suspendUser(Long userId, int days, String category, String detail);
     
     /**
-     * 유저 정지 해제 (state = true)
+     * 유저 정지 해제 (정지 내역 삭제)
      */
     void activateUser(Long userId);
     
@@ -37,5 +32,5 @@ public interface AdminService {
     /**
      * 유저 정지 내역 조회
      */
-    List<AdminDTO> getUserBans(Long userId);
+    List<BansDTO> getUserBans(Long userId);
 }

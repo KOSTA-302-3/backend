@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AdminDTO {
+public class BansDTO {
     private Long banId;
     private Long userId;
     private String category;

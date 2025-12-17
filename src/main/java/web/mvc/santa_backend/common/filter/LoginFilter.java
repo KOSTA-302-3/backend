@@ -5,6 +5,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -17,6 +19,7 @@ import web.mvc.santa_backend.common.security.CustomUserDetails;
 import web.mvc.santa_backend.common.security.JWTUtil;
 import web.mvc.santa_backend.user.entity.Users;
 import web.mvc.santa_backend.user.repository.UserRepository;
+import web.mvc.santa_backend.user.service.UserService;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -33,6 +36,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final JWTUtil jwtUtil;
     private final BansRepository bansRepository;
     private final UserRepository userRepository;
+    
+    @Autowired
+    @Lazy
+    private UserService userService;
 
     public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil,
                       BansRepository bansRepository, UserRepository userRepository) {
@@ -80,13 +87,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         //UserDetailsService
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
-        
-        // 로그인 시 정지 기간 체크 및 자동 해제
         Users user = customUserDetails.getUser();
-        checkAndReleaseBan(user);
         
         // 정지 상태면 로그인 차단
-        if (!user.isState()) {
+        if (isUserSuspended(user)) {
             response.setContentType("text/html;charset=UTF-8");
             response.setStatus(403);
             Map<String, Object> errorMap = new HashMap<>();
@@ -154,22 +158,12 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     }
     
     /**
-     * 정지 기간 확인 후 자동 해제
+     * 유저가 정지 상태인지 확인
      */
-    private void checkAndReleaseBan(Users user) {
-        if (!user.isState()) { // 정지 상태인 경우만 체크
-            LocalDateTime now = LocalDateTime.now();
-            List<Bans> userBans = bansRepository.findByUser_UserId(user.getUserId());
-            
-            // 모든 정지가 만료되었는지 확인
-            boolean allExpired = userBans.stream()
-                    .allMatch(ban -> ban.getFinishedAt().isBefore(now));
-            
-            if (allExpired && !userBans.isEmpty()) {
-                user.setState(true);
-                userRepository.save(user);
-                log.info("로그인 시 유저 정지 자동 해제: userId={}, username={}", user.getUserId(), user.getUsername());
-            }
-        }
+    private boolean isUserSuspended(Users user) {
+        // bans 테이블에서 유효한 정지 기록 확인 (finishedAt > now)
+        LocalDateTime now = LocalDateTime.now();
+        return bansRepository.findByUser_UserId(user.getUserId()).stream()
+                .anyMatch(ban -> ban.getFinishedAt().isAfter(now));
     }
 }
