@@ -55,13 +55,13 @@ public class AdminController {
     }
 
     /**
-     * 관리자용 유저 목록 조회 (Admin 전용 - 정지 상태 포함)
+     * 상태별 유저 목록 조회 (드롭다운 필터용)
      */
-    @Operation(summary = "관리자용 유저 목록 조회", description = "page 0부터 시작, 정지 상태 포함")
-    @GetMapping("/users/admin/{page}")
-    public ResponseEntity<?> getAdminUsers(@PathVariable int page) {
-        log.info("getAdminUsers/ page: {}", page);
-        Page<AdminUserDTO> users = adminService.getAdminUsers(page);
+    @Operation(summary = "상태별 유저 목록 조회", description = "status: ALL, ACTIVE, BANNED")
+    @GetMapping("/users/filter/{status}/{page}")
+    public ResponseEntity<?> getAdminUsersByStatus(@PathVariable String status, @PathVariable int page) {
+        log.info("getAdminUsersByStatus/ status: {}, page: {}", status, page);
+        Page<AdminUserDTO> users = adminService.getAdminUsersByStatus(page, status);
         return ResponseEntity.status(HttpStatus.OK).body(users);
     }
 

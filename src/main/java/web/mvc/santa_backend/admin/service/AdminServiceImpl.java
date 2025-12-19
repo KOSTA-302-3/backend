@@ -84,44 +84,95 @@ public class AdminServiceImpl implements AdminService {
     }
 
     /**
-     * 신고관리 유저 목록 조회 (정지 상태 포함)
+     * 상태별 유저 목록 조회 (드롭다운 필터용)
      */
     @Override
-    public Page<AdminUserDTO> getAdminUsers(int page) {
-        log.info("getAdminUsers/ page: {}", page);
+    public Page<AdminUserDTO> getAdminUsersByStatus(int page, String status) {
+        log.info("getAdminUsersByStatus/ page: {}, status: {}", page, status);
         Pageable pageable = PageRequest.of(page, 20);
-        Page<Users> usersPage = userRepository.findAll(pageable);
+        LocalDateTime now = LocalDateTime.now();
         
-        List<AdminUserDTO> userList = usersPage.getContent().stream()
-                .map(user -> {
-                    // 정지 상태 확인
-                    Optional<Bans> activeBan = bansRepository.findByUser_UserIdAndFinishedAtAfter(
-                            user.getUserId(), LocalDateTime.now());
-                    
-                    String status = "ACTIVE";
-                    String banReason = null;
-                    String banFinishedAt = null;
-                    
-                    if (activeBan.isPresent()) {
-                        status = "BANNED";
-                        banReason = activeBan.get().getCategory();
-                        banFinishedAt = activeBan.get().getFinishedAt()
-                                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
-                    }
-                    
-                    return AdminUserDTO.builder()
+        if ("BANNED".equals(status)) {
+            // 정지된 유저만 Bans 테이블에서 직접 조회
+            Page<Bans> bansPage = bansRepository.findByFinishedAtAfterOrderByCreatedAtDesc(now, pageable);
+            
+            List<AdminUserDTO> bannedUsers = bansPage.getContent().stream()
+                    .map(ban -> {
+                        Users user = ban.getUser();
+                        return AdminUserDTO.builder()
+                                .userId(user.getUserId())
+                                .username(user.getUsername())
+                                .email(user.getEmail())
+                                .profileImage(user.getProfileImage())
+                                .status("BANNED")
+                                .banReason(ban.getCategory())
+                                .banFinishedAt(ban.getFinishedAt()
+                                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
+                                .build();
+                    })
+                    .collect(Collectors.toList());
+            
+            return new PageImpl<>(bannedUsers, pageable, bansPage.getTotalElements());
+            
+        } else if ("ACTIVE".equals(status)) {
+            // ACTIVE - 활성 유저만 조회
+            Page<Users> usersPage = userRepository.findAll(pageable);
+            
+            List<AdminUserDTO> activeUsers = usersPage.getContent().stream()
+                    .filter(user -> {
+                        Optional<Bans> activeBan = bansRepository.findByUser_UserIdAndFinishedAtAfter(
+                                user.getUserId(), now);
+                        return activeBan.isEmpty();
+                    })
+                    .map(user -> AdminUserDTO.builder()
                             .userId(user.getUserId())
                             .username(user.getUsername())
                             .email(user.getEmail())
                             .profileImage(user.getProfileImage())
-                            .status(status)
-                            .banReason(banReason)
-                            .banFinishedAt(banFinishedAt)
-                            .build();
-                })
-                .collect(Collectors.toList());
-        
-        return new PageImpl<>(userList, pageable, usersPage.getTotalElements());
+                            .status("ACTIVE")
+                            .banReason(null)
+                            .banFinishedAt(null)
+                            .build())
+                    .collect(Collectors.toList());
+            
+            return new PageImpl<>(activeUsers, pageable, usersPage.getTotalElements());
+            
+        } else {
+            // ALL - 전체 유저
+            Page<Users> usersPage = userRepository.findAll(pageable);
+            
+            List<AdminUserDTO> allUsers = usersPage.getContent().stream()
+                    .map(user -> {
+                        Optional<Bans> activeBan = bansRepository.findByUser_UserIdAndFinishedAtAfter(
+                                user.getUserId(), now);
+                        
+                        if (activeBan.isPresent()) {
+                            return AdminUserDTO.builder()
+                                    .userId(user.getUserId())
+                                    .username(user.getUsername())
+                                    .email(user.getEmail())
+                                    .profileImage(user.getProfileImage())
+                                    .status("BANNED")
+                                    .banReason(activeBan.get().getCategory())
+                                    .banFinishedAt(activeBan.get().getFinishedAt()
+                                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
+                                    .build();
+                        } else {
+                            return AdminUserDTO.builder()
+                                    .userId(user.getUserId())
+                                    .username(user.getUsername())
+                                    .email(user.getEmail())
+                                    .profileImage(user.getProfileImage())
+                                    .status("ACTIVE")
+                                    .banReason(null)
+                                    .banFinishedAt(null)
+                                    .build();
+                        }
+                    })
+                    .collect(Collectors.toList());
+            
+            return new PageImpl<>(allUsers, pageable, usersPage.getTotalElements());
+        }
     }
 
     /**
@@ -166,15 +217,20 @@ public class AdminServiceImpl implements AdminService {
     }
 
     /**
-     * 유저 정지 해제 (정지 내역 삭제)
+     * 유저 정지 해제 (현재 정지만 삭제, 과거 기록 유지)
      */
     @Override
     public void activateUser(Long userId) {
         log.info("activateUser/ userId: {}", userId);
-        List<Bans> userBans = bansRepository.findByUser_UserId(userId);
-        if (!userBans.isEmpty()) {
-            bansRepository.deleteAll(userBans);
-            log.info("유저 정지 내역 삭제 완료: userId={}", userId);
+        
+        // 현재 정지 중인 것만 찾아서 삭제
+        Optional<Bans> activeBan = bansRepository.findByUser_UserIdAndFinishedAtAfter(userId, LocalDateTime.now());
+        
+        if (activeBan.isPresent()) {
+            bansRepository.deleteById(activeBan.get().getBanId());
+            log.info("유저 현재 정지 해제 완료: userId={}, banId={}", userId, activeBan.get().getBanId());
+        } else {
+            log.warn("해제할 정지 내역이 없습니다: userId={}", userId);
         }
     }
 

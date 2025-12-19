@@ -25,9 +25,10 @@ public interface AdminService {
     Page<UserSimpleDTO> getAllUsers(int page);
     
     /**
-     * 관리자용 유저 목록 조회 (페이징) - Admin 전용 (정지 상태 포함)
+     * 상태별 유저 목록 조회 (드롭다운 필터용)
+     * @param status "ALL", "ACTIVE", "BANNED"
      */
-    Page<AdminUserDTO> getAdminUsers(int page);
+    Page<AdminUserDTO> getAdminUsersByStatus(int page, String status);
     
     /**
      * 유저 정지 (기간별)
