@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import web.mvc.santa_backend.user.entity.Users;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,6 +21,10 @@ public interface UserRepository extends JpaRepository<Users, Long> {
     Boolean existsByUsername(String username);
 
     Boolean existsByEmail(String email);
+
+    // 통계용: 오늘 가입한 유저 수
+    @Query("SELECT COUNT(u) FROM Users u WHERE u.createdAt >= :startOfDay")
+    long countByCreatedAtAfter(LocalDateTime startOfDay);
 
     // 예전 거 삭제예정
     Page<Users> findByUsernameContainingIgnoreCase(String username, Pageable pageable);

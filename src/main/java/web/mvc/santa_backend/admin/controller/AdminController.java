@@ -8,9 +8,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import web.mvc.santa_backend.admin.dto.AdminReportDTO;
+import web.mvc.santa_backend.admin.dto.AdminUserDTO;
 import web.mvc.santa_backend.admin.dto.BansDTO;
+import web.mvc.santa_backend.admin.dto.DashboardStatsDTO;
 import web.mvc.santa_backend.admin.dto.SuspendRequestDTO;
 import web.mvc.santa_backend.admin.service.AdminService;
+import web.mvc.santa_backend.common.enumtype.ReportType;
+import web.mvc.santa_backend.user.dto.ReportResponseDTO;
 import web.mvc.santa_backend.user.dto.UserResponseDTO;
 import web.mvc.santa_backend.user.dto.UserSimpleDTO;
 import web.mvc.santa_backend.user.service.UserService;
@@ -28,13 +33,35 @@ public class AdminController {
     private final UserService userService;
 
     /**
-     * 전체 유저 목록 조회
+     * 대시보드 통계 조회
+     */
+    @Operation(summary = "대시보드 통계 조회", description = "총 가입자 수, 오늘 가입자 수, 오늘 게시글 수")
+    @GetMapping("/dashboard/stats")
+    public ResponseEntity<?> getDashboardStats() {
+        log.info("getDashboardStats");
+        DashboardStatsDTO stats = adminService.getDashboardStats();
+        return ResponseEntity.status(HttpStatus.OK).body(stats);
+    }
+
+    /**
+     * 전체 유저 목록 조회 (기존 로직 - UserSimpleDTO)
      */
     @Operation(summary = "전체 유저 목록 조회", description = "page 0부터 시작")
     @GetMapping("/users/{page}")
     public ResponseEntity<?> getAllUsers(@PathVariable int page) {
         log.info("getAllUsers/ page: {}", page);
         Page<UserSimpleDTO> users = adminService.getAllUsers(page);
+        return ResponseEntity.status(HttpStatus.OK).body(users);
+    }
+
+    /**
+     * 관리자용 유저 목록 조회 (Admin 전용 - 정지 상태 포함)
+     */
+    @Operation(summary = "관리자용 유저 목록 조회", description = "page 0부터 시작, 정지 상태 포함")
+    @GetMapping("/users/admin/{page}")
+    public ResponseEntity<?> getAdminUsers(@PathVariable int page) {
+        log.info("getAdminUsers/ page: {}", page);
+        Page<AdminUserDTO> users = adminService.getAdminUsers(page);
         return ResponseEntity.status(HttpStatus.OK).body(users);
     }
 
@@ -93,5 +120,47 @@ public class AdminController {
         log.info("getUserBans/ userId: {}", userId);
         List<BansDTO> bans = adminService.getUserBans(userId);
         return ResponseEntity.status(HttpStatus.OK).body(bans);
+    }
+
+    /**
+     * 관리자용 신고 목록 조회 (페이징) - 정지 이력 포함
+     */
+    @Operation(summary = "관리자용 신고 목록 조회", description = "page 0부터 시작, type: USER, POST, REPLY, 정지 이력 포함")
+    @GetMapping("/reports/{type}/{page}")
+    public ResponseEntity<?> getAdminReports(@PathVariable ReportType type, @PathVariable int page) {
+        log.info("getAdminReports/ type: {}, page: {}", type, page);
+        try {
+            Page<AdminReportDTO> reports = adminService.getAdminReports(type, page);
+            log.info("관리자용 신고 목록 조회 성공: {} 건", reports.getTotalElements());
+            return ResponseEntity.status(HttpStatus.OK).body(reports);
+        } catch (Exception e) {
+            log.error("관리자용 신고 목록 조회 실패: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("신고 목록 조회 실패: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 신고 승인 (유저 정지 + 신고 삭제)
+     */
+    @Operation(summary = "신고 승인 (자동 정지)", description = "days: 7(7일), 30(30일), 365(1년), -1(영구)")
+    @PostMapping("/reports/{reportId}/approve")
+    public ResponseEntity<?> approveReport(
+            @PathVariable Long reportId,
+            @RequestParam(defaultValue = "7") int days) {
+        log.info("approveReport/ reportId: {}, days: {}", reportId, days);
+        adminService.approveReport(reportId, days);
+        return ResponseEntity.status(HttpStatus.OK).body("신고가 승인되고 유저가 정지되었습니다.");
+    }
+
+    /**
+     * 신고 거절 (신고만 삭제)
+     */
+    @Operation(summary = "신고 거절 (신고만 삭제)")
+    @DeleteMapping("/reports/{reportId}")
+    public ResponseEntity<?> deleteReport(@PathVariable Long reportId) {
+        log.info("deleteReport/ reportId: {}", reportId);
+        adminService.deleteReport(reportId);
+        return ResponseEntity.status(HttpStatus.OK).body("신고가 거절되었습니다.");
     }
 }
