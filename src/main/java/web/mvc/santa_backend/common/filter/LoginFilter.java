@@ -100,6 +100,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         map.put("username", user.getUsername());
         map.put("role", user.getRole().toString());
 
+        System.out.println("유저 id"+user.getUserId());
+
         Gson gson= new Gson();
         String arr = gson.toJson(map);
 
@@ -109,8 +111,12 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         cookie.setPath("/");
         cookie.setMaxAge(60 * 30);
 
+
+
+
         // 응답에 쿠키 태워 보내기
         response.addCookie(cookie);
+
 
         response.getWriter().print(arr);
     }

@@ -5,7 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import web.mvc.santa_backend.common.security.CustomUserDetails;
 import web.mvc.santa_backend.post.dto.LikeDTO;
 import web.mvc.santa_backend.post.dto.RepliesDTO;
 import web.mvc.santa_backend.post.service.LikeServiceImpl;
@@ -25,10 +27,14 @@ public class RepliesController {
     @ResponseBody
     @GetMapping("/getReplies")
     @Operation(summary = "게시물 댓글보기")
-    ResponseEntity<Page<RepliesDTO>> getReplies(@RequestParam Long id, @RequestParam int pageNo){
+    ResponseEntity<Page<RepliesDTO>> getReplies(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @RequestParam Long id, @RequestParam int pageNo){
 
         long st = System.currentTimeMillis();
-
+        if (customUserDetails.getAuthorities() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
         Page<RepliesDTO> replies= repliesService.findReplies(id,pageNo);
 
         System.out.println(System.currentTimeMillis()-st);
