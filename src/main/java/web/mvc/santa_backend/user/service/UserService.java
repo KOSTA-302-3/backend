@@ -36,6 +36,7 @@ public interface UserService {
      * userId로 개인 유저 조회
      */
     UserResponseDTO getUserById(Long id);
+    UserResponseDTO getUserById(Long id, boolean isMe);
 
 
     /**

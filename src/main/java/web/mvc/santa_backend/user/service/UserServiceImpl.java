@@ -93,10 +93,20 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     @Override
     public UserResponseDTO getUserById(Long id) {
+        return getUserById(id, false);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public UserResponseDTO getUserById(Long id, boolean isMe) {
         Users user = userRepository.findWithCustomById(id)
                 .orElseThrow(()->new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
         UserResponseDTO userResponseDTO = modelMapper.map(user, UserResponseDTO.class);
+        if (isMe) {
+            userResponseDTO.setMe(true);
+            log.info("isMe: {}", userResponseDTO.isMe());
+        }
 
         return userResponseDTO;
     }

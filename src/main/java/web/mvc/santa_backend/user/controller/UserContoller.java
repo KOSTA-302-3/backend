@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import web.mvc.santa_backend.common.enumtype.BlockType;
 import web.mvc.santa_backend.common.enumtype.CustomItemType;
 import web.mvc.santa_backend.common.enumtype.ReportType;
+import web.mvc.santa_backend.common.exception.ErrorCode;
+import web.mvc.santa_backend.common.exception.UnauthorizedException;
 import web.mvc.santa_backend.common.security.CustomUserDetails;
 import web.mvc.santa_backend.user.dto.CustomDTO;
 import web.mvc.santa_backend.user.dto.UserResponseDTO;
@@ -76,9 +78,29 @@ public class UserContoller {
     @Operation(summary = "userId로 개인 유저 조회",
             description = "현재 로그인 된 유저 외에도 다른 유저들을 조회하는 거라서 id 받아오기")
     @GetMapping("/{id}")
-    public ResponseEntity<?> getUserById(@PathVariable Long id) {
-        log.info("getUserById/ id: {}", id);
-        UserResponseDTO user = userService.getUserById(id);
+    public ResponseEntity<?> getUserById(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        UserResponseDTO user = null;
+
+        if (customUserDetails == null) {
+            user = userService.getUserById(id, false);
+        } else if (customUserDetails.getUser().getUserId().equals(id)) {
+            user = userService.getUserById(id, true);
+        } else {
+            user = userService.getUserById(id, false);
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(user);
+    }
+
+    @Operation(summary = "로그인 된 유저 조회 (유저 페이지)",
+            description = "현재 로그인 된 유저 조회")
+    @GetMapping("/me")
+    public ResponseEntity<?> getLoginUser(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        if (customUserDetails == null) throw new UnauthorizedException(ErrorCode.LOGIN_REQUIRED);
+
+        Long loginUserId = customUserDetails.getUser().getUserId();
+        log.info("getLoginUser/ loginId: {}", loginUserId);
+        UserResponseDTO user = userService.getUserById(loginUserId, true);
 
         return ResponseEntity.status(HttpStatus.OK).body(user);
     }
