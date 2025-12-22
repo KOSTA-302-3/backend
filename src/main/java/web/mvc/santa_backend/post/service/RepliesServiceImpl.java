@@ -1,16 +1,17 @@
 package web.mvc.santa_backend.post.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import web.mvc.santa_backend.post.dto.RepliesDTO;
+import web.mvc.santa_backend.post.dto.RepliesReponseDTO;
 import web.mvc.santa_backend.post.entity.Replies;
 import web.mvc.santa_backend.post.repository.PostResository;
 import web.mvc.santa_backend.post.repository.RepliesRepository;
+import web.mvc.santa_backend.user.repository.UserRepository;
 
 @Service
 public class RepliesServiceImpl implements RepliesService {
@@ -19,20 +20,23 @@ public class RepliesServiceImpl implements RepliesService {
     private RepliesRepository repliesRepository;
     @Autowired
     private PostResository postRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     @Transactional
 //    @Cacheable(value = "replies", key = "#id")
-    public Page<RepliesDTO> findReplies(Long id, int pageNo) {
+    public Page<RepliesReponseDTO> findReplies(Long id, int pageNo) {
 
         Pageable pageable = PageRequest.of(pageNo - 1, 5);
         System.out.println("접근");
         Page<Replies> page = repliesRepository.findAllByPostsPostId(id, pageable);
-        Page<RepliesDTO> pageDTO = page.map(replies -> new RepliesDTO(
+        Page<RepliesReponseDTO> pageDTO = page.map(replies -> new RepliesReponseDTO(
                 replies.getReplyId(),
-                replies.getUserId(),
+                userRepository.findById(replies.getUserId()).get().getUsername(),
                 replies.getPosts().getPostId(),
                 replies.getReplyContent(),
-                replies.getReplyLike()
+                replies.getReplyLike(),
+                userRepository.findById(replies.getUserId()).get().getProfileImage()
         ));
 
 
@@ -52,9 +56,9 @@ public class RepliesServiceImpl implements RepliesService {
     ;
 
     @Transactional
-    public void createReplies(RepliesDTO repliesDTO) {
+    public RepliesDTO createReplies(RepliesDTO repliesDTO) {
         System.out.println(repliesDTO.toString());
-        repliesRepository.save(
+      Replies replies =  repliesRepository.save(
                 Replies.builder().
                         userId(repliesDTO.getUserId()).
                         posts(postRepository.findById(repliesDTO.getPostId()).get()).
@@ -62,6 +66,15 @@ public class RepliesServiceImpl implements RepliesService {
                         replyLike(0L).
                         build()
         );
+      RepliesDTO responseReplies  = new RepliesDTO(
+                replies.getReplyId(),
+              replies.getUserId(),
+              replies.getPosts().getPostId(),
+              replies.getReplyContent(),
+              replies.getReplyLike()
+
+      );
+    return responseReplies;
     }
 
 

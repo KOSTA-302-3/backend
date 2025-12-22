@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import web.mvc.santa_backend.common.S3.S3Uploader;
 import web.mvc.santa_backend.post.dto.PostDTO;
+import web.mvc.santa_backend.post.dto.PostResponseDTO;
 import web.mvc.santa_backend.post.entity.HashTags;
 import web.mvc.santa_backend.post.entity.ImageSources;
 import web.mvc.santa_backend.post.entity.Posts;
@@ -39,12 +40,14 @@ public class PostServiceImpl implements PostService {
     private UserRepository userRepository;
 
 
+
     @Transactional
     public Page<PostDTO> getAllPostsWithOffFilter(int pageNo) {
 
 
         Pageable pageable = PageRequest.of(pageNo - 1, 5);
-        Page<Posts> page = postRepository.findAllAndContentVisibleTrue(pageable);
+//        Page<Posts> page = postRepository.findAllAndContentVisibleTrue(pageable);
+        Page<Posts> page = postRepository.findAll(pageable);
         Page<PostDTO> dtoPage = page.map(posts ->
                 new PostDTO(
                         posts.getPostId(),
@@ -75,13 +78,14 @@ public class PostServiceImpl implements PostService {
     }
 
     @Transactional
-    public Page<PostDTO> getAllPostsWithOnFilter(Long level, int pageNo) {
+    public Page<PostResponseDTO> getAllPostsWithOnFilter(Long level, int pageNo) {
 
         Pageable pageable = PageRequest.of(pageNo - 1, 5);
-        Page<Posts> page = postRepository.findAllByPostLevelBetweenAndContentVisibleTrue(1L, level, pageable);
+        Page<Posts> page = postRepository.findAllByPostLevelBetweenAndContentVisibleTrue(0L, level, pageable);
 
-        Page<PostDTO> pageDTO = page.map(posts -> new PostDTO(
+        Page<PostResponseDTO> pageDTO = page.map(posts -> new PostResponseDTO(
                 posts.getPostId(),
+                userRepository.findById(posts.getCreateUserId()).get().getProfileImage(),
                 userRepository.findById(posts.getCreateUserId()).get().getUsername(),
                 posts.getCreateAt(),
                 posts.getContent(),
@@ -116,12 +120,13 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Page<PostDTO> getFollowPostsWithOnFilter(Long userId, Long postLevel, int pageNo) {
+    public Page<PostResponseDTO> getFollowPostsWithOnFilter(Long userId, Long postLevel, int pageNo) {
         Pageable pageable = PageRequest.of(pageNo - 1, 5);
         Page<Posts> page = postRepository.findAllByPostIdAndFollowOnFilter(userId, postLevel, pageable);
         //map(new::postDTO로 하려했으나 참조테이블 특정 컬럼 조회해야해서 이게 최선인거같다..
-        Page<PostDTO> pageDTO = page.map(posts -> new PostDTO(
+        Page<PostResponseDTO> pageDTO = page.map(posts -> new PostResponseDTO(
                 posts.getPostId(),
+                userRepository.findById(posts.getCreateUserId()).get().getProfileImage(),
                 userRepository.findById(posts.getCreateUserId()).get().getUsername(),
                 posts.getCreateAt(),
                 posts.getContent(),
@@ -162,16 +167,36 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public void createPosts(PostDTO posts) {
 
-
-        postRepository.save(Posts.builder().
-                createUserId(posts.getPostId()).
+        Posts savedPost = postRepository.save(Posts.builder().
+                createUserId(userRepository.findByUsername(posts.getCreateUserName()).getUserId()).
                 createAt(posts.getCreateAt()).
                 likeCount(0L).
                 content(posts.getContent()).
-                postLevel(posts.getPostLevel()).
+                postLevel(0L).
                 contentVisible(true).
                 build()
         );
+
+
+        for(String image : posts.getImageSourcesList()){
+            imageSourcesRepository.save(ImageSources.builder()
+                            .posts(
+                                    savedPost
+                            )
+                            .source(image)
+                    .build());
+        }
+        for(String hash : posts.getHashTagsList()){
+            hashTagsRepository.save(
+                    HashTags.builder().
+                            posts( savedPost)
+                                    .tag(hash).
+                            build()
+            );
+
+        }
+
+
     }
 
     @Transactional
@@ -212,7 +237,7 @@ public class PostServiceImpl implements PostService {
 
 
     @Transactional
-    public void imgUpload(List<MultipartFile> files, Long postId) {
+    public List<String> imgUpload(List<MultipartFile> files) {
         List<String> urls = new ArrayList<>();
         List<ImageSources> imageList = new ArrayList<>();
         for (MultipartFile file : files) {
@@ -223,18 +248,20 @@ public class PostServiceImpl implements PostService {
             }
         }
 
-        for (int i = 0; i < urls.size(); i++) {
-            ImageSources imageSources = imageSourcesRepository.save(
-                    ImageSources.builder().
-                            posts(
-                                    postRepository.findById(postId).get()
-                            ).
-                            source(urls.get(i)).
-                            build()
-            );
-            imageList.add(imageSources);
-        }
-        postRepository.findById(postId).get().setImageSources(imageList);
+//        for (int i = 0; i < urls.size(); i++) {
+//            ImageSources imageSources = imageSourcesRepository.save(
+//                    ImageSources.builder().
+//                            posts(
+//                                    postRepository.findById(postId).get()
+//                            ).
+//                            source(urls.get(i)).
+//                            build()
+//            );
+//            imageList.add(imageSources);
+//        }
+//
+//        postRepository.findById(postId).get().setImageSources(imageList);
+        return urls;
     }
 
     @Transactional
@@ -253,6 +280,27 @@ public class PostServiceImpl implements PostService {
         }
         postRepository.findById(postId).get().setHashTags(hashTagList);
 
+    }
+
+    @Override
+    public PostResponseDTO getPostsById(Long postId) {
+
+        Posts posts = postRepository.findById(postId).get();
+
+       PostResponseDTO postResponseDTO = new PostResponseDTO(
+                posts.getPostId(),
+                userRepository.findById(posts.getCreateUserId()).get().getProfileImage(),
+                userRepository.findById(posts.getCreateUserId()).get().getUsername(),
+                posts.getCreateAt(),
+                posts.getContent(),
+                posts.getLikeCount(),
+                posts.getPostLevel(),
+                posts.isContentVisible(),
+                posts.getHashTags().stream().map(hashTags -> hashTags.getTag()).toList(),
+                posts.getImageSources().stream().map(imageSources -> imageSources.getSource()).toList()
+        );
+
+        return postResponseDTO;
     }
 
 

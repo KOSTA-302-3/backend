@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import web.mvc.santa_backend.common.security.CustomUserDetails;
 import web.mvc.santa_backend.post.dto.LikeDTO;
 import web.mvc.santa_backend.post.dto.RepliesDTO;
+import web.mvc.santa_backend.post.dto.RepliesReponseDTO;
 import web.mvc.santa_backend.post.service.LikeServiceImpl;
 import web.mvc.santa_backend.post.service.PostServiceImpl;
 import web.mvc.santa_backend.post.service.RepliesServiceImpl;
@@ -27,7 +28,7 @@ public class RepliesController {
     @ResponseBody
     @GetMapping("/getReplies")
     @Operation(summary = "게시물 댓글보기")
-    ResponseEntity<Page<RepliesDTO>> getReplies(
+    ResponseEntity<Page<RepliesReponseDTO>> getReplies(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @RequestParam Long id, @RequestParam int pageNo){
 
@@ -35,7 +36,7 @@ public class RepliesController {
         if (customUserDetails.getAuthorities() == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
-        Page<RepliesDTO> replies= repliesService.findReplies(id,pageNo);
+        Page<RepliesReponseDTO> replies= repliesService.findReplies(id,pageNo);
 
         System.out.println(System.currentTimeMillis()-st);
         return ResponseEntity.status(HttpStatus.OK).body(replies);
@@ -44,10 +45,12 @@ public class RepliesController {
     //댓글쓰기
     @PostMapping("/createReplies")
     @Operation(summary = "댓글쓰기")
-    ResponseEntity<String> createReplies(@RequestBody RepliesDTO repliesDTO){
-        repliesService.createReplies(repliesDTO);
+    ResponseEntity<RepliesDTO> createReplies(@RequestBody RepliesDTO repliesDTO,@AuthenticationPrincipal CustomUserDetails customUserDetails){
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("Create Success");
+        repliesDTO.setUserId(customUserDetails.getUser().getUserId());
+       RepliesDTO responseDTO =  repliesService.createReplies(repliesDTO);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
 
     }
 

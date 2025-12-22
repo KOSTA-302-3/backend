@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import web.mvc.santa_backend.common.security.CustomUserDetails;
 import web.mvc.santa_backend.post.dto.LikeDTO;
 import web.mvc.santa_backend.post.dto.PostDTO;
+import web.mvc.santa_backend.post.dto.PostResponseDTO;
 import web.mvc.santa_backend.post.entity.HashTags;
 import web.mvc.santa_backend.post.entity.Posts;
 import web.mvc.santa_backend.post.service.LikeServiceImpl;
@@ -47,7 +48,7 @@ public class PostContoller {
     @ResponseBody
     @GetMapping("/getAllOnFilter")
     @Operation(summary = "필터링 킨 전체 게시물 보기")
-    ResponseEntity<Page<PostDTO>> getAllPostsWithOnFilter(Long postLevel, int pageNo, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+    ResponseEntity<Page<PostResponseDTO>> getAllPostsWithOnFilter(Long postLevel, int pageNo, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         if (customUserDetails.getAuthorities() == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
@@ -68,7 +69,7 @@ public class PostContoller {
     //필터링 킨 팔로우 게시물 보기
     @Operation(summary = "필터링 킨 팔로우 게시물 보기")
     @GetMapping("/getFollowOnFilter")
-    ResponseEntity<Page<PostDTO>> getFollowPostsWithOnFilter(@RequestParam Long postLevel, @RequestParam int pageNo,@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+    ResponseEntity<Page<PostResponseDTO>> getFollowPostsWithOnFilter(@RequestParam Long postLevel, @RequestParam int pageNo,@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         if (customUserDetails.getAuthorities() == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
@@ -83,6 +84,15 @@ public class PostContoller {
 
         return ResponseEntity.status(HttpStatus.OK).body(postService.getPostsByUserId(userId, pageNo));
     }
+
+
+    @Operation(summary = "특정 게시물 보기")
+    @GetMapping("/getPostsByPostId")
+    ResponseEntity<PostResponseDTO> getPostsByPostId(@RequestParam Long PostId,@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+        return ResponseEntity.status(HttpStatus.OK).body(postService.getPostsById(PostId));
+    }
+
 
 
     //게시물 작성
@@ -115,14 +125,12 @@ public class PostContoller {
 
     }
 
-    @PostMapping(value = "/imageUpload/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/imageUpload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "이미지 작성")
-    ResponseEntity<String> createPosts(@RequestPart List<MultipartFile> files,
-                                       @PathVariable Long postId) {
+    ResponseEntity<List<String>> createPosts(@RequestPart List<MultipartFile> files ,@AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
-        postService.imgUpload(files, postId);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("이미지 업로드 완료");
+        return ResponseEntity.status(HttpStatus.CREATED).body(postService.imgUpload(files));
     }
 
     @PostMapping(value = "/hashTagsInsert/{postId}")
@@ -136,13 +144,24 @@ public class PostContoller {
 
     @PostMapping("/like")
     @Operation(summary = "게시물 좋아요")
-    ResponseEntity<String> likePost(@RequestBody LikeDTO likeDTO) {
+    ResponseEntity<String> likePost(@RequestBody LikeDTO likeDTO,@AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
-
+        likeDTO.setUserId(customUserDetails.getUser().getUserId());
         return ResponseEntity.status(HttpStatus.OK).body(
                 likeService.postReplies(likeDTO.getTargetId(), likeDTO.getUserId())
         );
     }
+
+    @GetMapping("/ckLike")
+    @Operation(summary = "좋아요 여부 확인")
+    ResponseEntity<Boolean> likePost(@RequestParam Long targerId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        LikeDTO likeDTO = new LikeDTO(targerId,customUserDetails.getUser().getUserId());
+
+        return ResponseEntity.status(HttpStatus.OK).body(
+                likeService.ckLike(likeDTO)
+        );
+    }
+    
 
     @GetMapping("testCode")
     public String testA(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
