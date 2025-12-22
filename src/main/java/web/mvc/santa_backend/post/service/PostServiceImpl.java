@@ -181,7 +181,7 @@ public class PostServiceImpl implements PostService {
         for(String image : posts.getImageSourcesList()){
             imageSourcesRepository.save(ImageSources.builder()
                             .posts(
-                                    postRepository.findById(savedPost.getPostId()).get()
+                                    savedPost
                             )
                             .source(image)
                     .build());
@@ -189,7 +189,7 @@ public class PostServiceImpl implements PostService {
         for(String hash : posts.getHashTagsList()){
             hashTagsRepository.save(
                     HashTags.builder().
-                            posts(postRepository.findById(savedPost.getPostId()).get())
+                            posts( savedPost)
                                     .tag(hash).
                             build()
             );
