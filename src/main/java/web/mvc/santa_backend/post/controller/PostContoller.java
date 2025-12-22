@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import web.mvc.santa_backend.common.security.CustomUserDetails;
 import web.mvc.santa_backend.post.dto.LikeDTO;
 import web.mvc.santa_backend.post.dto.PostDTO;
+import web.mvc.santa_backend.post.dto.PostResponseDTO;
 import web.mvc.santa_backend.post.entity.HashTags;
 import web.mvc.santa_backend.post.entity.Posts;
 import web.mvc.santa_backend.post.service.LikeServiceImpl;
@@ -47,7 +48,7 @@ public class PostContoller {
     @ResponseBody
     @GetMapping("/getAllOnFilter")
     @Operation(summary = "필터링 킨 전체 게시물 보기")
-    ResponseEntity<Page<PostDTO>> getAllPostsWithOnFilter(Long postLevel, int pageNo, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+    ResponseEntity<Page<PostResponseDTO>> getAllPostsWithOnFilter(Long postLevel, int pageNo, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         if (customUserDetails.getAuthorities() == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
@@ -68,7 +69,7 @@ public class PostContoller {
     //필터링 킨 팔로우 게시물 보기
     @Operation(summary = "필터링 킨 팔로우 게시물 보기")
     @GetMapping("/getFollowOnFilter")
-    ResponseEntity<Page<PostDTO>> getFollowPostsWithOnFilter(@RequestParam Long postLevel, @RequestParam int pageNo,@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+    ResponseEntity<Page<PostResponseDTO>> getFollowPostsWithOnFilter(@RequestParam Long postLevel, @RequestParam int pageNo,@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         if (customUserDetails.getAuthorities() == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }

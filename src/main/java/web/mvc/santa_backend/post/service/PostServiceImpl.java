@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import web.mvc.santa_backend.common.S3.S3Uploader;
 import web.mvc.santa_backend.post.dto.PostDTO;
+import web.mvc.santa_backend.post.dto.PostResponseDTO;
 import web.mvc.santa_backend.post.entity.HashTags;
 import web.mvc.santa_backend.post.entity.ImageSources;
 import web.mvc.santa_backend.post.entity.Posts;
@@ -77,13 +78,14 @@ public class PostServiceImpl implements PostService {
     }
 
     @Transactional
-    public Page<PostDTO> getAllPostsWithOnFilter(Long level, int pageNo) {
+    public Page<PostResponseDTO> getAllPostsWithOnFilter(Long level, int pageNo) {
 
         Pageable pageable = PageRequest.of(pageNo - 1, 5);
         Page<Posts> page = postRepository.findAllByPostLevelBetweenAndContentVisibleTrue(0L, level, pageable);
 
-        Page<PostDTO> pageDTO = page.map(posts -> new PostDTO(
+        Page<PostResponseDTO> pageDTO = page.map(posts -> new PostResponseDTO(
                 posts.getPostId(),
+                userRepository.findById(posts.getCreateUserId()).get().getProfileImage(),
                 userRepository.findById(posts.getCreateUserId()).get().getUsername(),
                 posts.getCreateAt(),
                 posts.getContent(),
@@ -118,12 +120,13 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Page<PostDTO> getFollowPostsWithOnFilter(Long userId, Long postLevel, int pageNo) {
+    public Page<PostResponseDTO> getFollowPostsWithOnFilter(Long userId, Long postLevel, int pageNo) {
         Pageable pageable = PageRequest.of(pageNo - 1, 5);
         Page<Posts> page = postRepository.findAllByPostIdAndFollowOnFilter(userId, postLevel, pageable);
         //map(new::postDTO로 하려했으나 참조테이블 특정 컬럼 조회해야해서 이게 최선인거같다..
-        Page<PostDTO> pageDTO = page.map(posts -> new PostDTO(
+        Page<PostResponseDTO> pageDTO = page.map(posts -> new PostResponseDTO(
                 posts.getPostId(),
+                userRepository.findById(posts.getCreateUserId()).get().getProfileImage(),
                 userRepository.findById(posts.getCreateUserId()).get().getUsername(),
                 posts.getCreateAt(),
                 posts.getContent(),
