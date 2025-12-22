@@ -1,8 +1,7 @@
 package web.mvc.santa_backend.post.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
@@ -10,6 +9,9 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "replies")
 public class Replies {
 
@@ -31,5 +33,13 @@ public class Replies {
     @ColumnDefault("0")
     private  Long replyLike;
 
+
+   public void increaseLikeCount(){
+        this.replyLike++;
+    }
+
+    public void decreaseLikeCount(){
+        this.replyLike--;
+    }
 
 }

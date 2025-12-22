@@ -65,7 +65,6 @@ public class Users {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    @OneToOne
-    @MapsId
+    @OneToOne(mappedBy = "user", fetch =  FetchType.LAZY)
     private Customs custom;
 }

@@ -11,7 +11,13 @@ import lombok.*;
 @AllArgsConstructor
 public class Customs {
     @Id
-    private Long userId;
+    @Column(name = "user_id")
+    private Long id;
+
+    @OneToOne
+    @MapsId
+    @JoinColumn(name = "user_id")
+    private Users user;
 
     /** 유저가 현재 장착한 글자색 */
     @ManyToOne

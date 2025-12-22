@@ -2,5 +2,7 @@ package web.mvc.santa_backend.common.enumtype;
 
 public enum MessageType {
     TEXT,
-    IMAGE;
+    IMAGE,
+    NOTICE,
+    READ_UPDATE;
 }
