@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  backend:
+    build: .
+    container_name: santa-backend
+    restart: always
+    volumes:
+      - ./application.properties:/app/application.properties:ro
+    networks:
+      - santa-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: santa-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - backend
+    networks:
+      - santa-network
+
+networks:
+  santa-network:
+    driver: bridge
