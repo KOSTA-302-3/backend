@@ -8,12 +8,6 @@ import java.util.List;
 public interface NotificationService {
 
     /**
-     * 관리자..에서 사용할 지 몰라서 지우진 않았으나 아직 구현되지 않은 메서드
-     * @return
-     */
-    public List<NotificationDTO> getAllNotifications();
-
-    /**
      * user가 읽지 않은 알림만 가져오는 메서드
      * @param id
      * @param page
@@ -48,4 +42,6 @@ public interface NotificationService {
      * @param id
      */
     public void deleteNotificationById(Long id);
+
+    public void deleteAllNotificationById(Long userId);
 }
