@@ -31,7 +31,7 @@ public class MessageController {
     @GetMapping("/api/message/{chatroomId}")
     public ResponseEntity<Page<OutboundChatMessageDTO>> getMessages(@PathVariable("chatroomId") Long chatroomId,
                                             @AuthenticationPrincipal CustomUserDetails customUserDetails,
-                                            @RequestParam int page) {
+                                            @RequestParam(defaultValue = "0") int page) {
         Long userId = customUserDetails.getUser().getUserId();
         return ResponseEntity.status(HttpStatus.OK).body(messageService.getOutboundChatMessages(chatroomId, userId, page));
     }
