@@ -3,6 +3,7 @@ package web.mvc.santa_backend.chat.service;
 import org.springframework.data.domain.Page;
 import web.mvc.santa_backend.chat.dto.ChatroomDTO;
 import web.mvc.santa_backend.chat.dto.ChatroomRequestDTO;
+import web.mvc.santa_backend.chat.dto.ChatroomResponseDTO;
 
 public interface ChatroomService {
     /**
@@ -30,7 +31,7 @@ public interface ChatroomService {
      * @param page
      * @return
      */
-    public Page<ChatroomDTO> getChatrooms(Long userId, String word, int page);
+    public Page<ChatroomResponseDTO> getChatrooms(Long userId, String word, int page);
 
     /**
      * 채팅방의 제목, 비밀번호, 공개상태, 설명, 이미지를 바꾸는 메서드

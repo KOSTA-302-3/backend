@@ -10,6 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import web.mvc.santa_backend.chat.dto.ChatroomMemberDTO;
+import web.mvc.santa_backend.chat.dto.ChatroomMemberResDTO;
 import web.mvc.santa_backend.chat.service.ChatroomMemberService;
 import web.mvc.santa_backend.common.exception.ChatMemberNotFoundException;
 import web.mvc.santa_backend.common.exception.ErrorCode;
@@ -26,9 +27,9 @@ public class ChatroomMemberController {
     private final ChatroomMemberService chatroomMemberService;
 
     @GetMapping("/api/chatmember/{chatroomId}")
-    public ResponseEntity<List<UserSimpleDTO>> getChatroomMember(@PathVariable("chatroomId") Long chatroomId, @RequestParam boolean isBanned, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+    public ResponseEntity<List<ChatroomMemberResDTO>> getChatroomMember(@PathVariable("chatroomId") Long chatroomId, @RequestParam(defaultValue = "false") boolean isBanned, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         Long userId = customUserDetails.getUser().getUserId();
-        List<UserSimpleDTO> chatroomMembers = chatroomMemberService.getChatroomMembers(chatroomId, isBanned, userId);
+        List<ChatroomMemberResDTO> chatroomMembers = chatroomMemberService.getChatroomMembers(chatroomId, isBanned, userId);
 
         return ResponseEntity.status(HttpStatus.OK).body(chatroomMembers);
     }

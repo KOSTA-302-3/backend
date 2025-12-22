@@ -22,6 +22,9 @@ import web.mvc.santa_backend.chat.repository.MessageRepository;
 import web.mvc.santa_backend.common.enumtype.MessageType;
 import web.mvc.santa_backend.common.exception.ChatMemberNotFoundException;
 import web.mvc.santa_backend.common.exception.ErrorCode;
+import web.mvc.santa_backend.common.exception.UserNotFoundException;
+import web.mvc.santa_backend.user.entity.Users;
+import web.mvc.santa_backend.user.repository.UserRepository;
 
 import java.util.Map;
 
@@ -32,6 +35,7 @@ import java.util.Map;
 public class MessageServiceImpl implements MessageService {
     private final MessageRepository messageRepository;
     private final ChatroomMemberRepository chatroomMemberRepository;
+    private final UserRepository userRepository;
     private final ChatroomManager chatroomManager;
 
     @Override
@@ -39,12 +43,13 @@ public class MessageServiceImpl implements MessageService {
     public Page<OutboundChatMessageDTO> getOutboundChatMessages(Long chatroomId, Long userId, int page) {
         ChatroomMembers chatroomMember = chatroomMemberRepository.findByChatroom_ChatroomIdAndUser_UserId(chatroomId, userId)
                 .orElseThrow(() -> new ChatMemberNotFoundException(ErrorCode.NOT_CHATMEMBER));
+        Users user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(ErrorCode.USER_NOT_FOUND));
         Long startRead = chatroomMember.getStartRead();
         Pageable pageable = PageRequest.of(page,100, Sort.by(Sort.Direction.DESC, "messageId"));
         Page<Messages> chatMessageList =
-                messageRepository.findByChatrooms_ChatroomIdAndMessageIdGreaterThan(chatroomId, startRead, pageable);
+                messageRepository.findByChatrooms_ChatroomIdAndMessageIdGreaterThanOrderByUserIdDesc(chatroomId, startRead, pageable);
 
-        return chatMessageList.map(c -> toOutboundChatMessageDTO(c));
+        return chatMessageList.map(c -> toOutboundChatMessageDTO(c, user));
     }
 
     @Override
@@ -67,9 +72,12 @@ public class MessageServiceImpl implements MessageService {
             ChatroomMembers chatroomMembers = chatroomMemberRepository.findByChatroom_ChatroomIdAndUser_UserId(roomId, userId).orElseThrow(() -> new ChatMemberNotFoundException(ErrorCode.NOT_CHATMEMBER));
             chatroomMembers.setLastRead(lastMessage);
         });
-        
+        //username과 profileiamge를 가지고 오기 위해 user를 db에서 소환
+        Users user = userRepository.findById(message.getUserId()).orElseThrow(() -> new UserNotFoundException(ErrorCode.USER_NOT_FOUND));
+
+
         //OutMessageDTO로 바꿔서 리턴
-        return toOutboundChatMessageDTO(message);
+        return toOutboundChatMessageDTO(message, user);
     }
 
     @Override
@@ -94,21 +102,28 @@ public class MessageServiceImpl implements MessageService {
         }
     }
 
-    private OutboundChatMessageDTO toOutboundChatMessageDTO(Messages messages){
+    private OutboundChatMessageDTO toOutboundChatMessageDTO(Messages messages, Users user) {
         long unreadCount = chatroomMemberRepository.countByChatroom_ChatroomIdAndIsBannedAndLastReadLessThan(
                 messages.getChatrooms().getChatroomId(), false, messages.getMessageId());
+        String type = null;
+        if(MessageType.NOTICE.equals(messages.getType())){
+            type = "notice";
+        }else if(messages.getUserId().equals(user.getUserId())){
+            type = "me";
+        }else {
+            type = "other";
+        }
         OutboundChatMessageDTO outboundChatMessageDTO = OutboundChatMessageDTO.builder()
-                .messageId(messages.getMessageId())
+                .id(messages.getMessageId())
+                .type(type)
                 .userId(messages.getUserId())
-                .chatroomId(messages.getChatrooms().getChatroomId())
-                .payload(messages.getPayload())
-                .createdAt(messages.getCreatedAt())
-                .type(messages.getType())
+                .username(user.getUsername())
+                .avatarUrl(user.getProfileImage())
+                .text(messages.getPayload())
+                .ts(messages.getCreatedAt())
+                .messageType(messages.getType())
                 .unreadCount(unreadCount)
                 .build();
-        if(messages.getReplyMessage() != null){
-            outboundChatMessageDTO.setReplyMessage(toReplyMessageDTO(messages.getReplyMessage()));
-        }
         return outboundChatMessageDTO;
     }
 
