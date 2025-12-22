@@ -1,5 +1,7 @@
 package web.mvc.santa_backend.common.config;
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
@@ -9,6 +11,7 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+@OpenAPIDefinition(servers = {@Server(url = "https://santa-sns.o-r.kr", description = "도메인 설명")})
 @Configuration
 public class SwaggerConfig {
 
@@ -27,6 +30,7 @@ public class SwaggerConfig {
                 .title("SANTA API")
                 .description("SANTA API")
                 .contact(new Contact().name("SANTA"))
+
                 .version("1.0");
     }
 
