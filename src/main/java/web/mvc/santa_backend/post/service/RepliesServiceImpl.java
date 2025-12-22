@@ -21,7 +21,7 @@ public class RepliesServiceImpl implements RepliesService {
     private PostResository postRepository;
 
     @Transactional
-    @Cacheable(value = "replies", key = "#id")
+//    @Cacheable(value = "replies", key = "#id")
     public Page<RepliesDTO> findReplies(Long id, int pageNo) {
 
         Pageable pageable = PageRequest.of(pageNo - 1, 5);

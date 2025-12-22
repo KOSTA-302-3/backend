@@ -78,7 +78,7 @@ public class PostServiceImpl implements PostService {
     public Page<PostDTO> getAllPostsWithOnFilter(Long level, int pageNo) {
 
         Pageable pageable = PageRequest.of(pageNo - 1, 5);
-        Page<Posts> page = postRepository.findAllByPostLevelBetweenAndContentVisibleTrue(0L, level, pageable);
+        Page<Posts> page = postRepository.findAllByPostLevelBetweenAndContentVisibleTrue(1L, level, pageable);
 
         Page<PostDTO> pageDTO = page.map(posts -> new PostDTO(
                 posts.getPostId(),
