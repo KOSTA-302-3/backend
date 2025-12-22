@@ -29,7 +29,7 @@ public class NotificationController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @PutMapping("/api/notification/{notificationId}")
+    @DeleteMapping("/api/notification/{notificationId}")
     public ResponseEntity<?> checkNotification(@PathVariable Long notificationId){
         notificationService.deleteNotificationById(notificationId);
         return ResponseEntity.status(HttpStatus.OK).build();
