@@ -6,7 +6,7 @@ import web.mvc.santa_backend.post.dto.RepliesDTO;
 public interface RepliesService {
     Page<RepliesDTO> findReplies(Long id, int pageNo);
 
-    void createReplies(RepliesDTO repliesDTO);
+    RepliesDTO createReplies(RepliesDTO repliesDTO);
 
     void updateReplies(RepliesDTO repliesDTO);
 

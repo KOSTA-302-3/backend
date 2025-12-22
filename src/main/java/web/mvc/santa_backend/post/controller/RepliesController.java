@@ -44,10 +44,12 @@ public class RepliesController {
     //댓글쓰기
     @PostMapping("/createReplies")
     @Operation(summary = "댓글쓰기")
-    ResponseEntity<String> createReplies(@RequestBody RepliesDTO repliesDTO){
-        repliesService.createReplies(repliesDTO);
+    ResponseEntity<RepliesDTO> createReplies(@RequestBody RepliesDTO repliesDTO,@AuthenticationPrincipal CustomUserDetails customUserDetails){
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("Create Success");
+        repliesDTO.setUserId(customUserDetails.getUser().getUserId());
+       RepliesDTO responseDTO =  repliesService.createReplies(repliesDTO);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
 
     }
 

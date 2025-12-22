@@ -115,14 +115,12 @@ public class PostContoller {
 
     }
 
-    @PostMapping(value = "/imageUpload/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/imageUpload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "이미지 작성")
-    ResponseEntity<String> createPosts(@RequestPart List<MultipartFile> files,
-                                       @PathVariable Long postId) {
+    ResponseEntity<List<String>> createPosts(@RequestPart List<MultipartFile> files ,@AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
-        postService.imgUpload(files, postId);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("이미지 업로드 완료");
+        return ResponseEntity.status(HttpStatus.CREATED).body(postService.imgUpload(files));
     }
 
     @PostMapping(value = "/hashTagsInsert/{postId}")
@@ -143,6 +141,17 @@ public class PostContoller {
                 likeService.postReplies(likeDTO.getTargetId(), likeDTO.getUserId())
         );
     }
+
+    @GetMapping("/ckLike")
+    @Operation(summary = "좋아요 여부 확인")
+    ResponseEntity<Boolean> likePost(@RequestParam Long targerId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        LikeDTO likeDTO = new LikeDTO(targerId,customUserDetails.getUser().getUserId());
+
+        return ResponseEntity.status(HttpStatus.OK).body(
+                likeService.ckLike(likeDTO)
+        );
+    }
+    
 
     @GetMapping("testCode")
     public String testA(@AuthenticationPrincipal CustomUserDetails customUserDetails) {

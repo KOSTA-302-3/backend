@@ -91,7 +91,6 @@ public class PostTest {
     void createData() {
 
 //        for (int i = 0; i < 100000; i++) {
-//
 //            postResository.save(Posts.builder().
 //                    createUserId(1L).
 //                    create_at(LocalDateTime.now()).

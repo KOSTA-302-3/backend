@@ -1,7 +1,6 @@
 package web.mvc.santa_backend.post.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -52,9 +51,9 @@ public class RepliesServiceImpl implements RepliesService {
     ;
 
     @Transactional
-    public void createReplies(RepliesDTO repliesDTO) {
+    public RepliesDTO createReplies(RepliesDTO repliesDTO) {
         System.out.println(repliesDTO.toString());
-        repliesRepository.save(
+      Replies replies =  repliesRepository.save(
                 Replies.builder().
                         userId(repliesDTO.getUserId()).
                         posts(postRepository.findById(repliesDTO.getPostId()).get()).
@@ -62,6 +61,15 @@ public class RepliesServiceImpl implements RepliesService {
                         replyLike(0L).
                         build()
         );
+      RepliesDTO responseReplies  = new RepliesDTO(
+                replies.getReplyId(),
+              replies.getUserId(),
+              replies.getPosts().getPostId(),
+              replies.getReplyContent(),
+              replies.getReplyLike()
+
+      );
+    return responseReplies;
     }
 
 

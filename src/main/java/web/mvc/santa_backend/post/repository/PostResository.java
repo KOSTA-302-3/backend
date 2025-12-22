@@ -10,7 +10,7 @@ import web.mvc.santa_backend.post.entity.Posts;
 import java.util.List;
 @Repository
 public interface PostResository extends JpaRepository<Posts, Long> {
-    @Query(nativeQuery = true,value = "select * from posts where content_visible = 1 and post_level between :startLevel and :endLevel and create_user_id in (select user_id from users where is_private = 0)")
+    @Query(nativeQuery = true,value = "select * from posts where content_visible = 1 and post_level between :startLevel and :endLevel and create_user_id in (select user_id from users where is_private = 0) order by post_id desc")
     Page<Posts> findAllByPostLevelBetweenAndContentVisibleTrue(Long startLevel,Long endLevel,Pageable page);
     //배포시에는 위에 테스트 시에는 밑에
     //@Query(nativeQuery = true,value = "select * from posts where content_visible = 1 and create_user_id in (select user_id from users where is_private = 0)")
@@ -22,6 +22,7 @@ public interface PostResository extends JpaRepository<Posts, Long> {
     Page<Posts> findAllByPostIdAndFollowOnFilter(@Param("user_id") Long user_id,@Param("post_level") Long post_level, Pageable pageable);
     Page<Posts> findAllByCreateUserId(Long id,Pageable pageable);
     Page<Posts> findAll(Pageable pageable);
+
 
     }
 

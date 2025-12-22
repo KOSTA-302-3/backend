@@ -68,7 +68,7 @@ public class SecurityConfig {
                 auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        .requestMatchers("/index", "/api/user", "/api/user/**").permitAll()
+                        .requestMatchers("/index", "/api/user", "/api/user/**","/posts/**").permitAll()
                         // swagger 설정
                         .requestMatchers(
                                 "/v3/api-docs",

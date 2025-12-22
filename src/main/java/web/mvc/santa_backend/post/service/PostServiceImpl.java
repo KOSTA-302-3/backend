@@ -39,12 +39,14 @@ public class PostServiceImpl implements PostService {
     private UserRepository userRepository;
 
 
+
     @Transactional
     public Page<PostDTO> getAllPostsWithOffFilter(int pageNo) {
 
 
         Pageable pageable = PageRequest.of(pageNo - 1, 5);
-        Page<Posts> page = postRepository.findAllAndContentVisibleTrue(pageable);
+//        Page<Posts> page = postRepository.findAllAndContentVisibleTrue(pageable);
+        Page<Posts> page = postRepository.findAll(pageable);
         Page<PostDTO> dtoPage = page.map(posts ->
                 new PostDTO(
                         posts.getPostId(),
@@ -78,7 +80,7 @@ public class PostServiceImpl implements PostService {
     public Page<PostDTO> getAllPostsWithOnFilter(Long level, int pageNo) {
 
         Pageable pageable = PageRequest.of(pageNo - 1, 5);
-        Page<Posts> page = postRepository.findAllByPostLevelBetweenAndContentVisibleTrue(1L, level, pageable);
+        Page<Posts> page = postRepository.findAllByPostLevelBetweenAndContentVisibleTrue(0L, level, pageable);
 
         Page<PostDTO> pageDTO = page.map(posts -> new PostDTO(
                 posts.getPostId(),
@@ -162,16 +164,39 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public void createPosts(PostDTO posts) {
 
-
-        postRepository.save(Posts.builder().
-                createUserId(posts.getPostId()).
+        Posts savedPost = postRepository.save(Posts.builder().
+                createUserId(userRepository.findByUsername(posts.getCreateUserName()).getUserId()).
                 createAt(posts.getCreateAt()).
                 likeCount(0L).
                 content(posts.getContent()).
-                postLevel(posts.getPostLevel()).
+                postLevel(0L).
                 contentVisible(true).
                 build()
         );
+
+        System.out.println(posts.getImageSourcesList());
+
+        Long postId = savedPost.getPostId();
+
+        for(String image : posts.getImageSourcesList()){
+            imageSourcesRepository.save(ImageSources.builder()
+                            .posts(
+                                    postRepository.findById(postId).get()
+                            )
+                            .source(image)
+                    .build());
+        }
+        for(String hash : posts.getHashTagsList()){
+            hashTagsRepository.save(
+                    HashTags.builder().
+                            posts(postRepository.findById(postId).get())
+                                    .tag(hash).
+                            build()
+            );
+
+        }
+
+
     }
 
     @Transactional
@@ -212,7 +237,7 @@ public class PostServiceImpl implements PostService {
 
 
     @Transactional
-    public void imgUpload(List<MultipartFile> files, Long postId) {
+    public List<String> imgUpload(List<MultipartFile> files) {
         List<String> urls = new ArrayList<>();
         List<ImageSources> imageList = new ArrayList<>();
         for (MultipartFile file : files) {
@@ -223,18 +248,20 @@ public class PostServiceImpl implements PostService {
             }
         }
 
-        for (int i = 0; i < urls.size(); i++) {
-            ImageSources imageSources = imageSourcesRepository.save(
-                    ImageSources.builder().
-                            posts(
-                                    postRepository.findById(postId).get()
-                            ).
-                            source(urls.get(i)).
-                            build()
-            );
-            imageList.add(imageSources);
-        }
-        postRepository.findById(postId).get().setImageSources(imageList);
+//        for (int i = 0; i < urls.size(); i++) {
+//            ImageSources imageSources = imageSourcesRepository.save(
+//                    ImageSources.builder().
+//                            posts(
+//                                    postRepository.findById(postId).get()
+//                            ).
+//                            source(urls.get(i)).
+//                            build()
+//            );
+//            imageList.add(imageSources);
+//        }
+//
+//        postRepository.findById(postId).get().setImageSources(imageList);
+        return urls;
     }
 
     @Transactional
