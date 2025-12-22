@@ -3,6 +3,7 @@ package web.mvc.santa_backend.chat.service;
 import org.springframework.web.socket.WebSocketSession;
 import web.mvc.santa_backend.chat.dto.ChatroomDTO;
 import web.mvc.santa_backend.chat.dto.ChatroomMemberDTO;
+import web.mvc.santa_backend.chat.dto.ChatroomMemberResDTO;
 import web.mvc.santa_backend.chat.entity.ChatroomMembers;
 import web.mvc.santa_backend.user.dto.UserSimpleDTO;
 
@@ -17,7 +18,7 @@ public interface ChatroomMemberService {
      * @param isBanned 강퇴여부
      * @return 조회된 사용자 목록
      */
-    public List<UserSimpleDTO> getChatroomMembers(Long chatroomId, boolean isBanned, Long userId);
+    public List<ChatroomMemberResDTO> getChatroomMembers(Long chatroomId, boolean isBanned, Long userId);
 
     /**
      * 유저의 채팅방 입장메서드

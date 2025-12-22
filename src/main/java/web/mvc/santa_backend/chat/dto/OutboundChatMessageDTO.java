@@ -12,14 +12,13 @@ import java.time.LocalDateTime;
 @ToString
 @Builder
 public class OutboundChatMessageDTO {
-    private Long messageId;
+    private Long id;
+    private String type;
     private Long userId;
-    private Long chatroomId;
-    private ReplyMessageDTO replyMessage;
-    private String payload;
-    private LocalDateTime createdAt;
-    private MessageType type;
-    private Long unreadCount;
-    //유저id로는 user를 특정하기 어려운 관계로..
     private String username;
+    private String avatarUrl;
+    private String text;
+    private LocalDateTime ts;
+    private MessageType messageType;
+    private Long unreadCount;
 }

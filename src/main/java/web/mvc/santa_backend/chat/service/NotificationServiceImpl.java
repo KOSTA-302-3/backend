@@ -24,14 +24,9 @@ public class NotificationServiceImpl implements NotificationService{
     private final NotificationRepository notificationRepository;
 
     @Override
-    public List<NotificationDTO> getAllNotifications() {
-        return List.of();
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public Page<NotificationDTO> getNotificationByUserId(Long id, int page) {
-        Pageable pageable = PageRequest.of(page, 10);
+        Pageable pageable = PageRequest.of(page, 20);
         Page<Notifications> notifications = notificationRepository.findByUserAndIsRead(Users.builder().userId(id).build(), false, pageable);
 
         Page<NotificationDTO> notificationDTOS = notifications.map(n -> toDTO(n));
@@ -78,6 +73,14 @@ public class NotificationServiceImpl implements NotificationService{
         notification.setRead(true);
     }
 
+    @Override
+    public void deleteAllNotificationById(Long userId) {
+        List<Notifications> unreadList = notificationRepository.findByUser_UserIdAndIsRead(userId, false);
+        for (Notifications notification : unreadList) {
+            notification.setRead(false);
+        }
+    }
+
     /**
      * DTO를 Entity로 바꾸는 맵퍼 메서드
      * @param notificationDTO
@@ -111,4 +114,6 @@ public class NotificationServiceImpl implements NotificationService{
                 .actionUserId(notifications.getActionUser().getUserId())
                 .build();
     }
+
+
 }

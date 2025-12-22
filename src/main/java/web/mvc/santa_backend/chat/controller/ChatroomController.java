@@ -10,6 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import web.mvc.santa_backend.chat.dto.ChatroomDTO;
 import web.mvc.santa_backend.chat.dto.ChatroomRequestDTO;
+import web.mvc.santa_backend.chat.dto.ChatroomResponseDTO;
 import web.mvc.santa_backend.chat.service.ChatroomMemberService;
 import web.mvc.santa_backend.chat.service.ChatroomService;
 import web.mvc.santa_backend.common.exception.ErrorCode;
@@ -35,17 +36,17 @@ public class ChatroomController {
     }
 
     @GetMapping("/api/chatroom")
-    public ResponseEntity<Page<ChatroomDTO>> getChatroom(@RequestParam(defaultValue = "0") int page,
-                                                         @RequestParam(required = false) String word,
-                                                         @RequestParam(required = false) Long userId,
-                                                         @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        //유저id가 null일수 있어야 모든 채팅방의 조회가 가능해짐
-        //userId가 null이 아닌경우 user가 참여한 채팅방만 조회
-        //그러나 프론트에서 넘어온 userId가 현재 로그인 한 유저와 다를 수 있기 때문에 비교검증 필요
-        Long loginId = customUserDetails.getUser().getUserId();
-        if(userId!=null&&!Objects.equals(userId, loginId)){
-            throw new InvalidException(ErrorCode.INVALID_USER);
+    public ResponseEntity<Page<ChatroomResponseDTO>> getChatroom(@RequestParam(defaultValue = "0") int page,
+                                                                 @RequestParam(required = false) String word,
+                                                                 @RequestParam(required = false) String type,
+                                                                 @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        //로직 전체 수정.
+        //프론트에서 userId를 받아오는게 아니라, all, me 정도의 타입을 받아와서 내 채팅방인지 전체 채팅방인지를 조절
+        Long userId = null;
+        if("me".equals(type)){
+            userId = customUserDetails.getUser().getUserId();
         }
+        System.out.println(userId);
         page -= 1;
         if(page < 0){
             page = 0;
