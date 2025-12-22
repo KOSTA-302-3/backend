@@ -2,15 +2,16 @@ package web.mvc.santa_backend.user.dto;
 
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ColorDTO {
+public class UserColorDTO {
+    private Long id;
+    private Long userId;
     private Long colorId;
-    private String name;
-    private String description;
-    private String color;
-    private int price;
+    private LocalDateTime createdAt;
 }

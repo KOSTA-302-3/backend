@@ -6,20 +6,28 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import web.mvc.santa_backend.admin.entity.Bans;
+import web.mvc.santa_backend.admin.repository.BansRepository;
 import web.mvc.santa_backend.common.security.CustomUserDetails;
 import web.mvc.santa_backend.common.security.JWTUtil;
 import web.mvc.santa_backend.user.entity.Users;
+import web.mvc.santa_backend.user.repository.UserRepository;
+import web.mvc.santa_backend.user.service.UserService;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -27,10 +35,19 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
+    private final BansRepository bansRepository;
+    private final UserRepository userRepository;
+    
+    @Autowired
+    @Lazy
+    private UserService userService;
 
-    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil) {
+    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil,
+                      BansRepository bansRepository, UserRepository userRepository) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
+        this.bansRepository = bansRepository;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -71,6 +88,18 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         //UserDetailsService
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        Users user = customUserDetails.getUser();
+        
+        // 정지 상태면 로그인 차단
+        if (isUserSuspended(user)) {
+            response.setContentType("text/html;charset=UTF-8");
+            response.setStatus(403);
+            Map<String, Object> errorMap = new HashMap<>();
+            errorMap.put("errMsg", "정지된 계정입니다. 관리자에게 문의하세요.");
+            Gson gson = new Gson();
+            response.getWriter().print(gson.toJson(errorMap));
+            return;
+        }
 
         /*
         하나의 유저가 여러개의 권한을 가질수 있어서 collection으로 반환
@@ -95,7 +124,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.addHeader("Authorization", "Bearer " + token);
 
         Map<String, Object> map = new HashMap<>();
-        Users user = customUserDetails.getUser();
         map.put("userId", user.getUserId());
         map.put("username", user.getUsername());
         map.put("role", user.getRole().toString());
@@ -144,5 +172,15 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         Gson gson= new Gson();
         String arr = gson.toJson(map);
         response.getWriter().print(arr);
+    }
+    
+    /**
+     * 유저가 정지 상태인지 확인
+     */
+    private boolean isUserSuspended(Users user) {
+        // bans 테이블에서 유효한 정지 기록 확인 (finishedAt > now)
+        LocalDateTime now = LocalDateTime.now();
+        return bansRepository.findByUser_UserId(user.getUserId()).stream()
+                .anyMatch(ban -> ban.getFinishedAt().isAfter(now));
     }
 }

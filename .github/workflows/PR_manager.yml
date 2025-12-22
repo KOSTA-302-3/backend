@@ -1,0 +1,113 @@
+name: Notify Slack on PR Events
+
+on:
+  pull_request:
+    types: [opened, closed, reopened, ready_for_review, review_requested]
+    branches:
+      - '**'
+
+jobs:
+  notify-slack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Slack Notification
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          USER_MAP_JSON: ${{ secrets.USER_MAP }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_ACTION: ${{ github.event.action }}
+          PR_IS_DRAFT: ${{ github.event.pull_request.draft }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_MERGED: ${{ github.event.pull_request.merged }}
+          REQUESTED_REVIEWER: ${{ github.event.requested_reviewer.login }}
+          REQUESTED_REVIEWERS_LIST: ${{ toJson(github.event.pull_request.requested_reviewers) }}
+        run: |
+          # 1. Draft PR 체크
+          if [ "$PR_ACTION" == "opened" ] && [ "$PR_IS_DRAFT" == "true" ]; then
+            echo "Draft PR입니다. Slack 알림을 생략합니다."
+            exit 0
+          fi
+
+          # 2. GitHub ID -> Slack ID 변환 함수
+          get_slack_id() {
+            local github_id="$1"
+            if [ -z "$github_id" ] || [ "$github_id" == "null" ]; then
+              echo "unknown"
+              return
+            fi
+            echo "$USER_MAP_JSON" | jq -r --arg user "$github_id" '.[$user] // "unknown"'
+          }
+
+          SLACK_AUTHOR_ID=$(get_slack_id "$PR_AUTHOR")
+          
+          PR_STATUS=""
+          MENTION_TARGET=""
+
+          # 3. 상황별 처리 로직
+          if [ "$PR_ACTION" == "opened" ]; then
+            # 중복 방지 로직
+            REVIEWER_COUNT=$(echo "$REQUESTED_REVIEWERS_LIST" | jq '. | length')
+            if [ "$REVIEWER_COUNT" -gt 0 ]; then
+              echo "이미 리뷰어가 지정된 상태로 PR이 열렸습니다. review_requested 이벤트에서 알림을 보냅니다."
+              exit 0
+            fi
+
+            PR_STATUS="*새 PR이 생성되었습니다!*"
+            MENTION_TARGET=""
+
+          elif [ "$PR_ACTION" == "ready_for_review" ]; then
+            PR_STATUS="*리뷰 준비 완료! (Draft 해제)*"
+            MENTION_TARGET=""
+
+          elif [ "$PR_ACTION" == "review_requested" ]; then
+            TARGET_SLACK_ID=$(get_slack_id "$REQUESTED_REVIEWER")
+            PR_STATUS="*리뷰 요청이 도착했습니다!*"
+            
+            if [ "$TARGET_SLACK_ID" != "unknown" ]; then
+              MENTION_TARGET="<@$TARGET_SLACK_ID>"
+            else
+              MENTION_TARGET="(GitHub ID: $REQUESTED_REVIEWER)"
+            fi
+
+          elif [ "$PR_ACTION" == "closed" ]; then
+            if [ "$PR_MERGED" == "true" ]; then
+              PR_STATUS="*PR Merged*"
+              MENTION_TARGET="<@$SLACK_AUTHOR_ID>"
+            else
+              PR_STATUS="*PR Closed (미머지)*"
+              MENTION_TARGET=""
+            fi
+
+          elif [ "$PR_ACTION" == "reopened" ]; then
+            PR_STATUS="*PR이 다시 열렸습니다!*"
+            MENTION_TARGET=""
+          
+          else
+            echo "Action $PR_ACTION is skipped."
+            exit 0
+          fi
+
+          # 4. Payload 생성
+          PAYLOAD=$(jq -n \
+            --arg status "$PR_STATUS" \
+            --arg title "$PR_TITLE" \
+            --arg number "$PR_NUMBER" \
+            --arg author_id "$SLACK_AUTHOR_ID" \
+            --arg mention "$MENTION_TARGET" \
+            --arg url "$PR_URL" \
+            '{
+              text: "\($status)\n*PR 제목:* \($title) (#\($number))\n*작성자:* <@\($author_id)>\n\($mention)\n*링크:* \($url)"
+            }')
+
+          # 5. 전송 (안전 장치 추가)
+          # URL 앞뒤 공백 제거
+          CLEAN_WEBHOOK_URL=$(echo "$SLACK_WEBHOOK_URL" | xargs)
+
+          if [ -z "$CLEAN_WEBHOOK_URL" ]; then
+             echo "Error: SLACK_WEBHOOK_URL 시크릿이 비어있습니다."
+             exit 1
+          fi
+
+          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" "$CLEAN_WEBHOOK_URL"

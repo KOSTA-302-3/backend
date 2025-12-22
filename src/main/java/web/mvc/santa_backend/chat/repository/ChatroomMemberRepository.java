@@ -12,11 +12,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ChatroomMemberRepository extends JpaRepository<ChatroomMembers,Long> {
-    @Query("select c from ChatroomMembers cm join cm.chatroom c where cm.user.userId = :userId")
-    Page<Chatrooms> findByUserId(Long userId, Pageable pageable);
+    @Query("select c from ChatroomMembers cm join cm.chatroom c where cm.user.userId = :userId and c.isDeleted = :isDeleted")
+    Page<Chatrooms> findByUserId(Long userId, boolean isDeleted, Pageable pageable);
 
-    @Query("select c from ChatroomMembers cm join cm.chatroom c where cm.user.userId = :userId and lower(c.name) like lower(concat('%', :word, '%'))")
-    Page<Chatrooms> findByUserIdAndWord(Long userId, String word, Pageable pageable);
+    @Query("select c from ChatroomMembers cm join cm.chatroom c where cm.user.userId = :userId and c.isDeleted = :isDeleted and lower(c.name) like lower(concat('%', :word, '%'))")
+    Page<Chatrooms> findByUserIdAndWord(Long userId, String word, boolean isDeleted, Pageable pageable);
 
     List<ChatroomMembers> findByChatroomAndIsBanned(Chatrooms chatroom, boolean isBanned);
 
@@ -26,13 +26,13 @@ public interface ChatroomMemberRepository extends JpaRepository<ChatroomMembers,
 
     Optional<ChatroomMembers> findByUserAndChatroom(Users user, Chatrooms chatroom);
 
-    boolean existsByChatroomAndUserAndIsBanned(Chatrooms chatroom, Users user, boolean isBanned);
-
-    void deleteByUserAndChatroom(Users user, Chatrooms chatroom);
-
     boolean existsByChatroom_ChatroomIdAndUser_UserIdAndIsBanned(Long chatroomChatroomId, Long userUserId, boolean isBanned);
 
     void deleteByUser_UserIdAndChatroom_ChatroomId(Long userUserId, Long chatroomChatroomId);
 
-    long countByChatroom_ChatroomIdAndIsBannedAndLastReadLessThan(Long chatroomChatroomId, boolean isBanned, Long lastReadIsLessThan);
+    Long countByChatroom_ChatroomIdAndIsBannedAndLastReadLessThan(Long chatroomChatroomId, boolean isBanned, Long lastReadIsLessThan);
+
+    Long countChatroomMembersByChatroom_ChatroomIdAndIsBanned(Long chatroomChatroomId, boolean isBanned);
+
+    long countByChatroom_ChatroomIdAndIsBanned(Long chatroomChatroomId, boolean isBanned);
 }
