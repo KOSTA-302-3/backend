@@ -5,8 +5,6 @@ import lombok.*;
 import web.mvc.santa_backend.common.enumtype.UserRole;
 import web.mvc.santa_backend.user.entity.Users;
 
-import java.util.List;
-
 @Entity
 @Table(
         uniqueConstraints = {
