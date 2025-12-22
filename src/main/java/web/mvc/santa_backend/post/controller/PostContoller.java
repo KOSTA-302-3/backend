@@ -86,6 +86,15 @@ public class PostContoller {
     }
 
 
+    @Operation(summary = "특정 게시물 보기")
+    @GetMapping("/getPostsByPostId")
+    ResponseEntity<PostResponseDTO> getPostsByPostId(@RequestParam Long PostId,@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+        return ResponseEntity.status(HttpStatus.OK).body(postService.getPostsById(PostId));
+    }
+
+
+
     //게시물 작성
     @PostMapping(value = "/createPosts")
     @Operation(summary = "게시물 작성")
@@ -135,9 +144,9 @@ public class PostContoller {
 
     @PostMapping("/like")
     @Operation(summary = "게시물 좋아요")
-    ResponseEntity<String> likePost(@RequestBody LikeDTO likeDTO) {
+    ResponseEntity<String> likePost(@RequestBody LikeDTO likeDTO,@AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
-
+        likeDTO.setUserId(customUserDetails.getUser().getUserId());
         return ResponseEntity.status(HttpStatus.OK).body(
                 likeService.postReplies(likeDTO.getTargetId(), likeDTO.getUserId())
         );

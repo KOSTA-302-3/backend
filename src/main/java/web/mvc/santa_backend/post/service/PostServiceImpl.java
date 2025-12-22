@@ -177,14 +177,11 @@ public class PostServiceImpl implements PostService {
                 build()
         );
 
-        System.out.println(posts.getImageSourcesList());
-
-        Long postId = savedPost.getPostId();
 
         for(String image : posts.getImageSourcesList()){
             imageSourcesRepository.save(ImageSources.builder()
                             .posts(
-                                    postRepository.findById(postId).get()
+                                    postRepository.findById(savedPost.getPostId()).get()
                             )
                             .source(image)
                     .build());
@@ -192,7 +189,7 @@ public class PostServiceImpl implements PostService {
         for(String hash : posts.getHashTagsList()){
             hashTagsRepository.save(
                     HashTags.builder().
-                            posts(postRepository.findById(postId).get())
+                            posts(postRepository.findById(savedPost.getPostId()).get())
                                     .tag(hash).
                             build()
             );
@@ -283,6 +280,27 @@ public class PostServiceImpl implements PostService {
         }
         postRepository.findById(postId).get().setHashTags(hashTagList);
 
+    }
+
+    @Override
+    public PostResponseDTO getPostsById(Long postId) {
+
+        Posts posts = postRepository.findById(postId).get();
+
+       PostResponseDTO postResponseDTO = new PostResponseDTO(
+                posts.getPostId(),
+                userRepository.findById(posts.getCreateUserId()).get().getProfileImage(),
+                userRepository.findById(posts.getCreateUserId()).get().getUsername(),
+                posts.getCreateAt(),
+                posts.getContent(),
+                posts.getLikeCount(),
+                posts.getPostLevel(),
+                posts.isContentVisible(),
+                posts.getHashTags().stream().map(hashTags -> hashTags.getTag()).toList(),
+                posts.getImageSources().stream().map(imageSources -> imageSources.getSource()).toList()
+        );
+
+        return postResponseDTO;
     }
 
 
