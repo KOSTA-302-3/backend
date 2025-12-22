@@ -157,6 +157,7 @@ public class UserContoller {
     @Operation(summary = "커스텀(배지/색상) 보유 목록 조회")
     @GetMapping("/custom/{type}/{page}")
     public ResponseEntity<?> getCustoms(@PathVariable CustomItemType type, @PathVariable int page, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        if (customUserDetails == null) throw new UnauthorizedException(ErrorCode.LOGIN_REQUIRED);
         Long userId = customUserDetails.getUser().getUserId();
 
         Page<?> customs = switch (type) {
@@ -170,6 +171,7 @@ public class UserContoller {
     @Operation(summary = "프로필 커스텀(배지/색상) 바꾸기")
     @PutMapping("/custom/{type}/{id}")
     public ResponseEntity<?> changeCustom(@PathVariable CustomItemType type, @PathVariable Long id, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        if (customUserDetails == null) throw new UnauthorizedException(ErrorCode.LOGIN_REQUIRED);
         Long userId = customUserDetails.getUser().getUserId();
         CustomDTO customDTO = customService.updateCustom(type, userId, id);
 
@@ -213,6 +215,7 @@ public class UserContoller {
     @Operation(summary = "대기 중인 팔로워 조회 (페이징)", description = "현재 유저가 대기 팔로워 수락/거절 선택을 위함")
     @GetMapping("/pending/{page}")
     public ResponseEntity<?> getPendingFollowers(@PathVariable int page, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        if (customUserDetails == null) throw new UnauthorizedException(ErrorCode.LOGIN_REQUIRED);
         Page<UserSimpleDTO> pendingFollowers = followService.getPendingFollowers(customUserDetails.getUser().getUserId(), page);
 
         return ResponseEntity.status(HttpStatus.OK).body(pendingFollowers);
@@ -233,6 +236,7 @@ public class UserContoller {
     @Operation(summary = "차단 목록 조회 (페이징)", description = "로그인한 유저의 차단 목록을 보는 것")
     @GetMapping("/block/{type}/{page}")
     public ResponseEntity<?> getBlocks(@PathVariable BlockType type, @PathVariable int page, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        if (customUserDetails == null) throw new UnauthorizedException(ErrorCode.LOGIN_REQUIRED);
         Page<Object> blocks = blockService.getBlocks(customUserDetails.getUser().getUserId(), type, page);
 
         return ResponseEntity.status(HttpStatus.OK).body(blocks);
