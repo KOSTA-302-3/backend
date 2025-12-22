@@ -2,6 +2,7 @@ package web.mvc.santa_backend.chat.service;
 
 import org.springframework.data.domain.Page;
 import web.mvc.santa_backend.chat.dto.NotificationDTO;
+import web.mvc.santa_backend.chat.dto.NotificationResponseDTO;
 
 import java.util.List;
 
@@ -13,7 +14,7 @@ public interface NotificationService {
      * @param page
      * @return
      */
-    public Page<NotificationDTO> getNotificationByUserId(Long id, int page);
+    public Page<NotificationResponseDTO> getNotificationByUserId(Long id, int page);
 
     /**
      * 유저의 모든 알림을 가져오는 메서드
@@ -22,7 +23,7 @@ public interface NotificationService {
      * @return
      */
 
-    public Page<NotificationDTO> getAllNotificationByUserId(Long id, int page);
+    public Page<NotificationResponseDTO> getAllNotificationByUserId(Long id, int page);
 
     /**
      * 알림을 생성하는 메서드.
