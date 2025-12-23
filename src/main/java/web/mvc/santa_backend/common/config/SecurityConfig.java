@@ -90,13 +90,19 @@ public class SecurityConfig {
         // UsernamePasswordAuthenticationFilter 는 form login(security의 기본 로그인)을 진행하는 필터
         // form login을 위에서 disable 했고, 우리는 이 필터를 상속받은 LoginFilter로 jwt 방식 로그인을 할 것
         // addFilterAt:  UsernamePasswordAuthenticationFilter 자리에 LoginFilter 가 실행되도록 설정
-        http.addFilterAt(
-                new LoginFilter(
+        LoginFilter loginFilter = new LoginFilter(
                         this.authenticationManager(authenticationConfiguration),
                         jwtUtil,
                         bansRepository,
-                        userRepository),
+                        userRepository
+        );
+        
+        loginFilter.setFilterProcessesUrl("/api/login");
+            
+        http.addFilterAt(
+                loginFilter,
                 UsernamePasswordAuthenticationFilter.class);
+        
         http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
 
         return http.build();
