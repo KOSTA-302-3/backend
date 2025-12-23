@@ -22,7 +22,8 @@ public class ChatInterceptor implements HandshakeInterceptor {
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
         log.info("beforeHandshake");
-        List<String> authorizations = request.getHeaders().get("Authorization");
+        //기존 헤더에서 가지고오는 방법
+        /*List<String> authorizations = request.getHeaders().get("Authorization");
 
         if(authorizations == null || !authorizations.get(0).startsWith("Bearer ")) {
             return false;
@@ -34,7 +35,35 @@ public class ChatInterceptor implements HandshakeInterceptor {
         Long userId = jwtUtil.getUserId(auth);
         if(userId == null) {
             return false;
+        }*/
+
+        //쿠키에서 jwt 꺼내기
+        String token = null;
+
+        List<String> cookies = request.getHeaders().get("Cookie");
+        if(cookies == null || cookies.isEmpty()) {//쿠키가 아예 없으면?
+            return false;
         }
+
+        for(String cookieHeader : cookies) {
+            String[] cookiePairs = cookieHeader.split(";");
+
+            for(String cookie : cookiePairs) {
+                String trimmed = cookie.trim();
+
+                if(trimmed.startsWith("Authorization=")) {
+                    token = trimmed.substring("Authorization=".length());
+                }
+            }
+        }
+
+        Long userId = jwtUtil.getUserId(token);
+        if(userId == null) {
+            return false;
+        }
+
+
+
 
         String path = request.getURI().getPath();
         String[] split = path.split("/");

@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import web.mvc.santa_backend.chat.dto.ChatroomDTO;
 import web.mvc.santa_backend.chat.dto.ChatroomMemberDTO;
 import web.mvc.santa_backend.chat.dto.ChatroomRequestDTO;
+import web.mvc.santa_backend.chat.dto.ChatroomResponseDTO;
 import web.mvc.santa_backend.chat.entity.ChatroomMembers;
 import web.mvc.santa_backend.chat.entity.Chatrooms;
 import web.mvc.santa_backend.chat.repository.ChatroomMemberRepository;
@@ -39,23 +40,31 @@ public class ChatroomServiceImpl implements ChatroomService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ChatroomDTO> getChatrooms(Long userId, String word, int page) {
-
+    public Page<ChatroomResponseDTO> getChatrooms(Long userId, String word, int page) {
+        System.out.println("userId: " + userId);
+        System.out.println("word: " + word);
+        System.out.println("page: " + page);
         Page<Chatrooms> chatrooms = null;
         Pageable pageable = PageRequest.of(page, 10);
-        if(userId==null && word==null){
+        if(userId==null && (word==null || word.isEmpty())){
+            log.info("전체불러오기");
             chatrooms = chatroomRepository.findByIsPrivateAndIsDeleted(false, false, pageable);
-        }else if(userId==null && word!=null){
+        }else if(userId==null){
+            log.info("검색시");
             chatrooms = chatroomRepository.findByWord(word, pageable);
-        }else if(userId!=null && word==null){
+        }else if((word==null || word.isEmpty())){
+            log.info("내 채팅방");
             chatrooms = chatroomMemberRepository.findByUserId(userId, false, pageable);
-        }else if(userId!=null && word!=null){
+        }else {
+            log.info("내 채팅방 검색");
             chatrooms = chatroomMemberRepository.findByUserIdAndWord(userId, word, false, pageable);
         }
 
-        Page<ChatroomDTO> chatroomDTOS = chatrooms.map((n) -> {
+        System.out.println(chatrooms.getContent());
+
+        Page<ChatroomResponseDTO> chatroomDTOS = chatrooms.map((n) -> {
             long count = chatroomMemberRepository.countByChatroom_ChatroomIdAndIsBanned(n.getChatroomId(), false);
-            ChatroomDTO chatroomDTO = toDTO(n, count);
+            ChatroomResponseDTO chatroomDTO = toDTO(n, count);
             return chatroomDTO;
         });
 
@@ -104,17 +113,13 @@ public class ChatroomServiceImpl implements ChatroomService {
                 .build();
     }
 
-    private ChatroomDTO toDTO(Chatrooms chatrooms, long count) {
-        return ChatroomDTO.builder()
-                .chatroomId(chatrooms.getChatroomId())
+    private ChatroomResponseDTO toDTO(Chatrooms chatrooms, long count) {
+        return ChatroomResponseDTO.builder()
+                .id(chatrooms.getChatroomId())
                 .name(chatrooms.getName())
-                .createdAt(chatrooms.getCreatedAt())
                 .isPrivate(chatrooms.isPrivate())
-                .password(chatrooms.getPassword())
-                .isDeleted(chatrooms.isDeleted())
                 .imageUrl(chatrooms.getImageUrl())
-                .description(chatrooms.getDescription())
-                .countMember(count)
+                .membersCount(count)
                 .build();
     }
 }

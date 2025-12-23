@@ -49,10 +49,10 @@ public class ChatroomManager {
         }
     }
 
-    public void broadcast(OutboundChatMessageDTO outboundChatMessageDTO) {
+    public void broadcast(OutboundChatMessageDTO outboundChatMessageDTO, Long roomId) {
         objectMapper.registerModule(new JavaTimeModule()); //
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        Long roomId = outboundChatMessageDTO.getChatroomId();
+
         String message = null;
         try {
             message = objectMapper.writeValueAsString(outboundChatMessageDTO);

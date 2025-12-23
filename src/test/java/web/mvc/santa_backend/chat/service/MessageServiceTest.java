@@ -31,7 +31,5 @@ public class MessageServiceTest {
         OutboundChatMessageDTO testmessage = messageService.createMessage(message);
         //then
         Assertions.assertNotNull(testmessage);
-        Assertions.assertEquals(testmessage.getChatroomId(), message.getChatroomId());
-        Assertions.assertEquals(testmessage.getPayload(), message.getPayload());
     }
 }

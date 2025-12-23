@@ -70,7 +70,9 @@ public class SecurityConfig {
         /*
         http.authorizeHttpRequests((auth) ->
                 auth
-                        .requestMatchers("/index", "/api/user", "/api/user/**", "/ws/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        .requestMatchers("/index", "/api/user", "/api/user/**","/posts/**").permitAll()
                         // swagger 설정
                         .requestMatchers(
                                 "/v3/api-docs",
@@ -116,7 +118,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://192.168.0.19:5173", "ws://192.168.0.19:5173", "https://santa-sns.o-r.kr/", "http://santa-sns.o-r.kr/"));
 
         configuration.setAllowedMethods(Collections.singletonList("*"));
 
