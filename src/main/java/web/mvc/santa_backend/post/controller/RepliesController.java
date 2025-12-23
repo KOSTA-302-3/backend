@@ -16,7 +16,7 @@ import web.mvc.santa_backend.post.service.PostServiceImpl;
 import web.mvc.santa_backend.post.service.RepliesServiceImpl;
 
 @RestController
-@RequestMapping("/replies")
+@RequestMapping("/replies/api")
 public class RepliesController {
     @Autowired
     PostServiceImpl postService;

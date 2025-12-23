@@ -11,7 +11,7 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-@OpenAPIDefinition(servers = {@Server(url = "https://santa-sns.o-r.kr", description = "도메인 설명")})
+
 @Configuration
 public class SwaggerConfig {
 

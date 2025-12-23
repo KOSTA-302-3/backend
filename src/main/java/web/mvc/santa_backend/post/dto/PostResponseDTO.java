@@ -23,6 +23,7 @@ public class PostResponseDTO {
 
     private List<String> hashTagsList;
     private List<String> imageSourcesList;
+    private boolean userCheck;
 
 
 }
