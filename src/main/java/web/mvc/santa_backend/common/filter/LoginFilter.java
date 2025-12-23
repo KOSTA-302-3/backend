@@ -48,6 +48,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         this.jwtUtil = jwtUtil;
         this.bansRepository = bansRepository;
         this.userRepository = userRepository;
+        setFilterProcessesUrl("/api/login");
     }
 
     /**

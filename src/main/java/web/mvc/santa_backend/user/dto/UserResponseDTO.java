@@ -28,7 +28,7 @@ public class UserResponseDTO {
     private Long point;
     private int level;
 
-    //@JsonProperty("isPrivate")
+    @JsonProperty("isPrivate")
     private boolean isPrivate;
     private boolean state;
 
@@ -36,4 +36,7 @@ public class UserResponseDTO {
     private LocalDateTime deletedAt;
 
     private CustomDTO customDTO;
+
+    @JsonProperty("isMe")
+    private boolean isMe;
 }

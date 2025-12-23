@@ -1,5 +1,6 @@
 package web.mvc.santa_backend.common.config;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -61,18 +62,27 @@ public class SecurityConfig {
 
         http.cors(cors->cors.configurationSource(corsConfigurationSource()));
 
-
+        http.exceptionHandling(exception -> exception
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"error\":\"UNAUTHORIZED\"}");
+                })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"error\":\"FORBIDDEN\"}");
+                })
+        );
 
         // 모두 허용 (임시)
-        http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+        //http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
 
         // 경로별 인가 작업 (필요한 거 추가!)
-        /*
         http.authorizeHttpRequests((auth) ->
                 auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        .requestMatchers("/index", "/api/user", "/api/user/**","/posts/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
                         // swagger 설정
                         .requestMatchers(
                                 "/v3/api-docs",
@@ -82,18 +92,8 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/webjars/**"
                         ).permitAll()
-                        // GET 요청 누구나 접근 가능
-                        //.requestMatchers(HttpMethod.GET, "/api/user/**").permitAll()
-                        // Follow 인증 필요
-                        .requestMatchers("/api/follow/**").authenticated()
-                        .requestMatchers("/test").authenticated()
-                        // POST 요청 인증 필요
-                        //.requestMatchers(HttpMethod.POST, "/posts").authenticated()
-                        
-                        .requestMatchers("/api/admin/**").permitAll()  // 테스트용 임시 허용
-                        //.requestMatchers("/api/admin").hasRole("ADMIN")
+                        .requestMatchers("/api/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());
-         */
 
 
         // 필터 추가(교체)
@@ -102,13 +102,19 @@ public class SecurityConfig {
         // UsernamePasswordAuthenticationFilter 는 form login(security의 기본 로그인)을 진행하는 필터
         // form login을 위에서 disable 했고, 우리는 이 필터를 상속받은 LoginFilter로 jwt 방식 로그인을 할 것
         // addFilterAt:  UsernamePasswordAuthenticationFilter 자리에 LoginFilter 가 실행되도록 설정
-        http.addFilterAt(
-                new LoginFilter(
+        LoginFilter loginFilter = new LoginFilter(
                         this.authenticationManager(authenticationConfiguration),
                         jwtUtil,
                         bansRepository,
-                        userRepository),
+                        userRepository
+        );
+        
+        loginFilter.setFilterProcessesUrl("/api/login");
+            
+        http.addFilterAt(
+                loginFilter,
                 UsernamePasswordAuthenticationFilter.class);
+        
         http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
 
         return http.build();
