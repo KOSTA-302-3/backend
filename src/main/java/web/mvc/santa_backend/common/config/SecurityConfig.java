@@ -76,28 +76,28 @@ public class SecurityConfig {
         );
 
         // 모두 허용 (임시)
-        //http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+        http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
 
         // 경로별 인가 작업 (필요한 거 추가!)
-        http.authorizeHttpRequests((auth) ->
-                auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
-                        // post 테스트
-                        .requestMatchers("/api/posts/**").permitAll()
+        // http.authorizeHttpRequests((auth) ->
+        //         auth
+        //                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+        //                 .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
+        //                 .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
+        //                 // post 테스트
+        //                 .requestMatchers("/api/posts/**").permitAll()
                                    
-                        // swagger 설정
-                        .requestMatchers(
-                                "/v3/api-docs",
-                                "/v3/api-docs/**",
-                                "/swagger-ui.html",
-                                "/swagger-ui/**",
-                                "/swagger-resources/**",
-                                "/webjars/**"
-                        ).permitAll()
-                        .requestMatchers("/api/admin").hasRole("ADMIN")
-                        .anyRequest().authenticated());
+        //                 // swagger 설정
+        //                 .requestMatchers(
+        //                         "/v3/api-docs",
+        //                         "/v3/api-docs/**",
+        //                         "/swagger-ui.html",
+        //                         "/swagger-ui/**",
+        //                         "/swagger-resources/**",
+        //                         "/webjars/**"
+        //                 ).permitAll()
+        //                 .requestMatchers("/api/admin").hasRole("ADMIN")
+        //                 .anyRequest().authenticated());
 
 
         // 필터 추가(교체)
