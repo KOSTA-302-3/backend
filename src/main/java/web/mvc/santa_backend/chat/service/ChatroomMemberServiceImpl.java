@@ -5,10 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.socket.WebSocketSession;
-import web.mvc.santa_backend.chat.dto.ChatroomDTO;
-import web.mvc.santa_backend.chat.dto.ChatroomMemberDTO;
-import web.mvc.santa_backend.chat.dto.InboundChatMessageDTO;
-import web.mvc.santa_backend.chat.dto.OutboundChatMessageDTO;
+import web.mvc.santa_backend.chat.dto.*;
 import web.mvc.santa_backend.chat.entity.ChatroomMembers;
 import web.mvc.santa_backend.chat.entity.Chatrooms;
 import web.mvc.santa_backend.chat.manager.ChatroomManager;
@@ -24,6 +21,7 @@ import web.mvc.santa_backend.user.repository.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -40,26 +38,28 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserSimpleDTO> getChatroomMembers(Long chatroomId, boolean isBanned, Long userId) {
+    public List<ChatroomMemberResDTO> getChatroomMembers(Long chatroomId, boolean isBanned, Long userId) {
         //먼저 방 참여자인지의 검증
         checkChatMember(chatroomId, userId);
         //chatroomId로 현재유저/강퇴유저를 isBanned로 구별해서 불러오기
         List<ChatroomMembers> chatroomMembers =
                 chatroomMemberRepository.findByChatroomAndIsBanned(Chatrooms.builder().chatroomId(chatroomId).build(), isBanned);
 
-        List<UserSimpleDTO> userSimpleDTOList = new ArrayList<>();
-
+        List<ChatroomMemberResDTO> chatMemberList = new ArrayList<>();
+        Map<Long, WebSocketSession> roomSessions = chatroomManager.getRoomSessions(chatroomId);
         //chatroomMember에 들어있는 user엔티티를... userSimpleDTO로 변환후 리스트에 add
-        for(ChatroomMembers m : chatroomMembers){
-            userSimpleDTOList.add(
-                    UserSimpleDTO.builder()
-                    .userId(m.getUser().getUserId())
-                    .username(m.getUser().getUsername())
-                    .profileImage(m.getUser().getProfileImage())
-                    .build()
+        for (ChatroomMembers m : chatroomMembers) {
+            boolean result = roomSessions.containsKey(m.getUser().getUserId());
+            chatMemberList.add(
+                    ChatroomMemberResDTO.builder()
+                            .id(m.getUser().getUserId())
+                            .username(m.getUser().getUsername())
+                            .avatarUrl(m.getUser().getProfileImage())
+                            .online(result)
+                            .build()
             );
         }
-        return userSimpleDTOList;
+        return chatMemberList;
     }
 
     @Override
@@ -99,7 +99,7 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
             OutboundChatMessageDTO outMessage = messageService.createMessage(message);
 
             //현재 채팅방에 접속하고 있는 모든 사람에게 메시지 broadcast
-            chatroomManager.broadcast(outMessage);
+            chatroomManager.broadcast(outMessage, chatroomMemberDTO.getChatroomId());
         }else {
             //입장한 채팅방의 가장 최근 messageId를 가지고와서,
             Long latestMessageId = messageRepository.findLatestMessageId(chatroomMemberDTO.getChatroomId());

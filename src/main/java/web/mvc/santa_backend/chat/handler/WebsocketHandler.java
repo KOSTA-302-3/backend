@@ -44,6 +44,7 @@ public class WebsocketHandler extends TextWebSocketHandler {
                 .userId(userId)
                 .build();
         chatroomMemberService.enterChatroom(chatroomMemberDTO, session);
+        log.info("Chatroom has been entered successfully");
     }
 
     /**
@@ -68,7 +69,7 @@ public class WebsocketHandler extends TextWebSocketHandler {
         OutboundChatMessageDTO outMessageDTO = messageService.createMessage(messageDTO);
 
         //메시지를 채팅방에 있는 모든 사람들에게 broadcast.
-        chatroomManager.broadcast(outMessageDTO);
+        chatroomManager.broadcast(outMessageDTO, roomId);
     }
 
     /**

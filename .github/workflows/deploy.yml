@@ -29,7 +29,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
-          source: "build/libs/*.jar,Dockerfile,docker-compose.yml,nginx/nginx.conf"
+          source: "build/libs/*.jar,Dockerfile,docker-compose.yml"
           target: "~/santa-new"
           strip_components: 0
 
@@ -41,23 +41,30 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -e
+
+            # 디렉토리 정리
             TARGET_DIR="$HOME/santa"
             TEMP_DIR="$HOME/santa-new"
-
             if [ -d "$TARGET_DIR" ]; then sudo rm -rf "$TARGET_DIR"; fi
-
             mv "$TEMP_DIR" "$TARGET_DIR"
             cd "$TARGET_DIR"
+
+            # 파일 정리 (이름 단순화)
             mv build/libs/*.jar app.jar
 
+            # application.properties 생성 (Secrets 주입)
             echo "${{ secrets.BACKEND_PROPERTIES }}" > application.properties
 
+            # Docker Compose 실행
             if sudo docker compose version > /dev/null 2>&1; then
               COMPOSE_CMD="sudo docker compose"
             else
               COMPOSE_CMD="sudo docker-compose"
             fi
 
+            # 기존 컨테이너 종료 및 새 컨테이너 실행
             $COMPOSE_CMD down --remove-orphans || true
             $COMPOSE_CMD up --build -d
+
+            # 이미지 정리
             sudo docker image prune -f

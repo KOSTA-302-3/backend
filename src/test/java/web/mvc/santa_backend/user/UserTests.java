@@ -38,7 +38,7 @@ public class UserTests {
 
         Users user1 = userRepository.save(
                 Users.builder()
-                        .username("admin")
+                        .username("admin2")
                         .password(encPwd)
                         .email("admin@santa.com")
                         .phone("010-1111-1111")

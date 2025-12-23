@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import web.mvc.santa_backend.common.enumtype.LikeType;
+import web.mvc.santa_backend.post.dto.LikeDTO;
 import web.mvc.santa_backend.post.entity.Posts;
 import web.mvc.santa_backend.post.entity.Replies;
 import web.mvc.santa_backend.post.repository.LikesRepository;
@@ -97,6 +98,20 @@ public class LikeServiceImpl implements LikeService {
 
             return "cancel like";
         }
+    }
+
+    @Transactional
+    @Override
+    public boolean ckLike(LikeDTO likeDTO) {
+        boolean ck = false;
+        Users user = userRepository.findById(likeDTO.getUserId()).get();
+        if (likesRepository.findByTargetIdAndUser(likeDTO.getTargetId(), user).isEmpty()) {
+            return false;
+        }
+        else ck = true;
+        System.out.println(ck);
+
+        return true;
     }
 
 

@@ -9,9 +9,13 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import web.mvc.santa_backend.chat.dto.NotificationDTO;
+import web.mvc.santa_backend.chat.dto.NotificationResponseDTO;
 import web.mvc.santa_backend.chat.entity.Notifications;
 import web.mvc.santa_backend.chat.repository.NotificationRepository;
+import web.mvc.santa_backend.common.exception.ErrorCode;
+import web.mvc.santa_backend.common.exception.UserNotFoundException;
 import web.mvc.santa_backend.user.entity.Users;
+import web.mvc.santa_backend.user.repository.UserRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,28 +26,24 @@ import java.util.Optional;
 @Transactional(rollbackFor = Exception.class)
 public class NotificationServiceImpl implements NotificationService{
     private final NotificationRepository notificationRepository;
-
-    @Override
-    public List<NotificationDTO> getAllNotifications() {
-        return List.of();
-    }
+    private final UserRepository userRepository;
 
     @Override
     @Transactional(readOnly = true)
-    public Page<NotificationDTO> getNotificationByUserId(Long id, int page) {
-        Pageable pageable = PageRequest.of(page, 10);
+    public Page<NotificationResponseDTO> getNotificationByUserId(Long id, int page) {
+        Pageable pageable = PageRequest.of(page, 20);
         Page<Notifications> notifications = notificationRepository.findByUserAndIsRead(Users.builder().userId(id).build(), false, pageable);
 
-        Page<NotificationDTO> notificationDTOS = notifications.map(n -> toDTO(n));
+        Page<NotificationResponseDTO> notificationDTOS = notifications.map(n -> toDTO(n));
         return notificationDTOS;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<NotificationDTO> getAllNotificationByUserId(Long id, int page) {
+    public Page<NotificationResponseDTO> getAllNotificationByUserId(Long id, int page) {
         Pageable pageable = PageRequest.of(page, 10);
         Page<Notifications> notifications = notificationRepository.findByUser(Users.builder().userId(id).build(), pageable);
-        Page<NotificationDTO> notificationDTOS = notifications.map(n -> toDTO(n));
+        Page<NotificationResponseDTO> notificationDTOS = notifications.map(n -> toDTO(n));
         return notificationDTOS;
     }
 
@@ -78,6 +78,14 @@ public class NotificationServiceImpl implements NotificationService{
         notification.setRead(true);
     }
 
+    @Override
+    public void deleteAllNotificationById(Long userId) {
+        List<Notifications> unreadList = notificationRepository.findByUser_UserIdAndIsRead(userId, false);
+        for (Notifications notification : unreadList) {
+            notification.setRead(false);
+        }
+    }
+
     /**
      * DTO를 Entity로 바꾸는 맵퍼 메서드
      * @param notificationDTO
@@ -99,16 +107,46 @@ public class NotificationServiceImpl implements NotificationService{
      * @param notifications
      * @return
      */
-    private NotificationDTO toDTO(Notifications notifications){
-        return NotificationDTO.builder()
-                .notificationId(notifications.getNotificationId())
-                .userId(notifications.getUser().getUserId())
-                .message(notifications.getMessage())
-                .link(notifications.getLink())
-                .isRead(notifications.isRead())
-                .type(notifications.getNotificationType())
-                .createdAt(notifications.getCreatedAt())
-                .actionUserId(notifications.getActionUser().getUserId())
+    private NotificationResponseDTO toDTO(Notifications notifications){
+        Users actionUser = userRepository.findById(notifications.getActionUser().getUserId()).orElseThrow(() -> new UserNotFoundException(ErrorCode.USER_NOT_FOUND));
+        StringBuilder messageBuilder = new StringBuilder();
+        String title = null;
+        //알림 타입에 따라 메시지 분기처리 를.. 해야할지..
+        switch (notifications.getNotificationType()) {
+            case DM -> {
+                messageBuilder.append(actionUser.getUsername()).append("님의 DM");
+                title = "새로운 메시지";
+            }
+            case TAG -> {
+                messageBuilder.append(actionUser.getUsername()).append("님의 태그");
+                title = "새로운 태그";
+            }
+            case LIKE -> {
+                messageBuilder.append(actionUser.getUsername()).append("님의 좋아요");
+                title = "새로운 좋아요";
+            }
+            case POST -> {
+                messageBuilder.append(actionUser.getUsername()).append("님의 포스트");
+                title = "새로운 포스트";
+            }
+            case REPLY -> {
+                messageBuilder.append(actionUser.getUsername()).append("님의 답글");
+                title = "새로운 답글";
+            }
+            case FOLLOW -> {
+                messageBuilder.append(actionUser.getUsername()).append("님의 팔로우");
+                title = "새로운 팔로우";
+            }
+        }
+        String message = messageBuilder.toString();
+        return NotificationResponseDTO.builder()
+                .id(notifications.getNotificationId())
+                .title(title)
+                .message(message)
+                .time(notifications.getCreatedAt())
+                .isUnread(!notifications.isRead())
                 .build();
     }
+
+
 }
