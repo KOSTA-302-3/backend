@@ -27,17 +27,37 @@ public class S3Uploader {
     public String uploadFile(MultipartFile file, String path) throws IOException {
         String key = path + "/" + UUID.randomUUID() + "-" + file.getOriginalFilename();
 
-        s3Client.putObject(
-                PutObjectRequest.builder()
-                        .bucket(bucketName)
-                        .key(key)
-                        .contentType(file.getContentType())
-                        .contentDisposition("inline")
-                        .build()
-                , RequestBody.fromInputStream(file.getInputStream(), file.getSize())
-        );
+        log.info("========== S3 Upload Start ==========");
+        log.info("Bucket: {}", bucketName);
+        log.info("Region: {}", region);
+        log.info("Key (File Path): {}", key);
+        log.info("File Size: {} bytes", file.getSize());
+
+        try {
+            s3Client.putObject(
+                    PutObjectRequest.builder()
+                            .bucket(bucketName)
+                            .key(key)
+                            .contentType(file.getContentType())
+                            .contentDisposition("inline")
+                            .build(),
+                    RequestBody.fromInputStream(file.getInputStream(), file.getSize())
+            );
+            
+            log.info("========== S3 Upload Success ==========");
+
+        } catch (S3Exception e) {
+            log.error("!!! AWS S3 Error Occurred !!!");
+            log.error("HTTP Status Code: {}", e.statusCode());
+            log.error("AWS Error Code: {}", e.awsErrorDetails().errorCode());
+            log.error("Error Message: {}", e.awsErrorDetails().errorMessage());
+            throw e;
+
+        } catch (Exception e) {
+            log.error("!!! Unknown Error Occurred !!!", e);
+            throw new IOException("S3 Upload Failed", e);
+        }
 
         return "https://" + bucketName + ".s3." + region + ".amazonaws.com/" + key;
     }
-
 }
