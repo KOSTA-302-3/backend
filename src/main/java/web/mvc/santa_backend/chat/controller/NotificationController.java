@@ -48,6 +48,12 @@ public class NotificationController {
         return ResponseEntity.status(HttpStatus.OK).body(notifications);
     }
 
+    @GetMapping("/api/notification/count")
+    public ResponseEntity<?> getNotificationCount(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        Long userId = customUserDetails.getUser().getUserId();
+        return ResponseEntity.status(HttpStatus.OK).body(notificationService.countNotificationByUserId(userId));
+    }
+
     @PostMapping("/api/notification")
     public ResponseEntity<?> createNotification(@RequestBody NotificationDTO notification){
         notificationService.createNotification(notification);
@@ -56,7 +62,8 @@ public class NotificationController {
 
     @DeleteMapping("/api/notification")
     public ResponseEntity<?> checkAllNotification(@AuthenticationPrincipal CustomUserDetails customUserDetails){
-        Long Id = customUserDetails.getUser().getUserId();
+        Long id = customUserDetails.getUser().getUserId();
+        notificationService.deleteAllNotificationById(id);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
