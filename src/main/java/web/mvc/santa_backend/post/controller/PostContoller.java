@@ -125,7 +125,7 @@ public class PostContoller {
     @PostMapping(value = "/imageUpload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "이미지 작성")
     ResponseEntity<List<String>> createimage(@RequestPart List<MultipartFile> files ,@AuthenticationPrincipal CustomUserDetails customUserDetails) {
-
+        System.out.println("컨트롤러 도착! 파일 개수: " + (files != null ? files.size() : "null"));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(postService.imgUpload(files));
     }
