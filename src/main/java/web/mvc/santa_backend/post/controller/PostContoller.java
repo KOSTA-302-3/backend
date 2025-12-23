@@ -22,7 +22,7 @@ import web.mvc.santa_backend.post.service.RepliesServiceImpl;
 import java.util.List;
 
 @RestController
-@RequestMapping("/posts/api")
+@RequestMapping("/api/posts")
 public class PostContoller {
     @Autowired
     PostServiceImpl postService;
