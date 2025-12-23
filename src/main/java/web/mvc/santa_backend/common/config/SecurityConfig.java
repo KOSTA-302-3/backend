@@ -79,25 +79,26 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
 
         // 경로별 인가 작업 (필요한 거 추가!)
-        // http.authorizeHttpRequests((auth) ->
-        //         auth
-        //                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-        //                 .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
-        //                 .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
-        //                 // post 테스트
-        //                 .requestMatchers("/api/posts/**").permitAll()
-                                    
-        //                 // swagger 설정
-        //                 .requestMatchers(
-        //                         "/v3/api-docs",
-        //                         "/v3/api-docs/**",
-        //                         "/swagger-ui.html",
-        //                         "/swagger-ui/**",
-        //                         "/swagger-resources/**",
-        //                         "/webjars/**"
-        //                 ).permitAll()
-        //                 .requestMatchers("/api/admin").hasRole("ADMIN")
-        //                 .anyRequest().authenticated());
+//         http.authorizeHttpRequests((auth) ->
+//                 auth
+//                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+//                         .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
+//                         .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
+//                         // post 테스트
+//                         .requestMatchers("/api/posts/**").permitAll()
+//                                    
+//                         // swagger 설정
+//                         .requestMatchers(
+//                                 "/v3/api-docs",
+//                                 "/v3/api-docs/**",
+//                                 "/swagger-ui.html",
+//                                 "/swagger-ui/**",
+//                                 "/swagger-resources/**",
+//                                 "/webjars/**"
+//                         ).permitAll()
+//                         .requestMatchers("/api/admin").hasRole("ADMIN")
+//                         .anyRequest().authenticated());
+
 
         // 필터 추가(교체)
         // UsernamePasswordAuthenticationFilter 는 form login(security의 기본 로그인)을 진행하는 필터
@@ -127,7 +128,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://192.168.0.19:5173", "ws://192.168.0.19:5173", "https://santa-sns.o-r.kr", "http://santa-sns.o-r.kr", "https://santa-sns.o-r.kr/", "http://santa-sns.o-r.kr/"));
+        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://192.168.0.19:5173", "ws://192.168.0.19:5173", "https://santa-sns.o-r.kr", "http://santa-sns.o-r.kr"));
 
         configuration.setAllowedMethods(Collections.singletonList("*"));
 
@@ -141,4 +142,5 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
 }
