@@ -45,4 +45,6 @@ public interface NotificationService {
     public void deleteNotificationById(Long id);
 
     public void deleteAllNotificationById(Long userId);
+
+    public long countNotificationByUserId(Long userId);
 }

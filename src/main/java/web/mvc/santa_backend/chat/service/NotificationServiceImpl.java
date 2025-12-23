@@ -82,8 +82,13 @@ public class NotificationServiceImpl implements NotificationService{
     public void deleteAllNotificationById(Long userId) {
         List<Notifications> unreadList = notificationRepository.findByUser_UserIdAndIsRead(userId, false);
         for (Notifications notification : unreadList) {
-            notification.setRead(false);
+            notification.setRead(true);
         }
+    }
+
+    @Override
+    public long countNotificationByUserId(Long userId) {
+        return notificationRepository.countByUser_UserIdAndIsRead(userId, false);
     }
 
     /**
