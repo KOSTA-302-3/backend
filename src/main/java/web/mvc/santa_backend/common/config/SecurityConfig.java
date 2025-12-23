@@ -32,115 +32,115 @@ import java.util.List;
 @Slf4j
 public class SecurityConfig {
 
-    //AuthenticationManager가 인자로 받을 AuthenticationConfiguraion 객체 생성자 주입
-    private final AuthenticationConfiguration authenticationConfiguration;
+    //AuthenticationManager가 인자로 받을 AuthenticationConfiguraion 객체 생성자 주입
+    private final AuthenticationConfiguration authenticationConfiguration;
 
-    private final JWTUtil jwtUtil;
-    private final BansRepository bansRepository;
-    private final UserRepository userRepository;
+    private final JWTUtil jwtUtil;
+    private final BansRepository bansRepository;
+    private final UserRepository userRepository;
 
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-        return configuration.getAuthenticationManager();
-    }
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
+    }
 
-    @Bean
-    public BCryptPasswordEncoder bCryptPasswordEncoder() {
-        log.info("bCryptPasswordEncoder called...");
-        return new BCryptPasswordEncoder();
-    }
+    @Bean
+    public BCryptPasswordEncoder bCryptPasswordEncoder() {
+        log.info("bCryptPasswordEncoder called...");
+        return new BCryptPasswordEncoder();
+    }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // csrf disable (csrf공격을 방어하기 위한 토큰 주고 받는 부분을 비활성화)
-        http.csrf((auth) -> auth.disable());
-        // http basic 인증 방식 disable
-        http.httpBasic((auth) -> auth.disable());
-        // Form 로그인 방식 disable -> React, JWT 인증 방식으로 변경
-        // disable 설정하면 security의 UsernamePasswordAuthenticationFilter 비활성화
-        http.formLogin((auth) -> auth.disable());
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        // csrf disable (csrf공격을 방어하기 위한 토큰 주고 받는 부분을 비활성화)
+        http.csrf((auth) -> auth.disable());
+        // http basic 인증 방식 disable
+        http.httpBasic((auth) -> auth.disable());
+        // Form 로그인 방식 disable -> React, JWT 인증 방식으로 변경
+        // disable 설정하면 security의 UsernamePasswordAuthenticationFilter 비활성화
+        http.formLogin((auth) -> auth.disable());
 
-        http.cors(cors->cors.configurationSource(corsConfigurationSource()));
+        http.cors(cors->cors.configurationSource(corsConfigurationSource()));
 
-        http.exceptionHandling(exception -> exception
-                .authenticationEntryPoint((request, response, authException) -> {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.setContentType("application/json;charset=UTF-8");
-                    response.getWriter().write("{\"error\":\"UNAUTHORIZED\"}");
-                })
-                .accessDeniedHandler((request, response, accessDeniedException) -> {
-                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                    response.setContentType("application/json;charset=UTF-8");
-                    response.getWriter().write("{\"error\":\"FORBIDDEN\"}");
-                })
-        );
+        http.exceptionHandling(exception -> exception
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"error\":\"UNAUTHORIZED\"}");
+                })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"error\":\"FORBIDDEN\"}");
+                })
+        );
 
-        // 모두 허용 (임시)
-        http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+        // 모두 허용 (임시)
+        http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
 
-        // 경로별 인가 작업 (필요한 거 추가!)
-        // http.authorizeHttpRequests((auth) ->
-        //         auth
-        //                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-        //                 .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
-        //                 .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
-        //                 // post 테스트
-        //                 .requestMatchers("/api/posts/**").permitAll()
-                                   
-        //                 // swagger 설정
-        //                 .requestMatchers(
-        //                         "/v3/api-docs",
-        //                         "/v3/api-docs/**",
-        //                         "/swagger-ui.html",
-        //                         "/swagger-ui/**",
-        //                         "/swagger-resources/**",
-        //                         "/webjars/**"
-        //                 ).permitAll()
-        //                 .requestMatchers("/api/admin").hasRole("ADMIN")
-        //                 .anyRequest().authenticated());
+        // 경로별 인가 작업 (필요한 거 추가!)
+//         http.authorizeHttpRequests((auth) ->
+//                 auth
+//                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+//                         .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
+//                         .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
+//                         // post 테스트
+//                         .requestMatchers("/api/posts/**").permitAll()
+//                                    
+//                         // swagger 설정
+//                         .requestMatchers(
+//                                 "/v3/api-docs",
+//                                 "/v3/api-docs/**",
+//                                 "/swagger-ui.html",
+//                                 "/swagger-ui/**",
+//                                 "/swagger-resources/**",
+//                                 "/webjars/**"
+//                         ).permitAll()
+//                         .requestMatchers("/api/admin").hasRole("ADMIN")
+//                         .anyRequest().authenticated());
 
 
-        // 필터 추가(교체)
-        // UsernamePasswordAuthenticationFilter 는 form login(security의 기본 로그인)을 진행하는 필터
-        // 필터 추가(교체)
-        // UsernamePasswordAuthenticationFilter 는 form login(security의 기본 로그인)을 진행하는 필터
-        // form login을 위에서 disable 했고, 우리는 이 필터를 상속받은 LoginFilter로 jwt 방식 로그인을 할 것
-        // addFilterAt:  UsernamePasswordAuthenticationFilter 자리에 LoginFilter 가 실행되도록 설정
-        LoginFilter loginFilter = new LoginFilter(
-                        this.authenticationManager(authenticationConfiguration),
-                        jwtUtil,
-                        bansRepository,
-                        userRepository
-        );
-        
-        loginFilter.setFilterProcessesUrl("/api/login");
-            
-        http.addFilterAt(
-                loginFilter,
-                UsernamePasswordAuthenticationFilter.class);
-        
-        http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
+        // 필터 추가(교체)
+        // UsernamePasswordAuthenticationFilter 는 form login(security의 기본 로그인)을 진행하는 필터
+        // 필터 추가(교체)
+        // UsernamePasswordAuthenticationFilter 는 form login(security의 기본 로그인)을 진행하는 필터
+        // form login을 위에서 disable 했고, 우리는 이 필터를 상속받은 LoginFilter로 jwt 방식 로그인을 할 것
+        // addFilterAt:  UsernamePasswordAuthenticationFilter 자리에 LoginFilter 가 실행되도록 설정
+        LoginFilter loginFilter = new LoginFilter(
+                        this.authenticationManager(authenticationConfiguration),
+                        jwtUtil,
+                        bansRepository,
+                        userRepository
+        );
+        
+        loginFilter.setFilterProcessesUrl("/api/login");
+            
+        http.addFilterAt(
+                loginFilter,
+                UsernamePasswordAuthenticationFilter.class);
+        
+        http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
 
-        return http.build();
-    }
+        return http.build();
+    }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://192.168.0.19:5173", "ws://192.168.0.19:5173", "https://santa-sns.o-r.kr", "http://santa-sns.o-r.kr"));
+        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://192.168.0.19:5173", "ws://192.168.0.19:5173", "https://santa-sns.o-r.kr", "http://santa-sns.o-r.kr"));
 
-        configuration.setAllowedMethods(Collections.singletonList("*"));
+        configuration.setAllowedMethods(Collections.singletonList("*"));
 
-        configuration.setAllowedHeaders(Collections.singletonList("*"));
+        configuration.setAllowedHeaders(Collections.singletonList("*"));
 
-        configuration.setAllowCredentials(true);
+        configuration.setAllowCredentials(true);
 
-        configuration.setExposedHeaders(List.of("Authorization"));
+        configuration.setExposedHeaders(List.of("Authorization"));
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 
 }
