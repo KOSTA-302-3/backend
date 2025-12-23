@@ -22,7 +22,6 @@ import web.mvc.santa_backend.common.filter.JWTFilter;
 import web.mvc.santa_backend.common.filter.LoginFilter;
 import web.mvc.santa_backend.common.security.JWTUtil;
 import web.mvc.santa_backend.user.repository.UserRepository;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import java.util.Collections;
 import java.util.List;
@@ -77,28 +76,28 @@ public class SecurityConfig {
         );
 
         // 모두 허용 (임시)
-        //http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+        http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
 
         // 경로별 인가 작업 (필요한 거 추가!)
-        http.authorizeHttpRequests((auth) ->
-                auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
-                        // post 테스트
-                        .requestMatchers(new AntPathRequestMatcher("/api/posts/**")).permitAll()
+        // http.authorizeHttpRequests((auth) ->
+        //         auth
+        //                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+        //                 .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
+        //                 .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
+        //                 // post 테스트
+        //                 .requestMatchers(HttpMethod.POST, "/api/posts/**").permitAll()
                                    
-                        // swagger 설정
-                        .requestMatchers(
-                                "/v3/api-docs",
-                                "/v3/api-docs/**",
-                                "/swagger-ui.html",
-                                "/swagger-ui/**",
-                                "/swagger-resources/**",
-                                "/webjars/**"
-                        ).permitAll()
-                        .requestMatchers("/api/admin").hasRole("ADMIN")
-                        .anyRequest().authenticated());
+        //                 // swagger 설정
+        //                 .requestMatchers(
+        //                         "/v3/api-docs",
+        //                         "/v3/api-docs/**",
+        //                         "/swagger-ui.html",
+        //                         "/swagger-ui/**",
+        //                         "/swagger-resources/**",
+        //                         "/webjars/**"
+        //                 ).permitAll()
+        //                 .requestMatchers("/api/admin").hasRole("ADMIN")
+        //                 .anyRequest().authenticated());
 
 
         // 필터 추가(교체)
