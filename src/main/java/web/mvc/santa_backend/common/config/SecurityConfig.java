@@ -107,7 +107,7 @@ public class SecurityConfig {
                         jwtUtil,
                         bansRepository,
                         userRepository
-        )
+        );
         
         loginFilter.setFilterProcessesUrl("/api/login");
             
