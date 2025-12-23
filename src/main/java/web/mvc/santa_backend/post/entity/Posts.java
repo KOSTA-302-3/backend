@@ -42,10 +42,10 @@ public class Posts {
     @ColumnDefault("false")
     private   boolean contentVisible;
 
-    @OneToMany(mappedBy = "posts", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "posts", fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     private List<HashTags> hashTags = new ArrayList<>();
 
-    @OneToMany(mappedBy = "posts", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "posts", fetch = FetchType.LAZY ,cascade = CascadeType.ALL)
     private List<ImageSources> imageSources = new ArrayList<>();
 
 

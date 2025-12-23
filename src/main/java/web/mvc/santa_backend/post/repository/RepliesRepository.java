@@ -12,4 +12,6 @@ import java.util.List;
 public interface RepliesRepository extends JpaRepository<Replies,Long> {
 
     Page<Replies> findAllByPostsPostId(Long postId, Pageable pageable);
+
+    void deleteAllByPostsPostId(Long postId);
 }

@@ -28,6 +28,6 @@ public interface PostService {
 
     void insertHashTags(String hashTags, Long postId);
 
-    PostResponseDTO getPostsById(Long postId);
+    PostResponseDTO getPostsById(Long postId,Long userId);
 
 }

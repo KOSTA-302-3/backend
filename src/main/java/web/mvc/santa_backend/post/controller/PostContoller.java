@@ -22,7 +22,7 @@ import web.mvc.santa_backend.post.service.RepliesServiceImpl;
 import java.util.List;
 
 @RestController
-@RequestMapping("/posts")
+@RequestMapping("/posts/api")
 public class PostContoller {
     @Autowired
     PostServiceImpl postService;
@@ -49,9 +49,7 @@ public class PostContoller {
     @GetMapping("/getAllOnFilter")
     @Operation(summary = "필터링 킨 전체 게시물 보기")
     ResponseEntity<Page<PostResponseDTO>> getAllPostsWithOnFilter(Long postLevel, int pageNo, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        if (customUserDetails.getAuthorities() == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-        }
+
         return ResponseEntity.status(HttpStatus.OK).body(postService.getAllPostsWithOnFilter(postLevel, pageNo));
 
     }
@@ -60,9 +58,7 @@ public class PostContoller {
     @Operation(summary = "필터링 끈 팔로우 게시물 보기")
     @GetMapping("/getFollowOffFilter")
     ResponseEntity<Page<PostDTO>> getFollowPostsWithOffFilter(@RequestParam Long userId, @RequestParam int pageNo, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        if (customUserDetails.getAuthorities() == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-        }
+
         return ResponseEntity.status(HttpStatus.OK).body(postService.getFollowPostsWithOffFilter(userId, pageNo));
     }
 
@@ -70,9 +66,7 @@ public class PostContoller {
     @Operation(summary = "필터링 킨 팔로우 게시물 보기")
     @GetMapping("/getFollowOnFilter")
     ResponseEntity<Page<PostResponseDTO>> getFollowPostsWithOnFilter(@RequestParam Long postLevel, @RequestParam int pageNo,@AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        if (customUserDetails.getAuthorities() == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-        }
+
         long userId = customUserDetails.getUser().getUserId();
 
         return ResponseEntity.status(HttpStatus.OK).body(postService.getFollowPostsWithOnFilter(userId, postLevel, pageNo));
@@ -90,7 +84,9 @@ public class PostContoller {
     @GetMapping("/getPostsByPostId")
     ResponseEntity<PostResponseDTO> getPostsByPostId(@RequestParam Long PostId,@AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
-        return ResponseEntity.status(HttpStatus.OK).body(postService.getPostsById(PostId));
+
+        Long userId = customUserDetails.getUser().getUserId();
+        return ResponseEntity.status(HttpStatus.OK).body(postService.getPostsById(PostId,userId));
     }
 
 
@@ -119,7 +115,8 @@ public class PostContoller {
     //게시물 삭제
     @DeleteMapping("/deletePosts")
     @Operation(summary = "게시물 삭제")
-    ResponseEntity<String> deletePosts(@RequestBody PostDTO postDTO) {
+    ResponseEntity<String> deletePosts(@RequestBody PostDTO postDTO,@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        System.out.println(postDTO.toString());
         postService.deletePosts(postDTO);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Delete Success");
 
@@ -127,7 +124,7 @@ public class PostContoller {
 
     @PostMapping(value = "/imageUpload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "이미지 작성")
-    ResponseEntity<List<String>> createPosts(@RequestPart List<MultipartFile> files ,@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+    ResponseEntity<List<String>> createimage(@RequestPart List<MultipartFile> files ,@AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
 
         return ResponseEntity.status(HttpStatus.CREATED).body(postService.imgUpload(files));

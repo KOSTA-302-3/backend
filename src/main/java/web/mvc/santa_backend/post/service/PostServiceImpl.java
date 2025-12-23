@@ -19,6 +19,7 @@ import web.mvc.santa_backend.post.entity.Posts;
 import web.mvc.santa_backend.post.repository.HashTagsRepository;
 import web.mvc.santa_backend.post.repository.ImageSourcesRepository;
 import web.mvc.santa_backend.post.repository.PostResository;
+import web.mvc.santa_backend.post.repository.RepliesRepository;
 import web.mvc.santa_backend.user.repository.UserRepository;
 
 import java.io.IOException;
@@ -38,6 +39,8 @@ public class PostServiceImpl implements PostService {
     private S3Uploader s3Uploader;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private RepliesRepository repliesRepository;
 
 
 
@@ -93,7 +96,8 @@ public class PostServiceImpl implements PostService {
                 posts.getPostLevel(),
                 posts.isContentVisible(),
                 posts.getHashTags().stream().map(hashTags -> hashTags.getTag()).toList(),
-                posts.getImageSources().stream().map(imageSources -> imageSources.getSource()).toList()
+                posts.getImageSources().stream().map(imageSources -> imageSources.getSource()).toList(),
+                false
         ));
         return pageDTO;
     }
@@ -134,7 +138,8 @@ public class PostServiceImpl implements PostService {
                 posts.getPostLevel(),
                 posts.isContentVisible(),
                 posts.getHashTags().stream().map(hashTags -> hashTags.getTag()).toList(),
-                posts.getImageSources().stream().map(imageSources -> imageSources.getSource()).toList()
+                posts.getImageSources().stream().map(imageSources -> imageSources.getSource()).toList(),
+                false
         ));
         return pageDTO;
     }
@@ -232,6 +237,8 @@ public class PostServiceImpl implements PostService {
 
     @Transactional
     public void deletePosts(PostDTO posts) {
+
+        repliesRepository.deleteAllByPostsPostId(posts.getPostId());
         postRepository.deleteById(posts.getPostId());
     }
 
@@ -283,9 +290,11 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostResponseDTO getPostsById(Long postId) {
+    public PostResponseDTO getPostsById(Long postId,Long userId) {
 
         Posts posts = postRepository.findById(postId).get();
+
+        boolean userCheck =posts.getCreateUserId() == userId;
 
        PostResponseDTO postResponseDTO = new PostResponseDTO(
                 posts.getPostId(),
@@ -297,7 +306,8 @@ public class PostServiceImpl implements PostService {
                 posts.getPostLevel(),
                 posts.isContentVisible(),
                 posts.getHashTags().stream().map(hashTags -> hashTags.getTag()).toList(),
-                posts.getImageSources().stream().map(imageSources -> imageSources.getSource()).toList()
+                posts.getImageSources().stream().map(imageSources -> imageSources.getSource()).toList(),
+                userCheck
         );
 
         return postResponseDTO;

@@ -22,7 +22,7 @@ public class Replies {
     @Column(nullable = false)
     private  Long userId;
 
-    @ManyToOne
+    @ManyToOne()
     @JoinColumn(name = "post_id")
     private Posts posts;
 
