@@ -22,6 +22,7 @@ import web.mvc.santa_backend.common.filter.JWTFilter;
 import web.mvc.santa_backend.common.filter.LoginFilter;
 import web.mvc.santa_backend.common.security.JWTUtil;
 import web.mvc.santa_backend.user.repository.UserRepository;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import java.util.Collections;
 import java.util.List;
@@ -85,7 +86,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
                         // post 테스트
-                        .requestMatchers("/api/posts/**").permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/api/posts/**")).permitAll()
                                    
                         // swagger 설정
                         .requestMatchers(
