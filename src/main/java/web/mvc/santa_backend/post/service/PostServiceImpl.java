@@ -247,8 +247,14 @@ public class PostServiceImpl implements PostService {
     public List<String> imgUpload(List<MultipartFile> files) {
         List<String> urls = new ArrayList<>();
         List<ImageSources> imageList = new ArrayList<>();
+
+        System.out.println(files);
+        
         for (MultipartFile file : files) {
+            System.out.println(file);
+            
             try {
+                System.out.println("try in");
                 urls.add(s3Uploader.uploadFile(file, "test"));
             } catch (IOException e) {
                 throw new RuntimeException(e);
