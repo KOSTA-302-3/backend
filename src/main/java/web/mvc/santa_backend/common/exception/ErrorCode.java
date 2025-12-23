@@ -34,7 +34,10 @@ public enum ErrorCode {
     CHATMEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "chatmember not found", "채팅멤버가 없음"),
 
     NOT_CHATMEMBER(HttpStatus.BAD_REQUEST, "not chatmember", "채팅멤버가 아님"),
-    NOT_CHATROOM_ADMIN(HttpStatus.FORBIDDEN, "not chatroom admin", "채팅방 관리자가 아님");
+    NOT_CHATROOM_ADMIN(HttpStatus.FORBIDDEN, "not chatroom admin", "채팅방 관리자가 아님"),
+
+    LOGIN_REQUIRED(HttpStatus.UNAUTHORIZED, "unauthorized user", "로그인 필요");
+
     private final HttpStatus httpStatus;
     private final String title;
     private final String message;

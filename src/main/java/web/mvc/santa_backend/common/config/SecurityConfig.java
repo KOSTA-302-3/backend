@@ -64,15 +64,13 @@ public class SecurityConfig {
 
 
         // 모두 허용 (임시)
-        http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+        //http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
 
         // 경로별 인가 작업 (필요한 거 추가!)
-        /*
         http.authorizeHttpRequests((auth) ->
                 auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        .requestMatchers("/index", "/api/user", "/api/user/**","/posts/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
                         // swagger 설정
                         .requestMatchers(
                                 "/v3/api-docs",
@@ -82,18 +80,8 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/webjars/**"
                         ).permitAll()
-                        // GET 요청 누구나 접근 가능
-                        //.requestMatchers(HttpMethod.GET, "/api/user/**").permitAll()
-                        // Follow 인증 필요
-                        .requestMatchers("/api/follow/**").authenticated()
-                        .requestMatchers("/test").authenticated()
-                        // POST 요청 인증 필요
-                        //.requestMatchers(HttpMethod.POST, "/posts").authenticated()
-                        
-                        .requestMatchers("/api/admin/**").permitAll()  // 테스트용 임시 허용
-                        //.requestMatchers("/api/admin").hasRole("ADMIN")
+                        .requestMatchers("/api/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());
-         */
 
 
         // 필터 추가(교체)
