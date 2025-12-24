@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import web.mvc.santa_backend.chat.dto.NotificationDTO;
 import web.mvc.santa_backend.chat.dto.NotificationResponseDTO;
 import web.mvc.santa_backend.chat.entity.Notifications;
+import web.mvc.santa_backend.chat.manager.NotificationManager;
 import web.mvc.santa_backend.chat.repository.NotificationRepository;
 import web.mvc.santa_backend.common.exception.ErrorCode;
 import web.mvc.santa_backend.common.exception.UserNotFoundException;
@@ -27,6 +28,7 @@ import java.util.Optional;
 public class NotificationServiceImpl implements NotificationService{
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
+    private final NotificationManager notificationManager;
 
     @Override
     @Transactional(readOnly = true)
@@ -69,6 +71,8 @@ public class NotificationServiceImpl implements NotificationService{
         Users actionUser = Users.builder().userId(notificationDTO.getActionUserId()).build();
         Notifications notification = toEntity(notificationDTO, user, actionUser);
         notificationRepository.save(notification);
+        log.info("여기까지 오면 send됨");
+        notificationManager.sendNewNotification(notificationDTO.getUserId());
     }
 
 
