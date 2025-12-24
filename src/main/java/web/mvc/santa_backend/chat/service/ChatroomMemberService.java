@@ -5,6 +5,7 @@ import web.mvc.santa_backend.chat.dto.ChatroomDTO;
 import web.mvc.santa_backend.chat.dto.ChatroomMemberDTO;
 import web.mvc.santa_backend.chat.dto.ChatroomMemberResDTO;
 import web.mvc.santa_backend.chat.entity.ChatroomMembers;
+import web.mvc.santa_backend.common.enumtype.UserRole;
 import web.mvc.santa_backend.user.dto.UserSimpleDTO;
 
 import java.util.List;
@@ -72,4 +73,6 @@ public interface ChatroomMemberService {
      * 첫 입장시 입장 메시지 보낸 이후, 입장메시지 보냈는지의 여부를 true로 바꿈
      */
     void updateNoticeSent(Long chatroomMemberId);
+
+    UserRole getUserRole(Long userId, Long chatroomId);
 }
