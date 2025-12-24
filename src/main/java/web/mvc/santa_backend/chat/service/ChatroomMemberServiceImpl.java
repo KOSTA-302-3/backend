@@ -39,8 +39,6 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
     @Override
     @Transactional(readOnly = true)
     public List<ChatroomMemberResDTO> getChatroomMembers(Long chatroomId, boolean isBanned, Long userId) {
-        //먼저 방 참여자인지의 검증
-        checkChatMember(chatroomId, userId);
         //chatroomId로 현재유저/강퇴유저를 isBanned로 구별해서 불러오기
         List<ChatroomMembers> chatroomMembers =
                 chatroomMemberRepository.findByChatroomAndIsBanned(Chatrooms.builder().chatroomId(chatroomId).build(), isBanned);
@@ -71,19 +69,12 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
             throw new RuntimeException("강퇴당한 유저는 재입장이 불가능합니다.");
         }
 
-        //기존 참여자인지 확인
-        result = chatroomMemberRepository.existsByChatroom_ChatroomIdAndUser_UserIdAndIsBanned(chatroomMemberDTO.getChatroomId(), chatroomMemberDTO.getUserId(), false);
-        //기존 참여자가 아니라면 참여멤버 테이블에 레코드 추가
-        if(!result){
-            //참여자가 0명이라면 방을 만든사람 -> 즉 Admin
-            long count = chatroomMemberRepository.countByChatroom_ChatroomIdAndIsBanned(chatroomMemberDTO.getChatroomId(), false);
-            if(count == 0){
-                chatroomMemberDTO.setRole(UserRole.ADMIN);
-            }else { //참여자가 0명이 아니라면 기존 채팅방에 참여하는 사람 -> 즉 User
-                chatroomMemberDTO.setRole(UserRole.USER);
-            }
-            //참여멤버 테이블에 레코드 추가
-            ChatroomMembers chatroomMember = createChatroomMember(chatroomMemberDTO);
+        log.info("chatroomId : {}", chatroomMemberDTO.getChatroomId());
+        log.info("userId : {}", chatroomMemberDTO.getUserId());
+        ChatroomMembers chatroomMember = chatroomMemberRepository.findByChatroom_ChatroomIdAndUser_UserId(chatroomMemberDTO.getChatroomId(), chatroomMemberDTO.getUserId()).orElseThrow(() -> new ChatMemberNotFoundException(ErrorCode.CHATMEMBER_NOT_FOUND));
+        //첫 참여자인지 확인
+        if(!chatroomMember.isJoinNoticeSent()){
+            //첫 참여자라면...
             //메모리로 관리되는 채팅방에 현재 접속자의 세션 추가
             chatroomManager.addSession(webSocketSession);
             //username을 가지고 오기 위해서 find
@@ -100,31 +91,39 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
 
             //현재 채팅방에 접속하고 있는 모든 사람에게 메시지 broadcast
             chatroomManager.broadcast(outMessage, chatroomMemberDTO.getChatroomId());
+            updateNoticeSent(chatroomMember.getChatroomMemeberId());
         }else {
             //입장한 채팅방의 가장 최근 messageId를 가지고와서,
             Long latestMessageId = messageRepository.findLatestMessageId(chatroomMemberDTO.getChatroomId());
-            //입장
+            //lastRead를 최신화 시킴.
             chatroomMemberDTO.setLastRead(latestMessageId);
             updateChatroomMember(chatroomMemberDTO.getUserId(), chatroomMemberDTO);
+            //채팅방 입장
             chatroomManager.addSession(webSocketSession);
         }
-
     }
 
 
     @Override
     public ChatroomMembers createChatroomMember(ChatroomMemberDTO chatroomMemberDTO) {
+        log.info("여기에 들어와야하는데..?");
         //방이 있는지 확인
         Chatrooms chatroom = chatroomRepository.findById(chatroomMemberDTO.getChatroomId()).orElseThrow(() -> new ChatroomNotFoundException(ErrorCode.CHATROOM_NOT_FOUND));
         //유저가 실제로 있는지 확인
         Users user = userRepository.findById(chatroomMemberDTO.getUserId()).orElseThrow(() -> new UserNotFoundException(ErrorCode.USER_NOT_FOUND));
-        //이 두개가 채팅멤버의 unique조건. 중복되면 안되기때문에 있는지 확인
+        //이 두개가 채팅멤버의 unique조건. 중복되면 안되기때문에 있는지 확인 후... 있으면 null 반환
         if(chatroomMemberRepository.existsByChatroomAndUser(chatroom,user)){
-            throw new DuplicateChatMemberException(ErrorCode.DUPLICATED_CHAT_MEMBER);
+            return null;
         }
+        //없는경우에는....
         //입장한 방의 가장 최신 messageId를 가지고 옴, null일 수 있지만 entity변환시 0으로 바꾸기 때문에 상관없음
         Long latestMessageId = messageRepository.findLatestMessageId(chatroomMemberDTO.getChatroomId());
-        
+        long count = chatroomMemberRepository.countByChatroom_ChatroomIdAndIsBanned(chatroomMemberDTO.getChatroomId(), false);
+        if(count == 0){
+            chatroomMemberDTO.setRole(UserRole.ADMIN);
+        }else { //참여자가 0명이 아니라면 기존 채팅방에 참여하는 사람 -> 즉 User
+            chatroomMemberDTO.setRole(UserRole.USER);
+        }
         //입장한 순간의 메시지id 기록(이 사람은 여기서부터 메시지를 읽을 수 있음. 입장 전의 메시지는 확인하지 못함)
         chatroomMemberDTO.setStartRead(latestMessageId);
         //입장한 순간 lastRead를 최신화
@@ -187,6 +186,12 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
         return chatroomMemberRepository.countChatroomMembersByChatroom_ChatroomIdAndIsBanned(chatroomId, false);
     }
 
+    @Override
+    public void updateNoticeSent(Long chatroomMemberId) {
+        ChatroomMembers chatroomMember = chatroomMemberRepository.findById(chatroomMemberId).orElseThrow(() -> new ChatMemberNotFoundException(ErrorCode.CHATMEMBER_NOT_FOUND));
+        chatroomMember.setJoinNoticeSent(true);
+    }
+
     private ChatroomMembers toEntity(ChatroomMemberDTO chatroomMemberDTO) {
         Chatrooms chatroom = Chatrooms.builder().chatroomId(chatroomMemberDTO.getChatroomId()).build();
         Users user = Users.builder()
@@ -200,6 +205,7 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
                 .noteOff(chatroomMemberDTO.getNoteOff()!=null ? chatroomMemberDTO.getNoteOff() : false)
                 .role(chatroomMemberDTO.getRole()!=null ? chatroomMemberDTO.getRole() : UserRole.USER)
                 .isBanned(chatroomMemberDTO.getIsBanned()!=null ? chatroomMemberDTO.getIsBanned() : false)
+                .joinNoticeSent(false)
                 .build();
     }
 

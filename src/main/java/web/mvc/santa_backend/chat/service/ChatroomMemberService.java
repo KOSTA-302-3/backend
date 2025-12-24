@@ -67,4 +67,9 @@ public interface ChatroomMemberService {
     boolean checkChatroomMember(Long userId, Long chatroomId);
 
     Long countChatroomMember(Long chatroomId);
+
+    /**
+     * 첫 입장시 입장 메시지 보낸 이후, 입장메시지 보냈는지의 여부를 true로 바꿈
+     */
+    void updateNoticeSent(Long chatroomMemberId);
 }

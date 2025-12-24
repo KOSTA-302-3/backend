@@ -43,13 +43,12 @@ public class MessageServiceImpl implements MessageService {
     public Page<OutboundChatMessageDTO> getOutboundChatMessages(Long chatroomId, Long userId, int page) {
         ChatroomMembers chatroomMember = chatroomMemberRepository.findByChatroom_ChatroomIdAndUser_UserId(chatroomId, userId)
                 .orElseThrow(() -> new ChatMemberNotFoundException(ErrorCode.NOT_CHATMEMBER));
-        Users user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(ErrorCode.USER_NOT_FOUND));
         Long startRead = chatroomMember.getStartRead();
         Pageable pageable = PageRequest.of(page,100, Sort.by(Sort.Direction.DESC, "messageId"));
         Page<Messages> chatMessageList =
-                messageRepository.findByChatrooms_ChatroomIdAndMessageIdGreaterThanOrderByUserIdDesc(chatroomId, startRead, pageable);
+                messageRepository.findByChatrooms_ChatroomIdAndMessageIdGreaterThanOrderByMessageIdDesc(chatroomId, startRead, pageable);
 
-        return chatMessageList.map(c -> toOutboundChatMessageDTO(c, user));
+        return chatMessageList.map(c -> toOutboundChatMessageDTO(c));
     }
 
     @Override
@@ -77,7 +76,7 @@ public class MessageServiceImpl implements MessageService {
 
 
         //OutMessageDTO로 바꿔서 리턴
-        return toOutboundChatMessageDTO(message, user);
+        return toOutboundChatMessageDTO(message);
     }
 
     @Override
@@ -102,17 +101,16 @@ public class MessageServiceImpl implements MessageService {
         }
     }
 
-    private OutboundChatMessageDTO toOutboundChatMessageDTO(Messages messages, Users user) {
+    private OutboundChatMessageDTO toOutboundChatMessageDTO(Messages messages) {
         long unreadCount = chatroomMemberRepository.countByChatroom_ChatroomIdAndIsBannedAndLastReadLessThan(
                 messages.getChatrooms().getChatroomId(), false, messages.getMessageId());
         String type = null;
         if(MessageType.NOTICE.equals(messages.getType())){
             type = "notice";
-        }else if(messages.getUserId().equals(user.getUserId())){
-            type = "me";
-        }else {
-            type = "other";
+        }else{
+            type = "normal";
         }
+        Users user = userRepository.findById(messages.getUserId()).orElseThrow(() -> new UserNotFoundException(ErrorCode.USER_NOT_FOUND));
         OutboundChatMessageDTO outboundChatMessageDTO = OutboundChatMessageDTO.builder()
                 .id(messages.getMessageId())
                 .type(type)

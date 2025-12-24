@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import web.mvc.santa_backend.chat.dto.ChatroomMemberDTO;
 import web.mvc.santa_backend.chat.dto.ChatroomMemberResDTO;
+import web.mvc.santa_backend.chat.entity.ChatroomMembers;
 import web.mvc.santa_backend.chat.service.ChatroomMemberService;
 import web.mvc.santa_backend.common.exception.ChatMemberNotFoundException;
 import web.mvc.santa_backend.common.exception.ErrorCode;
@@ -36,9 +37,15 @@ public class ChatroomMemberController {
 
     @PostMapping("/api/chatmember")
     public ResponseEntity<?> addChatroomMember(@RequestBody ChatroomMemberDTO chatroomMemberDTO, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        log.info("chatmember 등록요청");
+        log.info(chatroomMemberDTO.getChatroomId().toString());
         Long userId = customUserDetails.getUser().getUserId();
         chatroomMemberDTO.setUserId(userId);
-        chatroomMemberService.createChatroomMember(chatroomMemberDTO);
+        ChatroomMembers chatroomMember = chatroomMemberService.createChatroomMember(chatroomMemberDTO);
+        //null이라는건 기존에 참여하고 있던 사람이란 뜻. 레코드 생성하지 않았으니 그냥 OK
+        if(chatroomMember==null){
+            return ResponseEntity.status(HttpStatus.OK).build();
+        }
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
