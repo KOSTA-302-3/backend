@@ -53,6 +53,7 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
                             .id(m.getUser().getUserId())
                             .username(m.getUser().getUsername())
                             .avatarUrl(m.getUser().getProfileImage())
+                            .role(m.getRole())
                             .online(result)
                             .build()
             );
@@ -190,6 +191,12 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
     public void updateNoticeSent(Long chatroomMemberId) {
         ChatroomMembers chatroomMember = chatroomMemberRepository.findById(chatroomMemberId).orElseThrow(() -> new ChatMemberNotFoundException(ErrorCode.CHATMEMBER_NOT_FOUND));
         chatroomMember.setJoinNoticeSent(true);
+    }
+
+    @Override
+    public UserRole getUserRole(Long userId, Long chatroomId) {
+        ChatroomMembers chatroomMember = chatroomMemberRepository.findByChatroom_ChatroomIdAndUser_UserId(chatroomId, userId).orElseThrow(() -> new ChatMemberNotFoundException(ErrorCode.CHATMEMBER_NOT_FOUND));
+        return UserRole.valueOf(chatroomMember.getRole().toString());
     }
 
     private ChatroomMembers toEntity(ChatroomMemberDTO chatroomMemberDTO) {

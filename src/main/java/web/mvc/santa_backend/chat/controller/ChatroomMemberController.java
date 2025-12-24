@@ -13,6 +13,7 @@ import web.mvc.santa_backend.chat.dto.ChatroomMemberDTO;
 import web.mvc.santa_backend.chat.dto.ChatroomMemberResDTO;
 import web.mvc.santa_backend.chat.entity.ChatroomMembers;
 import web.mvc.santa_backend.chat.service.ChatroomMemberService;
+import web.mvc.santa_backend.common.enumtype.UserRole;
 import web.mvc.santa_backend.common.exception.ChatMemberNotFoundException;
 import web.mvc.santa_backend.common.exception.ErrorCode;
 import web.mvc.santa_backend.common.security.CustomUserDetails;
@@ -62,5 +63,11 @@ public class ChatroomMemberController {
         Long userId = customUserDetails.getUser().getUserId();
         chatroomMemberService.deleteChatroomMember(userId, chatroomId);
         return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @GetMapping("/api/chatmember/role/{chatroomId}")
+    public ResponseEntity<UserRole> getUserRole(@PathVariable Long chatroomId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        Long userId = customUserDetails.getUser().getUserId();
+        return ResponseEntity.status(HttpStatus.OK).body(chatroomMemberService.getUserRole(chatroomId, userId));
     }
 }
