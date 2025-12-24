@@ -75,6 +75,13 @@ public class SecurityConfig {
                 })
         );
 
+        // 로그아웃
+        http.logout(logout -> logout
+                .logoutUrl("/api/logout")
+                .deleteCookies("Authorization")
+        );
+
+
         // 모두 허용 (임시)
         // http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
 
@@ -85,6 +92,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
                         .requestMatchers("/api/user/username/**", "/api/user/email/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
+                        .requestMatchers("/api/logout").permitAll()
                         // post 테스트
                         // .requestMatchers("/api/posts/**").permitAll()
                                    

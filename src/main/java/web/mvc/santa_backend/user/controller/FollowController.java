@@ -10,6 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import web.mvc.santa_backend.common.security.CustomUserDetails;
 import web.mvc.santa_backend.user.dto.FollowDTO;
+import web.mvc.santa_backend.user.dto.FollowRequestDTO;
 import web.mvc.santa_backend.user.service.FollowService;
 
 @RestController
@@ -23,8 +24,8 @@ public class FollowController {
 
     @Operation(summary = "팔로우")
     @PostMapping
-    public ResponseEntity<?> follow(@RequestBody Long followingId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        FollowDTO follow = followService.follow(customUserDetails.getUser().getUserId(), followingId);
+    public ResponseEntity<?> follow(@RequestBody FollowRequestDTO followDTO, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        FollowDTO follow = followService.follow(customUserDetails.getUser().getUserId(), followDTO.getFollowingId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(follow);
     }
