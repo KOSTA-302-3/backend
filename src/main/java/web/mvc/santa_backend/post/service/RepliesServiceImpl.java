@@ -6,6 +6,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import web.mvc.santa_backend.chat.dto.NotificationDTO;
+import web.mvc.santa_backend.chat.service.NotificationService;
+import web.mvc.santa_backend.common.enumtype.NotificationType;
 import web.mvc.santa_backend.post.dto.RepliesDTO;
 import web.mvc.santa_backend.post.dto.RepliesReponseDTO;
 import web.mvc.santa_backend.post.entity.Replies;
@@ -22,6 +25,8 @@ public class RepliesServiceImpl implements RepliesService {
     private PostResository postRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    NotificationService notificationService;
 
     @Transactional
 //    @Cacheable(value = "replies", key = "#id")
@@ -57,7 +62,7 @@ public class RepliesServiceImpl implements RepliesService {
 
     @Transactional
     public RepliesDTO createReplies(RepliesDTO repliesDTO) {
-        System.out.println(repliesDTO.toString());
+
       Replies replies =  repliesRepository.save(
                 Replies.builder().
                         userId(repliesDTO.getUserId()).
@@ -74,6 +79,14 @@ public class RepliesServiceImpl implements RepliesService {
               replies.getReplyLike()
 
       );
+
+      if(replies.getPosts().getCreateUserId() != repliesDTO.getUserId()){
+          NotificationDTO notificationDTO = new NotificationDTO(0L,replies.getPosts().getCreateUserId(),null,null,false, NotificationType.REPLY,null,repliesDTO.getUserId());
+          notificationService.createNotification(notificationDTO);
+
+
+
+      }
     return responseReplies;
     }
 

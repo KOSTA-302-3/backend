@@ -18,6 +18,8 @@ public interface HashTagsRepository extends JpaRepository<HashTags,Long> {
 
     List<TagMapping> findAllByPostsPostId(Long id,boolean hashCk);
 
+    void deleteAllByPostsPostId(Long id);
+
 }
 
 
