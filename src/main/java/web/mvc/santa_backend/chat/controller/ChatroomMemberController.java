@@ -68,6 +68,6 @@ public class ChatroomMemberController {
     @GetMapping("/api/chatmember/role/{chatroomId}")
     public ResponseEntity<UserRole> getUserRole(@PathVariable Long chatroomId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         Long userId = customUserDetails.getUser().getUserId();
-        return ResponseEntity.status(HttpStatus.OK).body(chatroomMemberService.getUserRole(chatroomId, userId));
+        return ResponseEntity.status(HttpStatus.OK).body(chatroomMemberService.getUserRole(userId, chatroomId));
     }
 }
