@@ -83,6 +83,7 @@ public class SecurityConfig {
 //                 auth
 //                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 //                         .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
+//                         .requestMatchers("/api/user/username/**", "/api/user/email/**").permitAll()
 //                         .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
 //                         // post 테스트
 //                         .requestMatchers("/api/posts/**").permitAll()
