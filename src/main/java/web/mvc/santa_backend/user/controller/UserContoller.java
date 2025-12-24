@@ -248,7 +248,7 @@ public class UserContoller {
     @Operation(summary = "userId 전송 메서드", description = "현재 접속중인 userId를 프론트로 보내는 메서드")
     @GetMapping("/userId")
     public ResponseEntity<?> getUserId(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
-
+        log.info("현재 접속중인 ID : {}",  customUserDetails.getUser().getUserId());
         return ResponseEntity.status(HttpStatus.OK).body(customUserDetails.getUser().getUserId());
     }
 
