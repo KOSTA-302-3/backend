@@ -17,6 +17,8 @@ public interface ImageSourcesRepository extends JpaRepository<ImageSources,Long>
 
     Optional<ImageSources> findBySource(String sources);
 
+    void deleteAllByPostsPostId(Long postId);
+
 
 }
 

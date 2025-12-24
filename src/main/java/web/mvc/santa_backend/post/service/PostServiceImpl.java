@@ -210,29 +210,48 @@ public class PostServiceImpl implements PostService {
         //프론트에서 받는 해시태그,이미지는 뺴는 값으로 받음
 
         Posts post = postRepository.findById(posts.getPostId()).get();
-
-        for (String imgUrl : posts.getImageSourcesList()) {
-
-            imageSourcesRepository.delete(
-                    imageSourcesRepository.findBySource(imgUrl).orElseThrow(() -> new RuntimeException("에러"))
-            );
-
-        }
-        for (String hash : posts.getHashTagsList()) {
-            hashTagsRepository.delete(
-                    hashTagsRepository.findByTagAndPostsPostId(
-                                    hash, posts.getPostId())
-                            .orElseThrow(() ->
-                                    new RuntimeException("에러"))
-
-            );
-        }
+//
+//        for (String imgUrl : posts.getImageSourcesList()) {
+//
+//            imageSourcesRepository.delete(
+//                    imageSourcesRepository.findBySource(imgUrl).orElseThrow(() -> new RuntimeException("에러"))
+//            );
+//
+//        }
+//        for (String hash : posts.getHashTagsList()) {
+//            hashTagsRepository.delete(
+//                    hashTagsRepository.findByTagAndPostsPostId(
+//                                    hash, posts.getPostId())
+//                            .orElseThrow(() ->
+//                                    new RuntimeException("에러"))
+//
+//            );
+//        }
 
 
         post.setContent(posts.getContent());
         post.setContentVisible(posts.isContentVisible());
-        post.setHashTags(hashTagsRepository.findAllByPostsPostId(posts.getPostId()));
-        post.setImageSources(imageSourcesRepository.findAllByPostsPostId(posts.getPostId()));
+        hashTagsRepository.deleteAllByPostsPostId(post.getPostId());
+        imageSourcesRepository.deleteAllByPostsPostId(post.getPostId());
+
+        for(String src : posts.getImageSourcesList()){
+            imageSourcesRepository.save(ImageSources.builder().
+                    posts(post).
+                    source(src).
+
+                    build());
+
+
+        }
+
+        for(String hash : posts.getHashTagsList()){
+            hashTagsRepository.save(HashTags.builder().
+                    tag(hash).
+                    posts(post).
+                    build());
+
+
+        }
     }
 
     @Transactional
