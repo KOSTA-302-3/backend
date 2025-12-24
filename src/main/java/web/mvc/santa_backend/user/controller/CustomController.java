@@ -62,15 +62,6 @@ public class CustomController {
         return ResponseEntity.status(HttpStatus.OK).body(ucDTO);
     }
 
-    /* 배지/색상 추가 (관리자용) (TODO 위치변경) */
-    @Operation(summary = "배지 추가")
-    @PostMapping("/admin/badge")
-    public ResponseEntity<?> addBadge(@RequestBody BadgeDTO badgeDTO) {
-        BadgeDTO badge = badgeService.addBadge(badgeDTO);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(badge);
-    }
-
     @Operation(summary = "색상 추가")
     @PostMapping("/admin/color")
     public ResponseEntity<?> addColor(@RequestBody ColorDTO colorDTO) {
