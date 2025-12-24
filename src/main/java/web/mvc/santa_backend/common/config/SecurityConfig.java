@@ -86,6 +86,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
                         // post 테스트
                         .requestMatchers("/api/posts/**").permitAll()
+
                                    
                         // swagger 설정
                         .requestMatchers(

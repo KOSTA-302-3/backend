@@ -73,7 +73,7 @@ public class RepliesController {
 
     @PostMapping("/like")
     @Operation(summary = "댓글 좋아요")
-    ResponseEntity<String> likeReplies(@RequestBody LikeDTO likeDTO){
+    ResponseEntity<String> likeReplies(@RequestBody LikeDTO likeDTO,@AuthenticationPrincipal CustomUserDetails customUserDetails){
         return ResponseEntity.status(HttpStatus.OK).body(
                 likeService.likeReplies(likeDTO.getTargetId(),likeDTO.getUserId())
         );
