@@ -2,7 +2,7 @@ name: Deploy Santa Backend
 
 on:
   push:
-    branches: ["dev"]
+    branches: ["dev-test"]
 
 jobs:
   deploy:

@@ -136,7 +136,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         Cookie cookie = new Cookie("Authorization", token);
         cookie.setHttpOnly(true);
-        cookie.setSecure(false);  // https 적용 시 true로 변경, 테스트는 로컬이니까  false 로
+        cookie.setSecure(true);  // https 적용 시 true로 변경, 테스트는 로컬이니까  false 로
         cookie.setPath("/");
         cookie.setMaxAge(60 * 30);
 
