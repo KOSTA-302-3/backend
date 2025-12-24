@@ -65,8 +65,8 @@ public class ChatroomMemberController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @GetMapping("/api/chatmember/role")
-    public ResponseEntity<UserRole> getUserRole(@RequestBody Long chatroomId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+    @GetMapping("/api/chatmember/role/{chatroomId}")
+    public ResponseEntity<UserRole> getUserRole(@PathVariable Long chatroomId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         Long userId = customUserDetails.getUser().getUserId();
         return ResponseEntity.status(HttpStatus.OK).body(chatroomMemberService.getUserRole(chatroomId, userId));
     }
