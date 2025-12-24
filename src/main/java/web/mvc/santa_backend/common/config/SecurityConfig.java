@@ -91,8 +91,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
                         .requestMatchers("/api/user/username/**", "/api/user/email/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
-                        .requestMatchers("/api/logout").permitAll()
                         // post 테스트
                         // .requestMatchers("/api/posts/**").permitAll()
                                    
