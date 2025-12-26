@@ -8,15 +8,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import web.mvc.santa_backend.chat.dto.ChatroomDTO;
 import web.mvc.santa_backend.chat.dto.ChatroomRequestDTO;
 import web.mvc.santa_backend.chat.dto.ChatroomResponseDTO;
 import web.mvc.santa_backend.chat.service.ChatroomMemberService;
 import web.mvc.santa_backend.chat.service.ChatroomService;
+import web.mvc.santa_backend.common.S3.S3Uploader;
 import web.mvc.santa_backend.common.exception.ErrorCode;
 import web.mvc.santa_backend.common.exception.InvalidException;
 import web.mvc.santa_backend.common.security.CustomUserDetails;
 
+import java.io.IOException;
 import java.util.Objects;
 
 @RestController
@@ -26,6 +29,7 @@ import java.util.Objects;
 public class ChatroomController {
     private final ChatroomService chatroomService;
     private final ChatroomMemberService chatroomMemberService;
+    private final S3Uploader s3Uploader;
 
     @PostMapping("/api/chatroom")
     public ResponseEntity<?> createChatroom(@RequestBody ChatroomRequestDTO chatroomRequestDTO,
@@ -36,7 +40,7 @@ public class ChatroomController {
     }
 
     @GetMapping("/api/chatroom")
-    public ResponseEntity<Page<ChatroomResponseDTO>> getChatroom(@RequestParam(defaultValue = "0") int page,
+    public ResponseEntity<Page<ChatroomResponseDTO>> getChatroom(@RequestParam(defaultValue = "1") int page,
                                                                  @RequestParam(required = false) String word,
                                                                  @RequestParam(required = false) String type,
                                                                  @AuthenticationPrincipal CustomUserDetails customUserDetails) {
@@ -74,5 +78,11 @@ public class ChatroomController {
         Long myUserId = customUserDetails.getUser().getUserId();
         Long chatroomId = chatroomService.createChatroom(userId, myUserId);
         return ResponseEntity.status(HttpStatus.CREATED).body(chatroomId);
+    }
+
+    @PostMapping("/api/chatroom/file")
+    public ResponseEntity<String> upload(@RequestParam("file") MultipartFile file) throws IOException {
+        String url = s3Uploader.uploadFile(file, "chatroom");
+        return ResponseEntity.status(HttpStatus.CREATED).body(url);
     }
 }

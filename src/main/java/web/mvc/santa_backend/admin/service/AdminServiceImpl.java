@@ -24,7 +24,8 @@ import web.mvc.santa_backend.user.entity.Users;
 import web.mvc.santa_backend.user.repository.ReportRepository;
 import web.mvc.santa_backend.user.repository.UserRepository;
 import web.mvc.santa_backend.user.service.UserService;
-
+import web.mvc.santa_backend.post.dto.PostDTO;
+import web.mvc.santa_backend.post.entity.Posts;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -326,5 +327,51 @@ public class AdminServiceImpl implements AdminService {
                 .orElseThrow(() -> new RuntimeException("신고를 찾을 수 없습니다."));
         reportRepository.delete(report);
         log.info("신고 삭제 완료: reportId={}", reportId);
+    }
+    
+    /**
+     * 전체 게시물 목록 조회 (페이징)
+     */
+    @Override
+    public Page<PostDTO> getAllPosts(int page) {
+        log.info("getAllPosts/ page: {}", page);
+        Pageable pageable = PageRequest.of(page, 20);
+        Page<Posts> postsPage = postRepository.findAll(pageable);
+        
+        return postsPage.map(post -> {
+            PostDTO dto = new PostDTO();
+            dto.setPostId(post.getPostId());
+            dto.setContent(post.getContent());
+            dto.setLikeCount(post.getLikeCount());
+            dto.setCreateAt(post.getCreateAt());
+            
+            // Users 조회해서 username 설정
+            Users user = userRepository.findById(post.getCreateUserId())
+                    .orElse(null);
+            if (user != null) {
+                dto.setCreateUserName(user.getUsername());
+            }
+            
+            // 이미지 URL 설정
+            if (post.getImageSources() != null && !post.getImageSources().isEmpty()) {
+                dto.setImageSourcesList(post.getImageSources().stream()
+                        .map(img -> img.getSource())
+                        .collect(Collectors.toList()));
+            }
+            
+            return dto;
+        });
+    }
+    
+    /**
+     * 게시물 삭제
+     */
+    @Override
+    public void deletePost(Long postId) {
+        log.info("deletePost/ postId: {}", postId);
+        Posts post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("게시물을 찾을 수 없습니다."));
+        postRepository.delete(post);
+        log.info("게시물 삭제 완료: postId={}", postId);
     }
 }
