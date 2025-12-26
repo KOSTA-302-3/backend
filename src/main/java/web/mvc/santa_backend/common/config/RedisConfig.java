@@ -40,8 +40,8 @@ public class RedisConfig {
     @Bean
     public LettuceConnectionFactory redisConnectionFactory() {
 
-        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration("localhost", 6379);
-
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
+        config.setUseSsl(true);
         // 2. 패스워드 설정 (RedisPassword 객체 사용)
         config.setPassword(RedisPassword.of(password));
 
