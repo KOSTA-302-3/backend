@@ -22,6 +22,13 @@ public interface ChatroomService {
     Long createChatroom(ChatroomRequestDTO chatroomRequestDTO);
 
     /**
+     * DM용 메서드
+     * @param userId
+     * @return
+     */
+    Long createChatroom(Long userId, Long myUserId);
+
+    /**
      * userId, word(검색시 입력한 단어)로 chatrooms를 가지고 오는 메서드
      * userId, word 둘다 null일 경우 - 모든 채팅방
      * userId만 있는 경우 - user가 속해있는 채팅방

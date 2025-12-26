@@ -7,20 +7,17 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import web.mvc.santa_backend.chat.dto.ChatroomDTO;
-import web.mvc.santa_backend.chat.dto.ChatroomMemberDTO;
-import web.mvc.santa_backend.chat.dto.ChatroomRequestDTO;
-import web.mvc.santa_backend.chat.dto.ChatroomResponseDTO;
+import web.mvc.santa_backend.chat.dto.*;
 import web.mvc.santa_backend.chat.entity.ChatroomMembers;
 import web.mvc.santa_backend.chat.entity.Chatrooms;
 import web.mvc.santa_backend.chat.repository.ChatroomMemberRepository;
 import web.mvc.santa_backend.chat.repository.ChatroomRepository;
 import web.mvc.santa_backend.chat.repository.MessageRepository;
+import web.mvc.santa_backend.common.enumtype.NotificationType;
 import web.mvc.santa_backend.common.enumtype.UserRole;
-import web.mvc.santa_backend.common.exception.ChatMemberNotFoundException;
-import web.mvc.santa_backend.common.exception.ChatroomNotFoundException;
-import web.mvc.santa_backend.common.exception.ErrorCode;
-import web.mvc.santa_backend.common.exception.ForbiddenException;
+import web.mvc.santa_backend.common.exception.*;
+import web.mvc.santa_backend.user.entity.Users;
+import web.mvc.santa_backend.user.repository.UserRepository;
 
 import java.util.List;
 
@@ -32,12 +29,51 @@ public class ChatroomServiceImpl implements ChatroomService {
     private final ChatroomRepository chatroomRepository;
     private final ChatroomMemberRepository chatroomMemberRepository;
     private final MessageRepository messageRepository;
+    private final UserRepository userRepository;
+    private final NotificationService notificationService;
+
 
     @Override
     public Long createChatroom(ChatroomRequestDTO chatroomRequestDTO) {
         Chatrooms chatrooms = toEntity(chatroomRequestDTO);
         Chatrooms save = chatroomRepository.save(chatrooms);
         return save.getChatroomId();
+    }
+
+    @Override
+    public Long createChatroom(Long userId, Long myUserId) {
+        if(myUserId.equals(userId)){
+            throw new InvalidException(ErrorCode.WRONG_TARGET);
+        }
+        Users user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(ErrorCode.INVALID_USER));
+        Chatrooms chatroom = Chatrooms.builder()
+                .name(user.getUsername() + "님과의 DM")
+                .isPrivate(true)
+                .isDeleted(false)
+                .imageUrl("test")
+                .description(user.getUsername() + "님과의 DM")
+                .build();
+        Chatrooms save = chatroomRepository.save(chatroom);
+        Long chatroomId = save.getChatroomId();
+        NotificationDTO notification = NotificationDTO.builder()
+                .userId(userId)
+                .actionUserId(myUserId)
+                .type(NotificationType.DM)
+                .build();
+        notificationService.createNotification(notification);
+
+        ChatroomMembers chatroomMember = ChatroomMembers.builder()
+                .chatroom(Chatrooms.builder().chatroomId(chatroomId).build())
+                .user(user)
+                .startRead(0L)
+                .lastRead(0L)
+                .noteOff(false)
+                .role(UserRole.USER)
+                .isBanned(false)
+                .joinNoticeSent(false)
+                .build();
+        chatroomMemberRepository.save(chatroomMember);
+        return chatroomId;
     }
 
     @Override
@@ -106,6 +142,8 @@ public class ChatroomServiceImpl implements ChatroomService {
         chatroom.setDeleted(true);
     }
 
+
+
     private Chatrooms toEntity(ChatroomRequestDTO chatroomRequestDTO) {
         return Chatrooms.builder()
                 .name(chatroomRequestDTO.getName())
@@ -126,4 +164,6 @@ public class ChatroomServiceImpl implements ChatroomService {
                 .hasUnread(hasUnread)
                 .build();
     }
+
+
 }
