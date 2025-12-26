@@ -12,16 +12,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import web.mvc.santa_backend.common.S3.S3Uploader;
+import web.mvc.santa_backend.post.dto.FeedBackDTO;
 import web.mvc.santa_backend.post.dto.PostDTO;
 import web.mvc.santa_backend.post.dto.PostResponseDTO;
+import web.mvc.santa_backend.post.entity.FeedBacks;
 import web.mvc.santa_backend.post.entity.HashTags;
 import web.mvc.santa_backend.post.entity.ImageSources;
 import web.mvc.santa_backend.post.entity.Posts;
+import web.mvc.santa_backend.post.entity.dbtest.RedisFeedBacks;
 import web.mvc.santa_backend.post.entity.dbtest.RedisPosts;
-import web.mvc.santa_backend.post.repository.HashTagsRepository;
-import web.mvc.santa_backend.post.repository.ImageSourcesRepository;
-import web.mvc.santa_backend.post.repository.PostResository;
-import web.mvc.santa_backend.post.repository.RepliesRepository;
+import web.mvc.santa_backend.post.repository.*;
 import web.mvc.santa_backend.user.repository.UserRepository;
 
 import java.io.IOException;
@@ -45,6 +45,10 @@ public class PostServiceImpl implements PostService {
     private RepliesRepository repliesRepository;
     @Autowired
     RedisTemplate<String, RedisPosts> redisTemplate;
+    @Autowired
+    private FeedBackRepository feedBackRepository;
+    @Autowired
+    RedisTemplate<String, RedisFeedBacks> redisFeedBacksRedisTemplate;
 
 
 
@@ -355,6 +359,21 @@ public class PostServiceImpl implements PostService {
         return postResponseDTO;
     }
 
+
+    @Transactional
+    public void createFeedBack(FeedBackDTO feedBackDTO) {
+
+        FeedBacks feedBacks= feedBackRepository.save(FeedBacks.builder()
+                        .userId(feedBackDTO.getUserId())
+                        .posts(postRepository.findById(feedBackDTO.getPostId()).get())
+                        .level(feedBackDTO.getLevel())
+                        .createAt(feedBackDTO.getCreateAt())
+                .build());
+
+
+        RedisFeedBacks redisFeedBacks = new RedisFeedBacks(feedBacks.getPosts().getPostId(),feedBacks.getLevel());
+        redisFeedBacksRedisTemplate.opsForList().rightPush("queue:feedback", redisFeedBacks);
+    }
 
 }
 
