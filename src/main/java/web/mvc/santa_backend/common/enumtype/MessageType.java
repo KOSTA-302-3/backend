@@ -4,5 +4,6 @@ public enum MessageType {
     TEXT,
     IMAGE,
     NOTICE,
-    READ_UPDATE;
+    READ_UPDATE,
+    STATUS;
 }
