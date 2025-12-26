@@ -72,7 +72,7 @@ public class NotificationServiceImpl implements NotificationService{
         Notifications notification = toEntity(notificationDTO, user, actionUser);
         notificationRepository.save(notification);
         log.info("여기까지 오면 send됨");
-        notificationManager.sendNewNotification(notificationDTO.getUserId());
+        notificationManager.sendNewNotification(notificationDTO.getUserId(), "Notification");
     }
 
 
