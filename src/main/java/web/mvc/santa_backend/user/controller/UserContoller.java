@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import web.mvc.santa_backend.common.S3.S3Uploader;
 import web.mvc.santa_backend.common.enumtype.BlockType;
 import web.mvc.santa_backend.common.enumtype.CustomItemType;
 import web.mvc.santa_backend.common.enumtype.ReportType;
@@ -22,6 +24,7 @@ import web.mvc.santa_backend.user.dto.UserRequestDTO;
 import web.mvc.santa_backend.user.dto.UserSimpleDTO;
 import web.mvc.santa_backend.user.service.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -38,6 +41,7 @@ public class UserContoller {
     private final ReportService reportService;
     private final BadgeService badgeService;
     private final ColorService colorService;
+    private final S3Uploader s3Uploader;
 
     /* 회원가입 */
     @Operation(summary = "아이디(username) 중복체크")
@@ -121,6 +125,14 @@ public class UserContoller {
         UserResponseDTO updateUser = userService.updatePrivacy(customUserDetails.getUser().getUserId());
 
         return ResponseEntity.status(HttpStatus.OK).body(updateUser);
+    }
+
+    /* 프로필 이미지 업로드 */
+    @PostMapping("/upload/profile")
+    public ResponseEntity<String> upload(@RequestParam("file") MultipartFile file) throws IOException {
+        log.info("Uploading file {}", file.getOriginalFilename());
+        String url = s3Uploader.uploadFile(file, "user");
+        return ResponseEntity.status(HttpStatus.CREATED).body(url);
     }
 
     /* 유저 탈퇴(상태 수정/삭제) */
