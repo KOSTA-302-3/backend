@@ -16,7 +16,7 @@ public class FeedBacks {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    private Long feedbakcId;
+    private Long feedbackId;
 
     @Column(nullable = false)
     private Long userId;
@@ -30,7 +30,7 @@ public class FeedBacks {
 
     @CreatedDate
     @Column(nullable = false)
-    private LocalDateTime createAt;
+    private LocalDateTime createdAt;
 
 
 }

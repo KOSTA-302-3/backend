@@ -89,7 +89,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests((auth) ->
                 auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/user", "/api/user/upload/profile").permitAll()
                         .requestMatchers("/api/user/username/**", "/api/user/email/**").permitAll()
                         // post 테스트
                         // .requestMatchers("/api/posts/**").permitAll()
