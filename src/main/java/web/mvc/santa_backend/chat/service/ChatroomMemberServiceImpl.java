@@ -32,9 +32,11 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
     private final ChatroomMemberRepository chatroomMemberRepository;
     private final ChatroomRepository chatroomRepository;
     private final UserRepository userRepository;
+    private final MessageRepository messageRepository;
+
     private final ChatroomManager chatroomManager;
     private final MessageService messageService;
-    private final MessageRepository messageRepository;
+    private final ChatroomService chatroomService;
 
     @Override
     @Transactional(readOnly = true)
@@ -173,8 +175,12 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
 
     @Override
     public void deleteChatroomMember(Long userId, Long chatroomId) {
-        //TODO 인증처리
+        log.info("여기에 도착해야해");
         chatroomMemberRepository.deleteByUser_UserIdAndChatroom_ChatroomId(userId, chatroomId);
+        long count = chatroomMemberRepository.countByChatroom_ChatroomIdAndIsBanned(chatroomId, false);
+        if(count == 0){
+            chatroomService.deleteChatroom(chatroomId);
+        }
     }
 
     @Override
