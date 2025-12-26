@@ -191,7 +191,7 @@ public class PostServiceImpl implements PostService {
                 createAt(posts.getCreateAt()).
                 likeCount(0L).
                 content(posts.getContent()).
-                postLevel(0L).
+                postLevel(1L).
                 contentVisible(true).
                 build()
         );
@@ -367,7 +367,7 @@ public class PostServiceImpl implements PostService {
                         .userId(feedBackDTO.getUserId())
                         .posts(postRepository.findById(feedBackDTO.getPostId()).get())
                         .level(feedBackDTO.getLevel())
-                        .createAt(feedBackDTO.getCreateAt())
+                        .createdAt(feedBackDTO.getCreateAt())
                 .build());
 
 
