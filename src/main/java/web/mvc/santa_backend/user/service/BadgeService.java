@@ -24,4 +24,14 @@ public interface BadgeService {
      * 배치 추가 (관리자용)
      */
     BadgeDTO addBadge(BadgeDTO badgeDTO);
+
+    /**
+     * 배지 수정 (관리자용)
+     */
+    BadgeDTO updateBadge(Long badgeId, BadgeDTO badgeDTO);
+
+    /**
+     * 배지 삭제 (관리자용)
+     */
+    void deleteBadge(Long badgeId);
 }

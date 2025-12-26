@@ -42,9 +42,9 @@ public class UserServiceImpl implements UserService {
     public String checkUsernameDuplication(String username) {
         if (userRepository.existsByUsername(username)) {
             log.info("username: {}", username);
-            return "이미 등록된 아이디입니다.";
+            return "EXISTED";
         }
-        return "사용 가능합니다.";
+        return "OK";
     }
 
     @Transactional(readOnly = true)
@@ -52,9 +52,9 @@ public class UserServiceImpl implements UserService {
     public String checkEmailDuplication(String email) {
         if (userRepository.existsByEmail(email)) {
             log.info("email: {}", email);
-            return "이미 등록된 이메일입니다.";
+            return "EXISTED";
         }
-        return "사용 가능합니다.";
+        return "OK";
     }
 
     @Transactional

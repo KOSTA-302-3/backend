@@ -5,6 +5,7 @@ import web.mvc.santa_backend.chat.dto.ChatroomDTO;
 import web.mvc.santa_backend.chat.dto.ChatroomMemberDTO;
 import web.mvc.santa_backend.chat.dto.ChatroomMemberResDTO;
 import web.mvc.santa_backend.chat.entity.ChatroomMembers;
+import web.mvc.santa_backend.common.enumtype.UserRole;
 import web.mvc.santa_backend.user.dto.UserSimpleDTO;
 
 import java.util.List;
@@ -56,7 +57,7 @@ public interface ChatroomMemberService {
      * @param userId
      * @param chatroomId
      */
-    void deleteChatroomMember(Long userId, Long chatroomId);
+    void deleteChatroomMember(Long userId, String username, Long chatroomId);
 
     /**
      * 채팅방에 현재 참여중인 유저인지, 처음 참여하는 유저인지를 확인하기 위한 메서드
@@ -67,4 +68,11 @@ public interface ChatroomMemberService {
     boolean checkChatroomMember(Long userId, Long chatroomId);
 
     Long countChatroomMember(Long chatroomId);
+
+    /**
+     * 첫 입장시 입장 메시지 보낸 이후, 입장메시지 보냈는지의 여부를 true로 바꿈
+     */
+    void updateNoticeSent(Long chatroomMemberId);
+
+    UserRole getUserRole(Long userId, Long chatroomId);
 }

@@ -18,4 +18,6 @@ public interface MessageRepository extends JpaRepository<Messages,Long> {
     Page<Messages> findByChatrooms_ChatroomIdAndMessageIdGreaterThan(Long chatroomsChatroomId, Long messageIdIsGreaterThan, Pageable pageable);
 
     Page<Messages> findByChatrooms_ChatroomIdAndMessageIdGreaterThanOrderByUserIdDesc(Long chatroomsChatroomId, Long messageIdIsGreaterThan, Pageable pageable);
+
+    Page<Messages> findByChatrooms_ChatroomIdAndMessageIdGreaterThanOrderByMessageIdDesc(Long chatroomsChatroomId, Long messageIdIsGreaterThan, Pageable pageable);
 }

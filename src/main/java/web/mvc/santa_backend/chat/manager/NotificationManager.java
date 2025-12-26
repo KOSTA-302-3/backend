@@ -44,13 +44,18 @@ public class NotificationManager {
         );
     }
 
-    public void sendNewNotification(Long userId) {
+    /**
+     * type은 Notification, Chat
+     * @param userId
+     * @param type
+     */
+    public void sendNewNotification(Long userId, String type) {
         WebSocketSession session = notificationSession.get(userId);
 
         if (session == null || !session.isOpen()) return;
 
         try {
-            session.sendMessage(new TextMessage("NEW_NOTIFICATION"));
+            session.sendMessage(new TextMessage(type));
         } catch (IOException e) {
             log.warn("알림 전송 실패 userId={}", userId, e);
         }
