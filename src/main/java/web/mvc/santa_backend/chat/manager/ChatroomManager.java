@@ -15,6 +15,7 @@ import web.mvc.santa_backend.chat.dto.OutboundChatMessageDTO;
 import web.mvc.santa_backend.chat.service.ChatroomMemberService;
 import web.mvc.santa_backend.chat.service.ChatroomService;
 import web.mvc.santa_backend.chat.service.MessageService;
+import web.mvc.santa_backend.common.enumtype.MessageType;
 import web.mvc.santa_backend.common.enumtype.UserRole;
 import web.mvc.santa_backend.common.exception.ChatroomNotFoundException;
 import web.mvc.santa_backend.common.exception.ErrorCode;
@@ -40,6 +41,12 @@ public class ChatroomManager {
         Long userId = (Long)session.getAttributes().get("userId");
         Long roomId = (Long)session.getAttributes().get("roomId");
         chatRooms.computeIfAbsent(roomId, k -> new HashMap<>()).put(userId, session);
+        OutboundChatMessageDTO messageDTO = OutboundChatMessageDTO
+                .builder()
+                .messageType(MessageType.STATUS)
+                .text("업데이트해")
+                .build();
+        broadcast(messageDTO, roomId);
     }
 
     public void removeSession(Long roomId, Long userId) {
@@ -47,6 +54,12 @@ public class ChatroomManager {
         if(roomSessions!=null) {
             roomSessions.remove(userId);
         }
+        OutboundChatMessageDTO messageDTO = OutboundChatMessageDTO
+                .builder()
+                .messageType(MessageType.STATUS)
+                .text("업데이트해")
+                .build();
+        broadcast(messageDTO, roomId);
     }
 
     public void broadcast(OutboundChatMessageDTO outboundChatMessageDTO, Long roomId) {

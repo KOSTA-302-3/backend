@@ -40,7 +40,7 @@ public class ChatroomController {
     }
 
     @GetMapping("/api/chatroom")
-    public ResponseEntity<Page<ChatroomResponseDTO>> getChatroom(@RequestParam(defaultValue = "0") int page,
+    public ResponseEntity<Page<ChatroomResponseDTO>> getChatroom(@RequestParam(defaultValue = "1") int page,
                                                                  @RequestParam(required = false) String word,
                                                                  @RequestParam(required = false) String type,
                                                                  @AuthenticationPrincipal CustomUserDetails customUserDetails) {
