@@ -50,4 +50,9 @@ public class ChatroomMembers {
     @Builder.Default
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean isBanned = false;
+
+    //로직이 바뀌면서 처음 입장인지 아닌지를 DB에 기록해야 할 필요가 생김
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean joinNoticeSent = false;
 }

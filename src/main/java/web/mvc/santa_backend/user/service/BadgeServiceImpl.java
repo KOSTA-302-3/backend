@@ -38,7 +38,7 @@ public class BadgeServiceImpl implements BadgeService {
         Pageable pageable = PageRequest.of(page, 10);
         Page<Badges> badges = badgeRepository.findAll(pageable);
 
-        return badges.map(badge -> modelMapper.map(badges, BadgeDTO.class));
+        return badges.map(badge -> modelMapper.map(badge, BadgeDTO.class));
     }
 
     @Override
@@ -74,5 +74,32 @@ public class BadgeServiceImpl implements BadgeService {
         newBadge.setBadgeId(null);
 
         return modelMapper.map(badgeRepository.save(newBadge), BadgeDTO.class);
+    }
+
+    @Override
+    public BadgeDTO updateBadge(Long badgeId, BadgeDTO badgeDTO) {
+        Badges badge = badgeRepository.findById(badgeId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND));
+
+        // 필드 업데이트
+        badge.setName(badgeDTO.getName());
+        badge.setDescription(badgeDTO.getDescription());
+        badge.setPrice(badgeDTO.getPrice());
+        
+        // imageUrl은 변경된 경우에만 업데이트
+        if (badgeDTO.getImageUrl() != null && !badgeDTO.getImageUrl().isEmpty()) {
+            badge.setImageUrl(badgeDTO.getImageUrl());
+        }
+
+        Badges updated = badgeRepository.save(badge);
+        return modelMapper.map(updated, BadgeDTO.class);
+    }
+
+    @Override
+    public void deleteBadge(Long badgeId) {
+        Badges badge = badgeRepository.findById(badgeId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.ITEM_NOT_FOUND));
+        
+        badgeRepository.delete(badge);
     }
 }

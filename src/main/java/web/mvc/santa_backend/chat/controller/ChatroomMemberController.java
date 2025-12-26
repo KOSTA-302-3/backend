@@ -11,7 +11,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import web.mvc.santa_backend.chat.dto.ChatroomMemberDTO;
 import web.mvc.santa_backend.chat.dto.ChatroomMemberResDTO;
+import web.mvc.santa_backend.chat.entity.ChatroomMembers;
 import web.mvc.santa_backend.chat.service.ChatroomMemberService;
+import web.mvc.santa_backend.common.enumtype.UserRole;
 import web.mvc.santa_backend.common.exception.ChatMemberNotFoundException;
 import web.mvc.santa_backend.common.exception.ErrorCode;
 import web.mvc.santa_backend.common.security.CustomUserDetails;
@@ -36,9 +38,15 @@ public class ChatroomMemberController {
 
     @PostMapping("/api/chatmember")
     public ResponseEntity<?> addChatroomMember(@RequestBody ChatroomMemberDTO chatroomMemberDTO, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        log.info("chatmember 등록요청");
+        log.info(chatroomMemberDTO.getChatroomId().toString());
         Long userId = customUserDetails.getUser().getUserId();
         chatroomMemberDTO.setUserId(userId);
-        chatroomMemberService.createChatroomMember(chatroomMemberDTO);
+        ChatroomMembers chatroomMember = chatroomMemberService.createChatroomMember(chatroomMemberDTO);
+        //null이라는건 기존에 참여하고 있던 사람이란 뜻. 레코드 생성하지 않았으니 그냥 OK
+        if(chatroomMember==null){
+            return ResponseEntity.status(HttpStatus.OK).build();
+        }
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -51,9 +59,16 @@ public class ChatroomMemberController {
 
     @DeleteMapping("/api/chatmember/{chatroomId}")
     public ResponseEntity<?> deleteChatroomMember(@PathVariable Long chatroomId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        //TODO 현재는 채팅방 나가기. 정도의 메서드. 관리자가 차단을 해제하거나 할 때 써야할 메서드를 따로 놓을건지 아니면 이 메서드로 다 쓸건지..
+
         Long userId = customUserDetails.getUser().getUserId();
-        chatroomMemberService.deleteChatroomMember(userId, chatroomId);
+        String username = customUserDetails.getUser().getUsername();
+        chatroomMemberService.deleteChatroomMember(userId, username, chatroomId);
         return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @GetMapping("/api/chatmember/role/{chatroomId}")
+    public ResponseEntity<UserRole> getUserRole(@PathVariable Long chatroomId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        Long userId = customUserDetails.getUser().getUserId();
+        return ResponseEntity.status(HttpStatus.OK).body(chatroomMemberService.getUserRole(userId, chatroomId));
     }
 }

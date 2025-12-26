@@ -1,64 +1,29 @@
 package web.mvc.santa_backend.chat.service;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
-import web.mvc.santa_backend.chat.dto.ChatroomMemberDTO;
-import web.mvc.santa_backend.chat.entity.ChatroomMembers;
 import web.mvc.santa_backend.chat.entity.Chatrooms;
-import web.mvc.santa_backend.chat.repository.ChatroomMemberRepository;
-import web.mvc.santa_backend.user.dto.UserSimpleDTO;
-import web.mvc.santa_backend.user.entity.Users;
+import web.mvc.santa_backend.chat.repository.ChatroomRepository;
 
-import java.util.List;
-import java.util.Optional;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Transactional
-public class ChatroomMemberServiceTest {
+public class ChatroomServiceTest {
 
     @Autowired
-    private ChatroomMemberService chatroomMemberService;
-
-    @Autowired
-    private ChatroomMemberRepository chatroomMemberRepository;
-
-
-//    @Test
-//    @Transactional(readOnly = true)
-//    public void getChatroomMembersTest(){
-//        //given
-//        Long chatroomId = 1L;
-//        boolean banned = false;
-//        Long userId = 1L;
-//        //when
-//        List<UserSimpleDTO> chatroomMembers = chatroomMemberService.getChatroomMembers(chatroomId,banned,userId);
-//
-//        //then
-//        Assertions.assertNotNull(chatroomMembers);
-//
-//        for(UserSimpleDTO userSimpleDTO:chatroomMembers){
-//            System.out.println(userSimpleDTO);
-//        }
-//    }
+    private ChatroomRepository chatroomRepository;
 
     @Test
-    public void createChatroomMemberTest(){
-        //given
-        //Long chatroomId = 1L;
-        //Long userId = 1L;
-        Long chatroomId = 3L;
-        Long userId = 1L;
-        ChatroomMemberDTO test = ChatroomMemberDTO.builder().userId(userId).chatroomId(chatroomId).build();
+    public void createChatroom() {
+        Chatrooms test = Chatrooms.builder()
+                .name("test")
+                .build();
+        Chatrooms save = chatroomRepository.save(test);
 
-        //when
-        chatroomMemberService.createChatroomMember(test);
-        ChatroomMembers testMember = chatroomMemberRepository.findByChatroom_ChatroomIdAndUser_UserId(chatroomId, userId).orElseThrow(RuntimeException::new);
-        //then
-        Assertions.assertNotNull(testMember);
+        assertThat(save).isNotNull();
+        assertThat(save.getName()).isEqualTo(test.getName());
     }
-
-
 }
