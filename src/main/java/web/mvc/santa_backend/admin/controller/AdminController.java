@@ -19,6 +19,8 @@ import web.mvc.santa_backend.user.dto.ReportResponseDTO;
 import web.mvc.santa_backend.user.dto.UserResponseDTO;
 import web.mvc.santa_backend.user.dto.UserSimpleDTO;
 import web.mvc.santa_backend.user.service.UserService;
+import web.mvc.santa_backend.post.dto.PostDTO;
+
 
 import java.util.List;
 
@@ -171,7 +173,8 @@ public class AdminController {
     @GetMapping("/posts/{page}")
     public ResponseEntity<?> getAllPosts(@PathVariable int page) {
         log.info("getAllPosts/ page: {}", page);
-        Page<web.mvc.santa_backend.post.dto.PostDTO> posts = adminService.getAllPosts(page);
+        Page<PostDTO> posts = adminService.getAllPosts(page);
+        
         return ResponseEntity.status(HttpStatus.OK).body(posts);
     }
     

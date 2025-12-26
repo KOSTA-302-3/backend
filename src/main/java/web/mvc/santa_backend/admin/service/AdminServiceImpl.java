@@ -24,7 +24,8 @@ import web.mvc.santa_backend.user.entity.Users;
 import web.mvc.santa_backend.user.repository.ReportRepository;
 import web.mvc.santa_backend.user.repository.UserRepository;
 import web.mvc.santa_backend.user.service.UserService;
-
+import web.mvc.santa_backend.post.dto.PostDTO;
+import web.mvc.santa_backend.post.entity.Posts;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -332,13 +333,13 @@ public class AdminServiceImpl implements AdminService {
      * 전체 게시물 목록 조회 (페이징)
      */
     @Override
-    public Page<web.mvc.santa_backend.post.dto.PostDTO> getAllPosts(int page) {
+    public Page<PostDTO> getAllPosts(int page) {
         log.info("getAllPosts/ page: {}", page);
         Pageable pageable = PageRequest.of(page, 20);
-        Page<web.mvc.santa_backend.post.entity.Posts> postsPage = postRepository.findAll(pageable);
+        Page<Posts> postsPage = postRepository.findAll(pageable);
         
         return postsPage.map(post -> {
-            web.mvc.santa_backend.post.dto.PostDTO dto = new web.mvc.santa_backend.post.dto.PostDTO();
+            PostDTO dto = new PostDTO();
             dto.setPostId(post.getPostId());
             dto.setContent(post.getContent());
             dto.setLikeCount(post.getLikeCount());
@@ -368,7 +369,7 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public void deletePost(Long postId) {
         log.info("deletePost/ postId: {}", postId);
-        web.mvc.santa_backend.post.entity.Posts post = postRepository.findById(postId)
+        Posts post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("게시물을 찾을 수 없습니다."));
         postRepository.delete(post);
         log.info("게시물 삭제 완료: postId={}", postId);
