@@ -20,4 +20,28 @@ public interface MessageRepository extends JpaRepository<Messages,Long> {
     Page<Messages> findByChatrooms_ChatroomIdAndMessageIdGreaterThanOrderByUserIdDesc(Long chatroomsChatroomId, Long messageIdIsGreaterThan, Pageable pageable);
 
     Page<Messages> findByChatrooms_ChatroomIdAndMessageIdGreaterThanOrderByMessageIdDesc(Long chatroomsChatroomId, Long messageIdIsGreaterThan, Pageable pageable);
+
+    @Query("""
+    SELECT COUNT(m)
+    FROM ChatroomMembers cm
+    JOIN Messages m
+      ON m.chatrooms = cm.chatroom
+    WHERE cm.user.userId = :userId
+      AND m.messageId > cm.lastRead
+    """)
+    Long countUnreadMessages(@Param("userId") Long userId);
+
+    @Query("""
+    SELECT COUNT(m) > 0
+    FROM ChatroomMembers cm
+    JOIN Messages m
+      ON m.chatrooms = cm.chatroom
+    WHERE cm.user.userId = :userId
+      AND cm.chatroom.chatroomId = :chatroomId
+      AND m.messageId > cm.lastRead
+    """)
+    boolean existsUnreadMessage(
+            @Param("userId") Long userId,
+            @Param("chatroomId") Long chatroomId
+    );
 }

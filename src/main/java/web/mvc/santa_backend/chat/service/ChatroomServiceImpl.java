@@ -15,6 +15,7 @@ import web.mvc.santa_backend.chat.entity.ChatroomMembers;
 import web.mvc.santa_backend.chat.entity.Chatrooms;
 import web.mvc.santa_backend.chat.repository.ChatroomMemberRepository;
 import web.mvc.santa_backend.chat.repository.ChatroomRepository;
+import web.mvc.santa_backend.chat.repository.MessageRepository;
 import web.mvc.santa_backend.common.enumtype.UserRole;
 import web.mvc.santa_backend.common.exception.ChatMemberNotFoundException;
 import web.mvc.santa_backend.common.exception.ChatroomNotFoundException;
@@ -30,6 +31,7 @@ import java.util.List;
 public class ChatroomServiceImpl implements ChatroomService {
     private final ChatroomRepository chatroomRepository;
     private final ChatroomMemberRepository chatroomMemberRepository;
+    private final MessageRepository messageRepository;
 
     @Override
     public Long createChatroom(ChatroomRequestDTO chatroomRequestDTO) {
@@ -64,7 +66,8 @@ public class ChatroomServiceImpl implements ChatroomService {
 
         Page<ChatroomResponseDTO> chatroomDTOS = chatrooms.map((n) -> {
             long count = chatroomMemberRepository.countByChatroom_ChatroomIdAndIsBanned(n.getChatroomId(), false);
-            ChatroomResponseDTO chatroomDTO = toDTO(n, count);
+            boolean unread = messageRepository.existsUnreadMessage(userId, n.getChatroomId());
+            ChatroomResponseDTO chatroomDTO = toDTO(n, count, unread);
             return chatroomDTO;
         });
 
@@ -113,13 +116,14 @@ public class ChatroomServiceImpl implements ChatroomService {
                 .build();
     }
 
-    private ChatroomResponseDTO toDTO(Chatrooms chatrooms, long count) {
+    private ChatroomResponseDTO toDTO(Chatrooms chatrooms, long count, boolean hasUnread) {
         return ChatroomResponseDTO.builder()
                 .id(chatrooms.getChatroomId())
                 .name(chatrooms.getName())
                 .isPrivate(chatrooms.isPrivate())
                 .imageUrl(chatrooms.getImageUrl())
                 .membersCount(count)
+                .hasUnread(hasUnread)
                 .build();
     }
 }
