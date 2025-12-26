@@ -61,9 +61,8 @@ public class ChatroomMemberController {
     public ResponseEntity<?> deleteChatroomMember(@PathVariable Long chatroomId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
         Long userId = customUserDetails.getUser().getUserId();
-        log.info("chatmemberAPI, chatroomId : {}", chatroomId);
-        log.info("chatmemberAPI, userId : {}", userId);
-        chatroomMemberService.deleteChatroomMember(userId, chatroomId);
+        String username = customUserDetails.getUser().getUsername();
+        chatroomMemberService.deleteChatroomMember(userId, username, chatroomId);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
