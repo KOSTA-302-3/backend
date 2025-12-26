@@ -1,8 +1,11 @@
 package web.mvc.santa_backend.common.config;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -13,9 +16,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.RedisSerializationContext;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.data.redis.serializer.*;
 import web.mvc.santa_backend.post.entity.dbtest.RedisPosts;
 
 import java.time.Duration;
@@ -62,17 +63,35 @@ public class RedisConfig {
         RedisTemplate<String, RedisPosts> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        // Key는 String
+        // 1. 순수 데이터 저장을 위한 ObjectMapper 설정
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule()); // 날짜(LocalDateTime) 처리
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS); // 날짜를 배열 대신 문자열로
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false); // 모르는 필드 있어도 무시
+
+        // 2. Serializer 생성 (익명 클래스로 간단하게 구현)
+        RedisSerializer<RedisPosts> serializer = new RedisSerializer<RedisPosts>() {
+            @Override
+            public byte[] serialize(RedisPosts value) throws SerializationException {
+                try {
+                    return value == null ? null : mapper.writeValueAsBytes(value);
+                } catch (Exception e) { throw new SerializationException("Serialize Error", e); }
+            }
+
+            @Override
+            public RedisPosts deserialize(byte[] bytes) throws SerializationException {
+                try {
+                    return (bytes == null || bytes.length == 0) ? null : mapper.readValue(bytes, RedisPosts.class);
+                } catch (Exception e) { throw new SerializationException("Deserialize Error", e); }
+            }
+        };
+
+        // 3. 설정 적용
         template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(serializer);
 
-        // Value는 위에서 만든 JSON Serializer 사용 (RedisPosts로 형변환되어 들어감)
-        // (타입 안전성을 위해 RedisPosts 전용 Serializer를 만들어도 되지만,
-        //  Object용을 써도 내부적으로 잘 동작합니다. 여기서는 명확성을 위해 Object용 사용)
-        template.setValueSerializer(jsonSerializer());
-
-        // HashKey/Value 설정 (Hash 자료구조 쓸 때 필요)
         template.setHashKeySerializer(new StringRedisSerializer());
-        template.setHashValueSerializer(jsonSerializer());
+        template.setHashValueSerializer(serializer);
 
         return template;
     }
