@@ -64,4 +64,14 @@ public interface AdminService {
      * 신고 삭제 (처리 완료)
      */
     void deleteReport(Long reportId);
+    
+    /**
+     * 전체 게시물 목록 조회 (페이징)
+     */
+    Page<web.mvc.santa_backend.post.dto.PostDTO> getAllPosts(int page);
+    
+    /**
+     * 게시물 삭제
+     */
+    void deletePost(Long postId);
 }

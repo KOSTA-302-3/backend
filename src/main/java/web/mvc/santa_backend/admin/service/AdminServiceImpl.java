@@ -327,4 +327,50 @@ public class AdminServiceImpl implements AdminService {
         reportRepository.delete(report);
         log.info("신고 삭제 완료: reportId={}", reportId);
     }
+    
+    /**
+     * 전체 게시물 목록 조회 (페이징)
+     */
+    @Override
+    public Page<web.mvc.santa_backend.post.dto.PostDTO> getAllPosts(int page) {
+        log.info("getAllPosts/ page: {}", page);
+        Pageable pageable = PageRequest.of(page, 20);
+        Page<web.mvc.santa_backend.post.entity.Posts> postsPage = postRepository.findAll(pageable);
+        
+        return postsPage.map(post -> {
+            web.mvc.santa_backend.post.dto.PostDTO dto = new web.mvc.santa_backend.post.dto.PostDTO();
+            dto.setPostId(post.getPostId());
+            dto.setContent(post.getContent());
+            dto.setLikeCount(post.getLikeCount());
+            dto.setCreateAt(post.getCreateAt());
+            
+            // Users 조회해서 username 설정
+            Users user = userRepository.findById(post.getCreateUserId())
+                    .orElse(null);
+            if (user != null) {
+                dto.setCreateUserName(user.getUsername());
+            }
+            
+            // 이미지 URL 설정
+            if (post.getImageSources() != null && !post.getImageSources().isEmpty()) {
+                dto.setImageSourcesList(post.getImageSources().stream()
+                        .map(img -> img.getSource())
+                        .collect(Collectors.toList()));
+            }
+            
+            return dto;
+        });
+    }
+    
+    /**
+     * 게시물 삭제
+     */
+    @Override
+    public void deletePost(Long postId) {
+        log.info("deletePost/ postId: {}", postId);
+        web.mvc.santa_backend.post.entity.Posts post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("게시물을 찾을 수 없습니다."));
+        postRepository.delete(post);
+        log.info("게시물 삭제 완료: postId={}", postId);
+    }
 }
