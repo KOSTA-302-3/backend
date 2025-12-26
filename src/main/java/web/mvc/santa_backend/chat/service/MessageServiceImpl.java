@@ -17,6 +17,7 @@ import web.mvc.santa_backend.chat.entity.ChatroomMembers;
 import web.mvc.santa_backend.chat.entity.Chatrooms;
 import web.mvc.santa_backend.chat.entity.Messages;
 import web.mvc.santa_backend.chat.manager.ChatroomManager;
+import web.mvc.santa_backend.chat.manager.NotificationManager;
 import web.mvc.santa_backend.chat.repository.ChatroomMemberRepository;
 import web.mvc.santa_backend.chat.repository.MessageRepository;
 import web.mvc.santa_backend.common.enumtype.MessageType;
@@ -26,7 +27,9 @@ import web.mvc.santa_backend.common.exception.UserNotFoundException;
 import web.mvc.santa_backend.user.entity.Users;
 import web.mvc.santa_backend.user.repository.UserRepository;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +40,7 @@ public class MessageServiceImpl implements MessageService {
     private final ChatroomMemberRepository chatroomMemberRepository;
     private final UserRepository userRepository;
     private final ChatroomManager chatroomManager;
+    private final NotificationManager notificationManager;
 
     @Override
     @Transactional(readOnly = true)
@@ -67,12 +71,20 @@ public class MessageServiceImpl implements MessageService {
         
         //저장되어있는 사람들의 userId(key값)으로 lastRead를 업데이트
         //즉. 현재 실제 접속중인 사람들의 lastRead를 실시간으로 업데이트함
-        roomSessions.keySet().forEach(userId -> {
+        Set<Long> ids = roomSessions.keySet();
+        ids.forEach(userId -> {
             ChatroomMembers chatroomMembers = chatroomMemberRepository.findByChatroom_ChatroomIdAndUser_UserId(roomId, userId).orElseThrow(() -> new ChatMemberNotFoundException(ErrorCode.NOT_CHATMEMBER));
             chatroomMembers.setLastRead(lastMessage);
         });
-        //username과 profileiamge를 가지고 오기 위해 user를 db에서 소환
-        Users user = userRepository.findById(message.getUserId()).orElseThrow(() -> new UserNotFoundException(ErrorCode.USER_NOT_FOUND));
+
+        List<ChatroomMembers> members = chatroomMemberRepository.findByChatroom_ChatroomIdAndIsBanned(roomId, false);
+
+        members.forEach(member -> {
+            Long memberId = member.getUser().getUserId();
+            if(!ids.contains(memberId)) {
+                notificationManager.sendNewNotification(memberId, "Chat");
+            }
+        });
 
 
         //OutMessageDTO로 바꿔서 리턴
@@ -92,6 +104,11 @@ public class MessageServiceImpl implements MessageService {
                 .lastReadFrom(chatroomMember.getLastRead())
                 .lastReadTo(latestMessageId)
                 .build();
+    }
+
+    @Override
+    public Long countAllUnreadMessages(Long userId) {
+        return messageRepository.countUnreadMessages(userId);
     }
 
     private void checkChatMember(Long chatroomId, Long userId){
