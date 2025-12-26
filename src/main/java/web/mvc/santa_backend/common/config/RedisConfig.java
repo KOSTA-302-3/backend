@@ -15,10 +15,12 @@ import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisPassword;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.*;
+import web.mvc.santa_backend.post.entity.dbtest.RedisFeedBacks;
 import web.mvc.santa_backend.post.entity.dbtest.RedisPosts;
 
 import java.time.Duration;
@@ -40,12 +42,17 @@ public class RedisConfig {
     @Bean
     public LettuceConnectionFactory redisConnectionFactory() {
 
-        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration("localhost", 6379);
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
 
         // 2. 패스워드 설정 (RedisPassword 객체 사용)
         config.setPassword(RedisPassword.of(password));
 
-        return new LettuceConnectionFactory(config);
+        LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
+                .useSsl()  // <--- 이 부분이 AWS ElastiCache 접속 시 필수입니다.
+                // .and().commandTimeout(Duration.ofMillis(60000)) // 필요시 타임아웃 설정 등 추가
+                .build();
+
+        return new LettuceConnectionFactory(config,clientConfig);
     }
 
     /**
@@ -106,6 +113,46 @@ public class RedisConfig {
 
         return template;
     }
+
+    @Bean
+    public RedisTemplate<String, RedisFeedBacks> redisFeedBackTemplate(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, RedisFeedBacks> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+
+        // 1. 순수 데이터 저장을 위한 ObjectMapper 설정
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule()); // 날짜(LocalDateTime) 처리
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS); // 날짜를 배열 대신 문자열로
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false); // 모르는 필드 있어도 무시
+
+        // 2. Serializer 생성 (익명 클래스로 간단하게 구현)
+        RedisSerializer<RedisFeedBacks> serializer = new RedisSerializer<RedisFeedBacks>() {
+            @Override
+            public byte[] serialize(RedisFeedBacks value) throws SerializationException {
+                try {
+                    return value == null ? null : mapper.writeValueAsBytes(value);
+                } catch (Exception e) { throw new SerializationException("Serialize Error", e); }
+            }
+
+            @Override
+            public RedisFeedBacks deserialize(byte[] bytes) throws SerializationException {
+                try {
+                    return (bytes == null || bytes.length == 0) ? null : mapper.readValue(bytes, RedisFeedBacks.class);
+                } catch (Exception e) { throw new SerializationException("Deserialize Error", e); }
+            }
+        };
+
+        // 3. 설정 적용
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(serializer);
+
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(serializer);
+
+        return template;
+    }
+
+
 
     /**
      * 2. RedisCacheManager 설정 (@Cacheable 용)

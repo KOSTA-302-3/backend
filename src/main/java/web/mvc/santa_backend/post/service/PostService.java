@@ -3,6 +3,7 @@ package web.mvc.santa_backend.post.service;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestParam;
+import web.mvc.santa_backend.post.dto.FeedBackDTO;
 import web.mvc.santa_backend.post.dto.PostDTO;
 import web.mvc.santa_backend.post.dto.PostResponseDTO;
 import web.mvc.santa_backend.post.entity.Posts;
@@ -29,5 +30,7 @@ public interface PostService {
     void insertHashTags(String hashTags, Long postId);
 
     PostResponseDTO getPostsById(Long postId,Long userId);
+
+     void createFeedBack(FeedBackDTO feedBackDTO);
 
 }
