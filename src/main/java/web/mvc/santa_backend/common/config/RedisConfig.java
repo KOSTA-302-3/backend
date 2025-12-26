@@ -38,9 +38,22 @@ public class RedisConfig {
     @Value("${spring.data.redis.password}")
     private String password;
 
-    /**
-     * [핵심] SSL 강제 적용을 위한 ConnectionFactory 수동 생성
-     */
+    @Bean
+    public CommandLineRunner testRedisConnection(RedisTemplate<String, Object> redisTemplate) {
+        return args -> {
+            System.out.println("[진단 시작] Redis 연결 테스트를 수행합니다...");
+            try {
+                // PING 명령어로 연결 확인
+                String pong = redisTemplate.getConnectionFactory().getConnection().ping();
+                System.out.println("[진단 성공] Redis 응답: " + pong);
+            } catch (Exception e) {
+                System.err.println("[진단 실패] Redis 연결 에러 발생!");
+                System.err.println("원인: " + e.getMessage());
+                e.printStackTrace(); // 자세한 에러 로그 출력
+            }
+        };
+    }
+
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         // 1. 서버 정보 (Host, Port, Password)
