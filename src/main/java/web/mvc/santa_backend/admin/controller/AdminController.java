@@ -19,6 +19,8 @@ import web.mvc.santa_backend.user.dto.ReportResponseDTO;
 import web.mvc.santa_backend.user.dto.UserResponseDTO;
 import web.mvc.santa_backend.user.dto.UserSimpleDTO;
 import web.mvc.santa_backend.user.service.UserService;
+import web.mvc.santa_backend.post.dto.PostDTO;
+
 
 import java.util.List;
 
@@ -162,5 +164,28 @@ public class AdminController {
         log.info("deleteReport/ reportId: {}", reportId);
         adminService.deleteReport(reportId);
         return ResponseEntity.status(HttpStatus.OK).body("신고가 거절되었습니다.");
+    }
+    
+    /**
+     * 전체 게시물 목록 조회 (페이징)
+     */
+    @Operation(summary = "전체 게시물 목록 조회", description = "page 0부터 시작, 페이지당 20개")
+    @GetMapping("/posts/{page}")
+    public ResponseEntity<?> getAllPosts(@PathVariable int page) {
+        log.info("getAllPosts/ page: {}", page);
+        Page<PostDTO> posts = adminService.getAllPosts(page);
+        
+        return ResponseEntity.status(HttpStatus.OK).body(posts);
+    }
+    
+    /**
+     * 게시물 삭제
+     */
+    @Operation(summary = "게시물 삭제")
+    @DeleteMapping("/posts/{postId}")
+    public ResponseEntity<?> deletePost(@PathVariable Long postId) {
+        log.info("deletePost/ postId: {}", postId);
+        adminService.deletePost(postId);
+        return ResponseEntity.status(HttpStatus.OK).body("게시물이 삭제되었습니다.");
     }
 }
