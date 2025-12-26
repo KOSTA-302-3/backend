@@ -63,9 +63,16 @@ public class ChatroomController {
         return ResponseEntity.status(HttpStatus.OK).body("ok");
     }
 
-    @DeleteMapping("api/chatroom/{chatroomId}")
+    @DeleteMapping("/api/chatroom/{chatroomId}")
     public ResponseEntity<?> deleteChatroom(@PathVariable Long chatroomId) {
         chatroomService.deleteChatroom(chatroomId);
         return ResponseEntity.status(HttpStatus.OK).body("ok");
+    }
+
+    @PostMapping("/api/chatroom/{userId}")
+    public ResponseEntity<?> createDMRoom(@PathVariable Long userId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        Long myUserId = customUserDetails.getUser().getUserId();
+        Long chatroomId = chatroomService.createChatroom(userId, myUserId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(chatroomId);
     }
 }
