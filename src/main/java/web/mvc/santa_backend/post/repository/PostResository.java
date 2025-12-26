@@ -27,7 +27,9 @@ public interface PostResository extends JpaRepository<Posts, Long> {
     Page<Posts> findAllByPostIdAndFollow(@Param("user_id") Long user_id, Pageable pageable);
     @Query(nativeQuery = true,value = "select * from posts where content_visible = 1 and post_level <= :post_level and create_user_id in (select following_id from follows where follower_id = :user_id and pending = 0)")
     Page<Posts> findAllByPostIdAndFollowOnFilter(@Param("user_id") Long user_id,@Param("post_level") Long post_level, Pageable pageable);
-    Page<Posts> findAllByCreateUserId(Long id,Pageable pageable);
+    Page<Posts> findAllByCreateUserIdOrderByCreateAtDesc(Long id,Pageable pageable);
+
+    Page<Posts> findAllByCreateUserIdAndContentVisibleIsTrueOrderByCreateAtDesc(Long id,Pageable pageable);
     Page<Posts> findAll(Pageable pageable);
 
 

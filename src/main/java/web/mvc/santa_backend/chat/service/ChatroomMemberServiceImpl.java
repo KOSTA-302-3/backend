@@ -32,9 +32,11 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
     private final ChatroomMemberRepository chatroomMemberRepository;
     private final ChatroomRepository chatroomRepository;
     private final UserRepository userRepository;
+    private final MessageRepository messageRepository;
+
     private final ChatroomManager chatroomManager;
     private final MessageService messageService;
-    private final MessageRepository messageRepository;
+    private final ChatroomService chatroomService;
 
     @Override
     @Transactional(readOnly = true)
@@ -172,9 +174,24 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
     }
 
     @Override
-    public void deleteChatroomMember(Long userId, Long chatroomId) {
-        //TODO 인증처리
+    public void deleteChatroomMember(Long userId, String username, Long chatroomId) {
+        log.info("1단계");
+        InboundChatMessageDTO message = InboundChatMessageDTO.builder()
+                .userId(userId)
+                .chatroomId(chatroomId)
+                .payload(username + "님 퇴장")
+                .type(MessageType.NOTICE)
+                .build();
+        OutboundChatMessageDTO outMessage = messageService.createMessage(message);
+        log.info("2단계");
+        chatroomManager.broadcast(outMessage, chatroomId);
+        log.info("3단계");
         chatroomMemberRepository.deleteByUser_UserIdAndChatroom_ChatroomId(userId, chatroomId);
+        long count = chatroomMemberRepository.countByChatroom_ChatroomIdAndIsBanned(chatroomId, false);
+        log.info("4단계");
+        if(count == 0){
+            chatroomService.deleteChatroom(chatroomId);
+        }
     }
 
     @Override

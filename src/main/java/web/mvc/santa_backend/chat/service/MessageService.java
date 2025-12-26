@@ -26,4 +26,6 @@ public interface MessageService {
      * @return
      */
     ReadUpdateDTO updateFrontUnreadCount(Long chatroomId, Long userId);
+
+    Long countAllUnreadMessages(Long userId);
 }

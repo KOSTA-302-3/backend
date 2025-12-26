@@ -60,5 +60,9 @@ public class MessageController {
         return null;
     }
 
-
+    @GetMapping("/api/message/count")
+    public ResponseEntity<?> countUnreadMessages(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        Long userId = customUserDetails.getUser().getUserId();
+        return ResponseEntity.status(HttpStatus.OK).body(messageService.countAllUnreadMessages(userId));
+    }
 }

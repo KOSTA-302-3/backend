@@ -10,6 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import web.mvc.santa_backend.common.security.CustomUserDetails;
+import web.mvc.santa_backend.post.dto.FeedBackDTO;
 import web.mvc.santa_backend.post.dto.LikeDTO;
 import web.mvc.santa_backend.post.dto.PostDTO;
 import web.mvc.santa_backend.post.dto.PostResponseDTO;
@@ -75,8 +76,8 @@ public class PostContoller {
     @Operation(summary = "특정 유저 게시물 보기")
     @GetMapping("/getPostsByUserId")
     ResponseEntity<Page<PostDTO>> getPostsByUserId(@RequestParam Long userId, @RequestParam int pageNo,@AuthenticationPrincipal CustomUserDetails customUserDetails) {
-
-        return ResponseEntity.status(HttpStatus.OK).body(postService.getPostsByUserId(userId, pageNo));
+        Long findUser = customUserDetails.getUser().getUserId();
+        return ResponseEntity.status(HttpStatus.OK).body(postService.getPostsByUserId(userId, pageNo,findUser));
     }
 
 
@@ -165,6 +166,17 @@ public class PostContoller {
         System.out.println("Call!");
         System.out.println(customUserDetails.getUsername());
         return customUserDetails.getUsername();
+    }
+
+
+
+    @PostMapping(value = "/createFeedBacks")
+    @Operation(summary = "피드백 작성")
+    ResponseEntity<String> createFeedBacks(@RequestBody FeedBackDTO feedBackDTO, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+        feedBackDTO.setUserId(customUserDetails.getUser().getUserId());
+        postService.createFeedBack(feedBackDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Create Success");
     }
 
 
