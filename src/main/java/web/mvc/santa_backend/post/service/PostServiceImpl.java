@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import web.mvc.santa_backend.post.dto.PostResponseDTO;
 import web.mvc.santa_backend.post.entity.HashTags;
 import web.mvc.santa_backend.post.entity.ImageSources;
 import web.mvc.santa_backend.post.entity.Posts;
+import web.mvc.santa_backend.post.entity.dbtest.RedisPosts;
 import web.mvc.santa_backend.post.repository.HashTagsRepository;
 import web.mvc.santa_backend.post.repository.ImageSourcesRepository;
 import web.mvc.santa_backend.post.repository.PostResository;
@@ -41,6 +43,8 @@ public class PostServiceImpl implements PostService {
     private UserRepository userRepository;
     @Autowired
     private RepliesRepository repliesRepository;
+    @Autowired
+    RedisTemplate<String, RedisPosts> redisTemplate;
 
 
 
@@ -145,12 +149,18 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Page<PostDTO> getPostsByUserId(Long userId, int pageNo) {
+    public Page<PostDTO> getPostsByUserId(Long userId, int pageNo,Long findUser) {
 
         Pageable pageable = PageRequest.of(pageNo - 1, 5);
 
+        Page<Posts> page;
+        if (userId == findUser){
+           page = postRepository.findAllByCreateUserIdOrderByCreateAtDesc(userId, pageable);
+        }
+        else{
+         page = postRepository.findAllByCreateUserIdAndContentVisibleIsTrueOrderByCreateAtDesc(userId, pageable);
 
-        Page<Posts> page = postRepository.findAllByCreateUserId(userId, pageable);
+        }
 
         Page<PostDTO> pageDTO = page.map(posts -> new PostDTO(
                 posts.getPostId(),
@@ -182,7 +192,7 @@ public class PostServiceImpl implements PostService {
                 build()
         );
 
-
+        List<String> redisImage = new ArrayList<>();
         for(String image : posts.getImageSourcesList()){
             imageSourcesRepository.save(ImageSources.builder()
                             .posts(
@@ -190,6 +200,8 @@ public class PostServiceImpl implements PostService {
                             )
                             .source(image)
                     .build());
+        redisImage.add(image);
+
         }
         for(String hash : posts.getHashTagsList()){
             hashTagsRepository.save(
@@ -200,6 +212,11 @@ public class PostServiceImpl implements PostService {
             );
 
         }
+
+
+
+        RedisPosts redisPosts = new RedisPosts(savedPost.getPostId(),redisImage, savedPost.getContent());
+        redisTemplate.opsForList().rightPush("queue:inference", redisPosts);
 
 
     }

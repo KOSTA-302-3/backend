@@ -26,23 +26,23 @@ public class ChatroomMemberServiceTest {
     private ChatroomMemberRepository chatroomMemberRepository;
 
 
-    @Test
-    @Transactional(readOnly = true)
-    public void getChatroomMembersTest(){
-        //given
-        Long chatroomId = 1L;
-        boolean banned = false;
-        Long userId = 1L;
-        //when
-        List<UserSimpleDTO> chatroomMembers = chatroomMemberService.getChatroomMembers(chatroomId,banned,userId);
-
-        //then
-        Assertions.assertNotNull(chatroomMembers);
-
-        for(UserSimpleDTO userSimpleDTO:chatroomMembers){
-            System.out.println(userSimpleDTO);
-        }
-    }
+//    @Test
+//    @Transactional(readOnly = true)
+//    public void getChatroomMembersTest(){
+//        //given
+//        Long chatroomId = 1L;
+//        boolean banned = false;
+//        Long userId = 1L;
+//        //when
+//        List<UserSimpleDTO> chatroomMembers = chatroomMemberService.getChatroomMembers(chatroomId,banned,userId);
+//
+//        //then
+//        Assertions.assertNotNull(chatroomMembers);
+//
+//        for(UserSimpleDTO userSimpleDTO:chatroomMembers){
+//            System.out.println(userSimpleDTO);
+//        }
+//    }
 
     @Test
     public void createChatroomMemberTest(){

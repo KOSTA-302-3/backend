@@ -18,7 +18,7 @@ public interface PostService {
     Page<PostDTO> getFollowPostsWithOffFilter(Long userId, int pageNo);
     Page<PostResponseDTO> getFollowPostsWithOnFilter(Long userId,Long postLevel,int pageNo);
 
-    Page<PostDTO> getPostsByUserId(Long userId,int pageNo);
+    Page<PostDTO> getPostsByUserId(Long userId,int pageNo,Long findUser);
 
     void createPosts(PostDTO posts);
 

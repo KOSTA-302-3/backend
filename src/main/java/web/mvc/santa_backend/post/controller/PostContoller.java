@@ -75,8 +75,8 @@ public class PostContoller {
     @Operation(summary = "특정 유저 게시물 보기")
     @GetMapping("/getPostsByUserId")
     ResponseEntity<Page<PostDTO>> getPostsByUserId(@RequestParam Long userId, @RequestParam int pageNo,@AuthenticationPrincipal CustomUserDetails customUserDetails) {
-
-        return ResponseEntity.status(HttpStatus.OK).body(postService.getPostsByUserId(userId, pageNo));
+        Long findUser = customUserDetails.getUser().getUserId();
+        return ResponseEntity.status(HttpStatus.OK).body(postService.getPostsByUserId(userId, pageNo,findUser));
     }
 
 

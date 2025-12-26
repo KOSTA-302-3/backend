@@ -17,7 +17,9 @@ public class RedisTestEntity {
 
     @Id
     public Long id;
-    public Posts posts;
+    public Long job_id;
+    public List<String> image_urls;
+    public String content;
 
 
 }
