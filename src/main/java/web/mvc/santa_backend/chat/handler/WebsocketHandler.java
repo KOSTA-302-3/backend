@@ -13,6 +13,7 @@ import web.mvc.santa_backend.chat.dto.ChatroomMemberDTO;
 import web.mvc.santa_backend.chat.dto.InboundChatMessageDTO;
 import web.mvc.santa_backend.chat.dto.OutboundChatMessageDTO;
 import web.mvc.santa_backend.chat.manager.ChatroomManager;
+import web.mvc.santa_backend.chat.manager.NotificationManager;
 import web.mvc.santa_backend.chat.service.ChatroomMemberService;
 import web.mvc.santa_backend.chat.service.ChatroomService;
 import web.mvc.santa_backend.chat.service.MessageService;
@@ -30,6 +31,7 @@ public class WebsocketHandler extends TextWebSocketHandler {
     private final ChatroomMemberService chatroomMemberService;
     private final MessageService messageService;
     private final ChatroomManager chatroomManager;
+    private final NotificationManager notificationManager;
     /**
      * 접속시
      * @param session

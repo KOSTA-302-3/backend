@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @ToString
 @Builder
-public class OutboundChatMessageDTO {
+public class OutboundChatMessageDTO implements OutboundMessage {
     private Long id;
     private String type;
     private Long userId;
@@ -21,4 +21,10 @@ public class OutboundChatMessageDTO {
     private LocalDateTime ts;
     private MessageType messageType;
     private Long unreadCount;
+
+    @Override
+    public MessageType getMessageType(){
+        return messageType;
+    }
+
 }

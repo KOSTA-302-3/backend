@@ -42,12 +42,12 @@ public class ChatroomMemberController {
         log.info(chatroomMemberDTO.getChatroomId().toString());
         Long userId = customUserDetails.getUser().getUserId();
         chatroomMemberDTO.setUserId(userId);
-        ChatroomMembers chatroomMember = chatroomMemberService.createChatroomMember(chatroomMemberDTO);
+        ChatroomMemberResDTO chatroomMember = chatroomMemberService.createChatroomMember(chatroomMemberDTO);
         //null이라는건 기존에 참여하고 있던 사람이란 뜻. 레코드 생성하지 않았으니 그냥 OK
         if(chatroomMember==null){
             return ResponseEntity.status(HttpStatus.OK).build();
         }
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(chatroomMember);
     }
 
     @PutMapping("/api/chatmember")

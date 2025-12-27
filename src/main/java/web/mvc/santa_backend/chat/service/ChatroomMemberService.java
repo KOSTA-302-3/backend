@@ -37,7 +37,7 @@ public interface ChatroomMemberService {
      * UserRole role(역할, admin/user, default user)
      * @param chatroomMemberDTO 필수 파라미터 Long userId, Long chatroomId, 선택 파라미터 boolean noteOff, UserRole role
      */
-    ChatroomMembers createChatroomMember(ChatroomMemberDTO chatroomMemberDTO);
+    ChatroomMemberResDTO createChatroomMember(ChatroomMemberDTO chatroomMemberDTO);
 
     /**
      * 자신의 상태를 변경하는 메서드
