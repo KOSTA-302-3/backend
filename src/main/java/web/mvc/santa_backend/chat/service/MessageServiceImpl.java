@@ -101,8 +101,7 @@ public class MessageServiceImpl implements MessageService {
                 .chatroomId(chatroomId)
                 .userId(userId)
                 .messageType(MessageType.READ_UPDATE)
-                .lastReadFrom(chatroomMember.getLastRead())
-                .lastReadTo(latestMessageId)
+                .lastRead(chatroomMember.getLastRead())
                 .build();
     }
 

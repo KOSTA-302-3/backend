@@ -9,9 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
-import web.mvc.santa_backend.chat.dto.ChatroomDTO;
-import web.mvc.santa_backend.chat.dto.ChatroomMemberDTO;
-import web.mvc.santa_backend.chat.dto.OutboundChatMessageDTO;
+import web.mvc.santa_backend.chat.dto.*;
+import web.mvc.santa_backend.chat.entity.ChatroomMembers;
+import web.mvc.santa_backend.chat.repository.ChatroomMemberRepository;
 import web.mvc.santa_backend.chat.service.ChatroomMemberService;
 import web.mvc.santa_backend.chat.service.ChatroomService;
 import web.mvc.santa_backend.chat.service.MessageService;
@@ -19,6 +19,7 @@ import web.mvc.santa_backend.common.enumtype.MessageType;
 import web.mvc.santa_backend.common.enumtype.UserRole;
 import web.mvc.santa_backend.common.exception.ChatroomNotFoundException;
 import web.mvc.santa_backend.common.exception.ErrorCode;
+import web.mvc.santa_backend.common.exception.NotFoundException;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -31,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ChatroomManager {
     private final Map<Long, Map<Long, WebSocketSession>> chatRooms = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ChatroomMemberRepository chatroomMemberRepository;
 
 
     /**
@@ -41,10 +43,13 @@ public class ChatroomManager {
         Long userId = (Long)session.getAttributes().get("userId");
         Long roomId = (Long)session.getAttributes().get("roomId");
         chatRooms.computeIfAbsent(roomId, k -> new HashMap<>()).put(userId, session);
-        OutboundChatMessageDTO messageDTO = OutboundChatMessageDTO
+        ChatroomMembers chatroomMember = chatroomMemberRepository.findByChatroom_ChatroomIdAndUser_UserId(roomId, userId).orElseThrow(() -> new NotFoundException(ErrorCode.CHATMEMBER_NOT_FOUND));
+        ReadUpdateDTO messageDTO = ReadUpdateDTO
                 .builder()
                 .messageType(MessageType.STATUS)
-                .text("업데이트해")
+                .userId(userId)
+                .lastRead(chatroomMember.getLastRead())
+                .online(true)
                 .build();
         broadcast(messageDTO, roomId);
     }
@@ -54,28 +59,30 @@ public class ChatroomManager {
         if(roomSessions!=null) {
             roomSessions.remove(userId);
         }
-        OutboundChatMessageDTO messageDTO = OutboundChatMessageDTO
+        ReadUpdateDTO messageDTO = ReadUpdateDTO
                 .builder()
                 .messageType(MessageType.STATUS)
-                .text("업데이트해")
+                .userId(userId)
+                .online(false)
                 .build();
         broadcast(messageDTO, roomId);
     }
 
-    public void broadcast(OutboundChatMessageDTO outboundChatMessageDTO, Long roomId) {
+    public void broadcast(OutboundMessage outboundMessage, Long roomId) {
         objectMapper.registerModule(new JavaTimeModule()); //
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-
+        log.info("outboundMessage={}", outboundMessage);
         String message = null;
         try {
-            message = objectMapper.writeValueAsString(outboundChatMessageDTO);
+            message = objectMapper.writeValueAsString(outboundMessage);
         } catch (JsonProcessingException e) {
             //TODO 무슨 예외를.. 던져야하는가..
             throw new RuntimeException("메시지 이상함");
         }
         Map<Long, WebSocketSession> chatroom = chatRooms.get(roomId);
+
         if(chatroom==null) {
-            throw new ChatroomNotFoundException(ErrorCode.CHATROOM_NOT_FOUND);
+            return;
         }
 
         try {

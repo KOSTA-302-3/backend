@@ -96,20 +96,21 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
             chatroomManager.broadcast(outMessage, chatroomMemberDTO.getChatroomId());
             updateNoticeSent(chatroomMember.getChatroomMemeberId());
         }else {
+            //채팅방 입장
+            chatroomManager.addSession(webSocketSession);
             //입장한 채팅방의 가장 최근 messageId를 가지고와서,
             Long latestMessageId = messageRepository.findLatestMessageId(chatroomMemberDTO.getChatroomId());
             //lastRead를 최신화 시킴.
             chatroomMemberDTO.setLastRead(latestMessageId);
             updateChatroomMember(chatroomMemberDTO.getUserId(), chatroomMemberDTO);
-            //채팅방 입장
-            chatroomManager.addSession(webSocketSession);
         }
     }
 
 
     @Override
-    public ChatroomMembers createChatroomMember(ChatroomMemberDTO chatroomMemberDTO) {
+    public ChatroomMemberResDTO createChatroomMember(ChatroomMemberDTO chatroomMemberDTO) {
         log.info("여기에 들어와야하는데..?");
+        log.info("chatroomMemberDTO : {}", chatroomMemberDTO);
         //방이 있는지 확인
         Chatrooms chatroom = chatroomRepository.findById(chatroomMemberDTO.getChatroomId()).orElseThrow(() -> new ChatroomNotFoundException(ErrorCode.CHATROOM_NOT_FOUND));
         //유저가 실제로 있는지 확인
@@ -133,8 +134,18 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
         chatroomMemberDTO.setLastRead(latestMessageId);
         //엔티티 변환
         ChatroomMembers chatroomMember = toEntity(chatroomMemberDTO);
-        //저장 및 리턴
-        return chatroomMemberRepository.save(chatroomMember);
+        ChatroomMembers save = chatroomMemberRepository.save(chatroomMember);
+        ChatroomMemberResDTO dto = toDTO(save, user);
+        ReadUpdateDTO messageDTO = ReadUpdateDTO
+                .builder()
+                .messageType(MessageType.MEMBER_IN)
+                .chatroomMemberDTO(dto)
+                .online(true)
+                .build();
+
+        chatroomManager.broadcast(messageDTO, chatroomMemberDTO.getChatroomId());
+        log.info("여기까지는 오는건가");
+        return dto;
     }
 
     @Override
@@ -233,16 +244,14 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
                 .build();
     }
 
-    private ChatroomMemberDTO toDTO(ChatroomMembers chatroomMembers) {
-        return ChatroomMemberDTO.builder()
-                .chatroomMemberId(chatroomMembers.getChatroomMemeberId())
-                .userId(chatroomMembers.getUser().getUserId())
-                .chatroomId(chatroomMembers.getChatroom().getChatroomId())
-                .startRead(chatroomMembers.getStartRead() != null ? chatroomMembers.getStartRead() : 0)
-                .lastRead(chatroomMembers.getLastRead() != null ? chatroomMembers.getLastRead() : 0)
-                .noteOff(chatroomMembers.isNoteOff())
+    private ChatroomMemberResDTO toDTO(ChatroomMembers chatroomMembers, Users user) {
+        return ChatroomMemberResDTO
+                .builder()
+                .id(chatroomMembers.getChatroomMemeberId())
+                .username(chatroomMembers.getUser().getUsername())
+                .avatarUrl(user.getProfileImage())
                 .role(chatroomMembers.getRole())
-                .isBanned(chatroomMembers.isBanned())
+                .online(false)
                 .build();
     }
 
