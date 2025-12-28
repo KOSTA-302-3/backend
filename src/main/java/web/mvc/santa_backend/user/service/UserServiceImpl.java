@@ -116,7 +116,7 @@ public class UserServiceImpl implements UserService {
     public UserResponseDTO updateUsers(Long id, UserRequestDTO userRequestDTO) {
         log.info("updateUsers/ user: {}", userRequestDTO);
 
-        if (userRepository.existsByUsername(userRequestDTO.getUsername())) {
+        if (userRepository.existsByUsernameAndUserIdNot(userRequestDTO.getUsername(), id)) {
             throw new DuplicateException(ErrorCode.DUPLICATED_USERNAME);
         }
 
