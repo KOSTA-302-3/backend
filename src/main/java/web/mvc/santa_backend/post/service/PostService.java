@@ -33,4 +33,6 @@ public interface PostService {
 
      void createFeedBack(FeedBackDTO feedBackDTO);
 
+    Page<PostResponseDTO> getPostsByHashTags(String getHashTags,int pageNo);
+
 }

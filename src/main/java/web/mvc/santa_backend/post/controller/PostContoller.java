@@ -140,6 +140,14 @@ public class PostContoller {
         return ResponseEntity.status(HttpStatus.CREATED).body("해그태그 작성완료");
     }
 
+    @GetMapping(value = "/getPostsByHashTag")
+    @Operation(summary = "해시태그로 검색")
+    ResponseEntity<Page<PostResponseDTO>> getPostsByHashTag(String hashTags, @RequestParam int pageNo,@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+        return ResponseEntity.status(HttpStatus.OK).body(postService.getPostsByHashTags(hashTags, pageNo));
+    }
+
+
     @PostMapping("/like")
     @Operation(summary = "게시물 좋아요")
     ResponseEntity<String> likePost(@RequestBody LikeDTO likeDTO,@AuthenticationPrincipal CustomUserDetails customUserDetails) {
