@@ -88,7 +88,9 @@ public class MessageServiceImpl implements MessageService {
 
 
         //OutMessageDTO로 바꿔서 리턴
-        return toOutboundChatMessageDTO(message);
+        OutboundChatMessageDTO messageDTO = toOutboundChatMessageDTO(message);
+        log.info("messageDTO={}", messageDTO);
+        return messageDTO;
     }
 
     @Override
