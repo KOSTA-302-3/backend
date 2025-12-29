@@ -54,4 +54,11 @@ public class FollowController {
         return ResponseEntity.status(HttpStatus.OK).body(follow);
     }
 
+    @Operation(summary = "팔로우 거절", description = "비공개 유저에게 온 팔로우 요청을 거절")
+    @DeleteMapping("/refuse/{followerId}")
+    public ResponseEntity<?> refuseFollow(@PathVariable Long followerId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        followService.refuseFollow(followerId, customUserDetails.getUser().getUserId());
+
+        return ResponseEntity.status(HttpStatus.OK).body("OK");
+    }
 }
