@@ -120,6 +120,7 @@ public class FollowServiceImpl implements FollowService {
         return modelMapper.map(follow, FollowDTO.class);
     }
 
+    @Transactional
     @Override
     public void refuseFollow(Long followerId, Long followingId) {
         Follows follow = followRepository.findByFollower_UserIdAndFollowing_UserId(followerId, followingId)

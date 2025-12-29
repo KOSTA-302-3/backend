@@ -127,7 +127,7 @@ public class UserServiceImpl implements UserService {
         user.setProfileImage(userRequestDTO.getProfileImage());
         user.setDescription(userRequestDTO.getDescription());
         user.setLevel(userRequestDTO.getLevel());
-        user.setPassword(passwordEncoder.encode(userRequestDTO.getPassword())); // TODO: 비밀번호 암호화 수준 확인 및 이전 비밀번호 불가
+        //user.setPassword(passwordEncoder.encode(userRequestDTO.getPassword())); // TODO: 비밀번호 암호화 수준 확인 및 이전 비밀번호 불가
 
         return modelMapper.map(user, UserResponseDTO.class);
     }
