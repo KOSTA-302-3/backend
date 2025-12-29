@@ -6,4 +6,6 @@ import web.mvc.santa_backend.post.entity.FeedBacks;
 
 @Repository
 public interface FeedBackRepository extends JpaRepository<FeedBacks, Long> {
+
+    void deleteAllByPostsPostId(Long postId);
 }

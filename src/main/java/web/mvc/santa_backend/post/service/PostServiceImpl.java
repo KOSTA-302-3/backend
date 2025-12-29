@@ -103,6 +103,7 @@ public class PostServiceImpl implements PostService {
                 posts.getLikeCount(),
                 posts.getPostLevel(),
                 posts.isContentVisible(),
+                posts.getCreateUserId(),
                 posts.getHashTags().stream().map(hashTags -> hashTags.getTag()).toList(),
                 posts.getImageSources().stream().map(imageSources -> imageSources.getSource()).toList(),
                 false
@@ -145,6 +146,7 @@ public class PostServiceImpl implements PostService {
                 posts.getLikeCount(),
                 posts.getPostLevel(),
                 posts.isContentVisible(),
+                posts.getCreateUserId(),
                 posts.getHashTags().stream().map(hashTags -> hashTags.getTag()).toList(),
                 posts.getImageSources().stream().map(imageSources -> imageSources.getSource()).toList(),
                 false
@@ -218,9 +220,9 @@ public class PostServiceImpl implements PostService {
         }
 
 
-
-        RedisPosts redisPosts = new RedisPosts(savedPost.getPostId(),redisImage, savedPost.getContent());
-        redisTemplate.opsForList().rightPush("queue:inference", redisPosts);
+//
+//        RedisPosts redisPosts = new RedisPosts(savedPost.getPostId(),redisImage, savedPost.getContent());
+//        redisTemplate.opsForList().rightPush("queue:inference", redisPosts);
 
 
     }
@@ -279,6 +281,7 @@ public class PostServiceImpl implements PostService {
     public void deletePosts(PostDTO posts) {
 
         repliesRepository.deleteAllByPostsPostId(posts.getPostId());
+        feedBackRepository.deleteAllByPostsPostId(posts.getPostId());
         postRepository.deleteById(posts.getPostId());
     }
 
@@ -351,6 +354,7 @@ public class PostServiceImpl implements PostService {
                 posts.getLikeCount(),
                 posts.getPostLevel(),
                 posts.isContentVisible(),
+               posts.getCreateUserId(),
                 posts.getHashTags().stream().map(hashTags -> hashTags.getTag()).toList(),
                 posts.getImageSources().stream().map(imageSources -> imageSources.getSource()).toList(),
                 userCheck
@@ -371,8 +375,8 @@ public class PostServiceImpl implements PostService {
                 .build());
 
 
-        RedisFeedBacks redisFeedBacks = new RedisFeedBacks(feedBacks.getPosts().getPostId(),feedBacks.getLevel());
-        redisFeedBacksRedisTemplate.opsForList().rightPush("queue:feedback", redisFeedBacks);
+//        RedisFeedBacks redisFeedBacks = new RedisFeedBacks(feedBacks.getPosts().getPostId(),feedBacks.getLevel());
+//        redisFeedBacksRedisTemplate.opsForList().rightPush("queue:feedback", redisFeedBacks);
     }
 
 }

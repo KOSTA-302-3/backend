@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
+import web.mvc.santa_backend.chat.dto.ChatNotificationDTO;
 import web.mvc.santa_backend.chat.dto.OutboundChatMessageDTO;
 import web.mvc.santa_backend.common.exception.ChatroomNotFoundException;
 import web.mvc.santa_backend.common.exception.ErrorCode;
@@ -23,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class NotificationManager {
     private final Map<Long, WebSocketSession> notificationSession = new ConcurrentHashMap<>();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
 
     /**
@@ -56,6 +58,30 @@ public class NotificationManager {
 
         try {
             session.sendMessage(new TextMessage(type));
+        } catch (IOException e) {
+            log.warn("알림 전송 실패 userId={}", userId, e);
+        }
+    }
+
+    public void sendNewNotification(Long userId, Long roomId, String type) {
+        WebSocketSession session = notificationSession.get(userId);
+
+
+        if (session == null || !session.isOpen()) return;
+
+        try {
+            objectMapper.registerModule(new JavaTimeModule()); //
+            objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+            ChatNotificationDTO chatNotificationDTO = ChatNotificationDTO
+                    .builder()
+                    .chatroomId(roomId)
+                    .type(type)
+                    .build();
+
+            String payload = objectMapper.writeValueAsString(chatNotificationDTO);
+
+            session.sendMessage(new TextMessage(payload));
         } catch (IOException e) {
             log.warn("알림 전송 실패 userId={}", userId, e);
         }

@@ -20,6 +20,7 @@ public class PostResponseDTO {
     private Long likeCount;
     private Long postLevel;
     private boolean contentVisible;
+    private Long createUserId;
 
     private List<String> hashTagsList;
     private List<String> imageSourcesList;
