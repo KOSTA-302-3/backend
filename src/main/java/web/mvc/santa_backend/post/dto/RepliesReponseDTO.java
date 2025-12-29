@@ -19,5 +19,7 @@ public class RepliesReponseDTO {
 
     private Long replyLike;
 
+    private Long createUserId;
+
     private String userProfileImage;
 }

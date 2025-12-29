@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import web.mvc.santa_backend.post.entity.HashTags;
 import web.mvc.santa_backend.post.entity.Posts;
 
 import java.time.LocalDateTime;
@@ -35,6 +36,8 @@ public interface PostResository extends JpaRepository<Posts, Long> {
 
     Page<Posts> findAllByCreateUserIdAndContentVisibleIsTrueOrderByCreateAtDesc(Long id,Pageable pageable);
     Page<Posts> findAll(Pageable pageable);
+
+    Page<Posts> findAllByHashTagsIn(List<HashTags> hashTags,Pageable pageable);
 
 
     }

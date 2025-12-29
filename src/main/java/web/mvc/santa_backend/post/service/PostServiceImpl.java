@@ -379,5 +379,28 @@ public class PostServiceImpl implements PostService {
         redisFeedBacksRedisTemplate.opsForList().rightPush("queue:feedback", redisFeedBacks);
     }
 
+    @Transactional
+    public Page<PostResponseDTO> getPostsByHashTags(String getHashTags,int pageNo){
+
+        Pageable pageable = PageRequest.of(pageNo - 1, 5);
+        Page<Posts> page =   postRepository.findAllByHashTagsIn(
+                hashTagsRepository.findAllByTag(getHashTags),pageable);
+        Page<PostResponseDTO> pageDTO = page.map(posts -> new PostResponseDTO(
+                posts.getPostId(),
+                userRepository.findById(posts.getCreateUserId()).get().getProfileImage(),
+                userRepository.findById(posts.getCreateUserId()).get().getUsername(),
+                posts.getCreateAt(),
+                posts.getContent(),
+                posts.getLikeCount(),
+                posts.getPostLevel(),
+                posts.isContentVisible(),
+                posts.getCreateUserId(),
+                posts.getHashTags().stream().map(hashTags -> hashTags.getTag()).toList(),
+                posts.getImageSources().stream().map(imageSources -> imageSources.getSource()).toList(),
+                false
+        ));
+        return pageDTO;
+    }
+
 }
 
