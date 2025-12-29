@@ -76,7 +76,9 @@ public class ChatroomController {
     @PostMapping("/api/chatroom/{userId}")
     public ResponseEntity<?> createDMRoom(@PathVariable Long userId, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         Long myUserId = customUserDetails.getUser().getUserId();
-        Long chatroomId = chatroomService.createChatroom(userId, myUserId);
+        String username = customUserDetails.getUser().getUsername();
+        Long chatroomId = chatroomService.createChatroom(userId, myUserId, username);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(chatroomId);
     }
 

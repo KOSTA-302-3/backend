@@ -26,7 +26,7 @@ public interface ChatroomService {
      * @param userId
      * @return
      */
-    Long createChatroom(Long userId, Long myUserId);
+    Long createChatroom(Long userId, Long myUserId, String username);
 
     /**
      * userId, word(검색시 입력한 단어)로 chatrooms를 가지고 오는 메서드

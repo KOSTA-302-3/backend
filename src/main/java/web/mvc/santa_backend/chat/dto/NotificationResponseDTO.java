@@ -16,5 +16,6 @@ public class NotificationResponseDTO {
     private String title;
     private String message;
     private LocalDateTime time;
+    private String link;
     private boolean isUnread;
 }

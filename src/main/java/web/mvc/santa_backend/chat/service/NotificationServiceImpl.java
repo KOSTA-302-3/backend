@@ -154,6 +154,7 @@ public class NotificationServiceImpl implements NotificationService{
                 .message(message)
                 .time(notifications.getCreatedAt())
                 .isUnread(!notifications.isRead())
+                .link(notifications.getLink())
                 .build();
     }
 
