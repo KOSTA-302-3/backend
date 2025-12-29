@@ -82,7 +82,7 @@ public class MessageServiceImpl implements MessageService {
         members.forEach(member -> {
             Long memberId = member.getUser().getUserId();
             if(!ids.contains(memberId)) {
-                notificationManager.sendNewNotification(memberId, "Chat");
+                notificationManager.sendNewNotification(memberId, roomId, "Chat");
             }
         });
 
