@@ -89,10 +89,10 @@ public class PostServiceImpl implements PostService {
     }
 
     @Transactional
-    public Page<PostResponseDTO> getAllPostsWithOnFilter(Long level, int pageNo) {
+    public Page<PostResponseDTO> getAllPostsWithOnFilter(Long level, int pageNo,Long userId) {
 
         Pageable pageable = PageRequest.of(pageNo - 1, 5);
-        Page<Posts> page = postRepository.findAllByPostLevelBetweenAndContentVisibleTrue(0L, level, pageable);
+        Page<Posts> page = postRepository.findAllByPostLevelBetweenAndContentVisibleTrue(0L, level, pageable,userId);
 
         Page<PostResponseDTO> pageDTO = page.map(posts -> new PostResponseDTO(
                 posts.getPostId(),

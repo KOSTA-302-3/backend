@@ -14,7 +14,7 @@ public interface PostService {
 
     Page<PostDTO> getAllPostsWithOffFilter(int pageNo);
 
-    Page<PostResponseDTO> getAllPostsWithOnFilter(Long level, int pageNo);
+    Page<PostResponseDTO> getAllPostsWithOnFilter(Long level, int pageNo,Long userId);
 
     Page<PostDTO> getFollowPostsWithOffFilter(Long userId, int pageNo);
     Page<PostResponseDTO> getFollowPostsWithOnFilter(Long userId,Long postLevel,int pageNo);

@@ -51,7 +51,7 @@ public class PostContoller {
     @Operation(summary = "필터링 킨 전체 게시물 보기")
     ResponseEntity<Page<PostResponseDTO>> getAllPostsWithOnFilter(Long postLevel, int pageNo, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
-        return ResponseEntity.status(HttpStatus.OK).body(postService.getAllPostsWithOnFilter(postLevel, pageNo));
+        return ResponseEntity.status(HttpStatus.OK).body(postService.getAllPostsWithOnFilter(postLevel, pageNo,customUserDetails.getUser().getUserId()));
 
     }
 

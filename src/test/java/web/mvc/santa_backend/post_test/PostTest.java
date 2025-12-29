@@ -45,7 +45,7 @@ public class PostTest {
     @Test
     @DisplayName("유저 ID 기반 게시물 작성")
     void filterOnAll() {
-        System.out.println("테스트결과 : " + postService.getAllPostsWithOnFilter(1L,1));
+//        System.out.println("테스트결과 : " + postService.getAllPostsWithOnFilter(1L,1));
 
     }
 
