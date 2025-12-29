@@ -100,7 +100,7 @@ public class FollowServiceImpl implements FollowService {
 
     @Override
     public boolean isFollowing(Long followerId, Long followingId) {
-        return followRepository.existsByFollower_UserIdAndFollowing_UserId(followerId, followingId);
+        return followRepository.existsByFollower_UserIdAndFollowing_UserIdAndPendingIsFalse(followerId, followingId);
     }
 
     @Transactional
