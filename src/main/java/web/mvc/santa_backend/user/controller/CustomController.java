@@ -45,6 +45,15 @@ public class CustomController {
         return ResponseEntity.status(HttpStatus.OK).body(ubDTO);
     }
 
+    @Operation(summary = "내 배지 목록 조회")
+    @GetMapping("/my-badges/{page}")
+    public ResponseEntity<?> getMyBadges(@PathVariable int page, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        Long userId = customUserDetails.getUser().getUserId();
+        Page<BadgeDTO> badges = badgeService.getBadgesByUserId(userId, page);
+
+        return ResponseEntity.status(HttpStatus.OK).body(badges);
+    }
+
     @Operation(summary = "색상 조회")
     @GetMapping("/color/{page}")
     public ResponseEntity<?> getColors(@PathVariable int page) {

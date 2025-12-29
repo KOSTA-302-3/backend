@@ -58,6 +58,10 @@ public class BadgeServiceImpl implements BadgeService {
         // 유저의 point 가 배지의 price 보다 많은지 비교
         if (user.getPoint() < badge.getPrice()) throw new InvalidException(ErrorCode.INVALID_BUY);
 
+        // 포인트 차감
+        user.setPoint(user.getPoint() - badge.getPrice());
+        userRepository.save(user);
+
         Users_Badges ub = Users_Badges.builder()
                 .user(user)
                 .badge(badge)
