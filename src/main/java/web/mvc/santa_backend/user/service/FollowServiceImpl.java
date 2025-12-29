@@ -66,17 +66,20 @@ public class FollowServiceImpl implements FollowService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        if (following.isPrivate() == false) {   // 공개 계정일 경우만 count 증가
-            this.increaseFollowCount(followerId, followingId);
-        }
-
         // 알림
         NotificationDTO notificationDTO = NotificationDTO.builder()
                 .userId(following.getUserId())
                 .actionUserId(follower.getUserId())
                 .type(NotificationType.FOLLOW)
-                .link(null)
+                .link("/user/" + followingId + "/follow?tab=followings")
                 .build();
+
+        if (following.isPrivate() == false) {   // 공개 계정일 경우만 count 증가
+            this.increaseFollowCount(followerId, followingId);
+        } else {
+            notificationDTO.setLink("/user/" + followingId + "/follow?tab=pendings");
+        }
+
         notificationService.createNotification(notificationDTO);
 
         followRepository.save(follow);
@@ -100,7 +103,7 @@ public class FollowServiceImpl implements FollowService {
 
     @Override
     public boolean isFollowing(Long followerId, Long followingId) {
-        return followRepository.existsByFollower_UserIdAndFollowing_UserId(followerId, followingId);
+        return followRepository.existsByFollower_UserIdAndFollowing_UserIdAndPendingIsFalse(followerId, followingId);
     }
 
     @Transactional
@@ -115,6 +118,15 @@ public class FollowServiceImpl implements FollowService {
         log.info("user {} approved the follow request from user {}", followerId, followingId);
 
         return modelMapper.map(follow, FollowDTO.class);
+    }
+
+    @Override
+    public void refuseFollow(Long followerId, Long followingId) {
+        Follows follow = followRepository.findByFollower_UserIdAndFollowing_UserId(followerId, followingId)
+                .orElseThrow(()->new InvalidException(ErrorCode.INVALID_UNFOLLOW));
+
+        followRepository.delete(follow);
+        log.info("user {} refused user {}", followerId, followingId);
     }
 
     @Transactional
