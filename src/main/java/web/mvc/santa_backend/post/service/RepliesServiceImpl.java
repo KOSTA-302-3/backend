@@ -41,6 +41,7 @@ public class RepliesServiceImpl implements RepliesService {
                 replies.getPosts().getPostId(),
                 replies.getReplyContent(),
                 replies.getReplyLike(),
+                replies.getUserId(),
                 userRepository.findById(replies.getUserId()).get().getProfileImage()
         ));
 

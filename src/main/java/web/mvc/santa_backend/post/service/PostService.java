@@ -14,7 +14,7 @@ public interface PostService {
 
     Page<PostDTO> getAllPostsWithOffFilter(int pageNo);
 
-    Page<PostResponseDTO> getAllPostsWithOnFilter(Long level, int pageNo);
+    Page<PostResponseDTO> getAllPostsWithOnFilter(Long level, int pageNo,Long userId);
 
     Page<PostDTO> getFollowPostsWithOffFilter(Long userId, int pageNo);
     Page<PostResponseDTO> getFollowPostsWithOnFilter(Long userId,Long postLevel,int pageNo);
@@ -32,5 +32,7 @@ public interface PostService {
     PostResponseDTO getPostsById(Long postId,Long userId);
 
      void createFeedBack(FeedBackDTO feedBackDTO);
+
+    Page<PostResponseDTO> getPostsByHashTags(String getHashTags,int pageNo);
 
 }

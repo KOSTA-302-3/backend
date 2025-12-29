@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import web.mvc.santa_backend.post.entity.HashTags;
 import web.mvc.santa_backend.post.entity.Posts;
 
 import java.time.LocalDateTime;
@@ -16,9 +17,13 @@ public interface PostResository extends JpaRepository<Posts, Long> {
     // 통계용: 오늘 올라온 게시글 수
     @Query("SELECT COUNT(p) FROM Posts p WHERE p.createAt >= :startOfDay")
     long countByCreateAtAfter(LocalDateTime startOfDay);
+    
+    // 통계용: 특정 기간 내 올라온 게시글 수
+    @Query("SELECT COUNT(p) FROM Posts p WHERE p.createAt >= :start AND p.createAt < :end")
+    long countByCreateAtBetween(LocalDateTime start, LocalDateTime end);
 
-    @Query(nativeQuery = true,value = "select * from posts where content_visible = 1 and post_level between :startLevel and :endLevel and create_user_id in (select user_id from users where is_private = 0) order by post_id desc")
-    Page<Posts> findAllByPostLevelBetweenAndContentVisibleTrue(Long startLevel,Long endLevel,Pageable page);
+    @Query(nativeQuery = true,value = "select * from posts where content_visible = 1 and post_level between :startLevel and :endLevel and create_user_id in (select user_id from users where is_private = 0) and create_user_id not in (select target_id from blocks where user_id = :userId)order by post_id desc")
+    Page<Posts> findAllByPostLevelBetweenAndContentVisibleTrue(Long startLevel,Long endLevel,Pageable page,Long userId);
     //배포시에는 위에 테스트 시에는 밑에
     //@Query(nativeQuery = true,value = "select * from posts where content_visible = 1 and create_user_id in (select user_id from users where is_private = 0)")
     @Query(nativeQuery = true,value = "select * from posts where content_visible = 1")
@@ -31,6 +36,8 @@ public interface PostResository extends JpaRepository<Posts, Long> {
 
     Page<Posts> findAllByCreateUserIdAndContentVisibleIsTrueOrderByCreateAtDesc(Long id,Pageable pageable);
     Page<Posts> findAll(Pageable pageable);
+
+    Page<Posts> findAllByHashTagsIn(List<HashTags> hashTags,Pageable pageable);
 
 
     }

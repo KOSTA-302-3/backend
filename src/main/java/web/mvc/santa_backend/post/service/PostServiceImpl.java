@@ -89,10 +89,10 @@ public class PostServiceImpl implements PostService {
     }
 
     @Transactional
-    public Page<PostResponseDTO> getAllPostsWithOnFilter(Long level, int pageNo) {
+    public Page<PostResponseDTO> getAllPostsWithOnFilter(Long level, int pageNo,Long userId) {
 
         Pageable pageable = PageRequest.of(pageNo - 1, 5);
-        Page<Posts> page = postRepository.findAllByPostLevelBetweenAndContentVisibleTrue(0L, level, pageable);
+        Page<Posts> page = postRepository.findAllByPostLevelBetweenAndContentVisibleTrue(0L, level, pageable,userId);
 
         Page<PostResponseDTO> pageDTO = page.map(posts -> new PostResponseDTO(
                 posts.getPostId(),
@@ -377,6 +377,29 @@ public class PostServiceImpl implements PostService {
 
         RedisFeedBacks redisFeedBacks = new RedisFeedBacks(feedBacks.getPosts().getPostId(),feedBacks.getLevel());
         redisFeedBacksRedisTemplate.opsForList().rightPush("queue:feedback", redisFeedBacks);
+    }
+
+    @Transactional
+    public Page<PostResponseDTO> getPostsByHashTags(String getHashTags,int pageNo){
+
+        Pageable pageable = PageRequest.of(pageNo - 1, 5);
+        Page<Posts> page =   postRepository.findAllByHashTagsIn(
+                hashTagsRepository.findAllByTag(getHashTags),pageable);
+        Page<PostResponseDTO> pageDTO = page.map(posts -> new PostResponseDTO(
+                posts.getPostId(),
+                userRepository.findById(posts.getCreateUserId()).get().getProfileImage(),
+                userRepository.findById(posts.getCreateUserId()).get().getUsername(),
+                posts.getCreateAt(),
+                posts.getContent(),
+                posts.getLikeCount(),
+                posts.getPostLevel(),
+                posts.isContentVisible(),
+                posts.getCreateUserId(),
+                posts.getHashTags().stream().map(hashTags -> hashTags.getTag()).toList(),
+                posts.getImageSources().stream().map(imageSources -> imageSources.getSource()).toList(),
+                false
+        ));
+        return pageDTO;
     }
 
 }

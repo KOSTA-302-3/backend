@@ -20,6 +20,9 @@ public interface HashTagsRepository extends JpaRepository<HashTags,Long> {
 
     void deleteAllByPostsPostId(Long id);
 
+    List<HashTags> findAllByTag(String hashTag);
+
+
 }
 
 

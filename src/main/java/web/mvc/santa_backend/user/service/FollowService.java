@@ -32,6 +32,11 @@ public interface FollowService {
      */
     FollowDTO approveFollow(Long followerId, Long followingId);
 
+    /**
+     * 팔로우 대기(요청) 거절
+     */
+    void refuseFollow(Long followerId, Long followingId);
+
     /* 팔로워, 팔로잉 수 증가/감소 */
     void increaseFollowCount(Long followerId, Long followingId);
     void decreaseFollowCount(Long followerId, Long followingId);
