@@ -20,6 +20,8 @@ public interface UserRepository extends JpaRepository<Users, Long> {
 
     Boolean existsByUsername(String username);
 
+    Boolean existsByUsernameAndUserIdNot(String username, Long id);
+
     Boolean existsByEmail(String email);
 
     // 통계용: 오늘 가입한 유저 수
