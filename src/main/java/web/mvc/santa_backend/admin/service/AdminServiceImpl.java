@@ -57,11 +57,61 @@ public class AdminServiceImpl implements AdminService {
         long todayUsers = userRepository.countByCreatedAtAfter(startOfDay);
         long todayPosts = postRepository.countByCreateAtAfter(startOfDay);
         
+        // 최근 7일 가입자 통계
+        List<DashboardStatsDTO.DailyStats> weeklyUserStats = getWeeklyUserStats();
+        
+        // 최근 7일 게시글 통계
+        List<DashboardStatsDTO.DailyStats> weeklyPostStats = getWeeklyPostStats();
+        
         return DashboardStatsDTO.builder()
                 .totalUsers(totalUsers)
                 .todayUsers(todayUsers)
                 .todayPosts(todayPosts)
+                .weeklyUserStats(weeklyUserStats)
+                .weeklyPostStats(weeklyPostStats)
                 .build();
+    }
+    
+    /**
+     * 최근 7일 가입자 통계
+     */
+    private List<DashboardStatsDTO.DailyStats> getWeeklyUserStats() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd");
+        return java.util.stream.IntStream.range(0, 7)
+                .mapToObj(i -> {
+                    LocalDate date = LocalDate.now().minusDays(6 - i);
+                    LocalDateTime startOfDay = date.atStartOfDay();
+                    LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
+                    
+                    long count = userRepository.countByCreatedAtBetween(startOfDay, endOfDay);
+                    
+                    return DashboardStatsDTO.DailyStats.builder()
+                            .date(date.format(formatter))
+                            .count(count)
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * 최근 7일 게시글 통계
+     */
+    private List<DashboardStatsDTO.DailyStats> getWeeklyPostStats() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd");
+        return java.util.stream.IntStream.range(0, 7)
+                .mapToObj(i -> {
+                    LocalDate date = LocalDate.now().minusDays(6 - i);
+                    LocalDateTime startOfDay = date.atStartOfDay();
+                    LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
+                    
+                    long count = postRepository.countByCreateAtBetween(startOfDay, endOfDay);
+                    
+                    return DashboardStatsDTO.DailyStats.builder()
+                            .date(date.format(formatter))
+                            .count(count)
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 
     /**

@@ -27,6 +27,10 @@ public interface UserRepository extends JpaRepository<Users, Long> {
     // 통계용: 오늘 가입한 유저 수
     @Query("SELECT COUNT(u) FROM Users u WHERE u.createdAt >= :startOfDay")
     long countByCreatedAtAfter(LocalDateTime startOfDay);
+    
+    // 통계용: 특정 기간 내 가입한 유저 수
+    @Query("SELECT COUNT(u) FROM Users u WHERE u.createdAt >= :start AND u.createdAt < :end")
+    long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
     // 예전 거 삭제예정
     Page<Users> findByUsernameContainingIgnoreCase(String username, Pageable pageable);
