@@ -203,6 +203,11 @@ public class ChatroomMemberServiceImpl implements ChatroomMemberService {
         if(count == 0){
             chatroomService.deleteChatroom(chatroomId);
         }
+        ReadUpdateDTO messageDTO = ReadUpdateDTO
+                .builder()
+                .messageType(MessageType.MEMBER_OUT)
+                .build();
+        chatroomManager.broadcast(messageDTO, chatroomId);
     }
 
     @Override

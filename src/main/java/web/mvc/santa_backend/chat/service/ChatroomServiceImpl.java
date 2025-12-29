@@ -41,17 +41,17 @@ public class ChatroomServiceImpl implements ChatroomService {
     }
 
     @Override
-    public Long createChatroom(Long userId, Long myUserId) {
+    public Long createChatroom(Long userId, Long myUserId, String username) {
         if(myUserId.equals(userId)){
             throw new InvalidException(ErrorCode.WRONG_TARGET);
         }
         Users user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(ErrorCode.INVALID_USER));
         Chatrooms chatroom = Chatrooms.builder()
-                .name(user.getUsername() + "님과의 DM")
+                .name(user.getUsername() + " / " + username)
                 .isPrivate(true)
                 .isDeleted(false)
-                .imageUrl("test")
-                .description(user.getUsername() + "님과의 DM")
+                .imageUrl("")
+                .description(user.getUsername() + " / " + username)
                 .build();
         Chatrooms save = chatroomRepository.save(chatroom);
         Long chatroomId = save.getChatroomId();
@@ -59,6 +59,7 @@ public class ChatroomServiceImpl implements ChatroomService {
                 .userId(userId)
                 .actionUserId(myUserId)
                 .type(NotificationType.DM)
+                .link("/chat/"+chatroomId)
                 .build();
         notificationService.createNotification(notification);
 
