@@ -228,8 +228,8 @@ public class PostServiceImpl implements PostService {
 
 
 
-//        RedisPosts redisPosts = new RedisPosts(savedPost.getPostId(),redisImage, savedPost.getContent());
-//        redisTemplate.opsForList().rightPush("queue:inference", redisPosts);
+        RedisPosts redisPosts = new RedisPosts(savedPost.getPostId(),redisImage, savedPost.getContent());
+        redisTemplate.opsForList().rightPush("queue:inference", redisPosts);
 
 
     }
@@ -387,8 +387,8 @@ public class PostServiceImpl implements PostService {
         users.setPoint(users.getPoint()+50);
 
 
-//        RedisFeedBacks redisFeedBacks = new RedisFeedBacks(feedBacks.getPosts().getPostId(),feedBacks.getLevel());
-//        redisFeedBacksRedisTemplate.opsForList().rightPush("queue:feedback", redisFeedBacks);
+        RedisFeedBacks redisFeedBacks = new RedisFeedBacks(feedBacks.getPosts().getPostId(),feedBacks.getLevel());
+        redisFeedBacksRedisTemplate.opsForList().rightPush("queue:feedback", redisFeedBacks);
     }
 
     @Transactional
