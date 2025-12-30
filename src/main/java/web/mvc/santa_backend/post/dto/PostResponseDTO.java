@@ -21,6 +21,7 @@ public class PostResponseDTO {
     private Long postLevel;
     private boolean contentVisible;
     private Long createUserId;
+    private String badgeImageSrc;
 
     private List<String> hashTagsList;
     private List<String> imageSourcesList;

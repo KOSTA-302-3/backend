@@ -50,8 +50,7 @@ public class PostContoller {
     @GetMapping("/getAllOnFilter")
     @Operation(summary = "필터링 킨 전체 게시물 보기")
     ResponseEntity<Page<PostResponseDTO>> getAllPostsWithOnFilter(Long postLevel, int pageNo, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-
-        return ResponseEntity.status(HttpStatus.OK).body(postService.getAllPostsWithOnFilter(postLevel, pageNo,customUserDetails.getUser().getUserId()));
+        return ResponseEntity.status(HttpStatus.OK).body(postService.getAllPostsWithOnFilter(postLevel, pageNo,customUserDetails.getUser().getUserId(),5));
 
     }
 
@@ -70,7 +69,7 @@ public class PostContoller {
 
         long userId = customUserDetails.getUser().getUserId();
 
-        return ResponseEntity.status(HttpStatus.OK).body(postService.getFollowPostsWithOnFilter(userId, postLevel, pageNo));
+        return ResponseEntity.status(HttpStatus.OK).body(postService.getFollowPostsWithOnFilter(userId, postLevel, pageNo,5));
     }
 
     @Operation(summary = "특정 유저 게시물 보기")

@@ -14,6 +14,7 @@ import web.mvc.santa_backend.post.dto.RepliesReponseDTO;
 import web.mvc.santa_backend.post.entity.Replies;
 import web.mvc.santa_backend.post.repository.PostResository;
 import web.mvc.santa_backend.post.repository.RepliesRepository;
+import web.mvc.santa_backend.user.repository.CustomRepository;
 import web.mvc.santa_backend.user.repository.UserRepository;
 
 @Service
@@ -27,6 +28,8 @@ public class RepliesServiceImpl implements RepliesService {
     private UserRepository userRepository;
     @Autowired
     NotificationService notificationService;
+    @Autowired
+    CustomRepository customRepository;
 
     @Transactional
 //    @Cacheable(value = "replies", key = "#id")
@@ -42,7 +45,9 @@ public class RepliesServiceImpl implements RepliesService {
                 replies.getReplyContent(),
                 replies.getReplyLike(),
                 replies.getUserId(),
-                userRepository.findById(replies.getUserId()).get().getProfileImage()
+                userRepository.findById(replies.getUserId()).get().getProfileImage(),
+                customRepository.findById(replies.getUserId()).map(c->c.getBadge()).map(b->b.getImageUrl()).orElse("")
+
         ));
 
 
