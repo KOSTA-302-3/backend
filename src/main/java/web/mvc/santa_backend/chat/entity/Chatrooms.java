@@ -3,6 +3,7 @@ package web.mvc.santa_backend.chat.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import web.mvc.santa_backend.common.enumtype.ChatroomType;
 
 
 import java.time.LocalDateTime;
@@ -46,4 +47,6 @@ public class Chatrooms {
     @Builder.Default
     @OneToMany(mappedBy = "chatroom", fetch = FetchType.LAZY)
     private List<ChatroomMembers> chatroomMembers = new ArrayList<>();
+
+    private ChatroomType chatroomType;
 }
