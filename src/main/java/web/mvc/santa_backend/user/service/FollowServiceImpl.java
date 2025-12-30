@@ -71,7 +71,7 @@ public class FollowServiceImpl implements FollowService {
                 .userId(following.getUserId())
                 .actionUserId(follower.getUserId())
                 .type(NotificationType.FOLLOW)
-                .link("/user/" + followingId + "/follow?tab=followings")
+                .link("/user/" + followingId + "/follow?tab=followers")
                 .build();
 
         if (following.isPrivate() == false) {   // 공개 계정일 경우만 count 증가
