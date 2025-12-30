@@ -13,6 +13,7 @@ import web.mvc.santa_backend.chat.entity.Chatrooms;
 import web.mvc.santa_backend.chat.repository.ChatroomMemberRepository;
 import web.mvc.santa_backend.chat.repository.ChatroomRepository;
 import web.mvc.santa_backend.chat.repository.MessageRepository;
+import web.mvc.santa_backend.common.enumtype.ChatroomType;
 import web.mvc.santa_backend.common.enumtype.NotificationType;
 import web.mvc.santa_backend.common.enumtype.UserRole;
 import web.mvc.santa_backend.common.exception.*;
@@ -20,6 +21,7 @@ import web.mvc.santa_backend.user.entity.Users;
 import web.mvc.santa_backend.user.repository.UserRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -45,6 +47,12 @@ public class ChatroomServiceImpl implements ChatroomService {
         if(myUserId.equals(userId)){
             throw new InvalidException(ErrorCode.WRONG_TARGET);
         }
+        Optional<Chatrooms> existingRoom = chatroomRepository.findDmRoomByTwoUsers(userId, myUserId);
+
+        if(existingRoom.isPresent()){
+            return existingRoom.get().getChatroomId();
+        }
+
         Users user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(ErrorCode.INVALID_USER));
         Chatrooms chatroom = Chatrooms.builder()
                 .name(user.getUsername() + " / " + username)
@@ -52,6 +60,7 @@ public class ChatroomServiceImpl implements ChatroomService {
                 .isDeleted(false)
                 .imageUrl("")
                 .description(user.getUsername() + " / " + username)
+                .chatroomType(ChatroomType.DM)
                 .build();
         Chatrooms save = chatroomRepository.save(chatroom);
         Long chatroomId = save.getChatroomId();
@@ -152,6 +161,7 @@ public class ChatroomServiceImpl implements ChatroomService {
                 .password(chatroomRequestDTO.getPassword())
                 .imageUrl(chatroomRequestDTO.getImageUrl() != null ?  chatroomRequestDTO.getImageUrl() : "")
                 .description(chatroomRequestDTO.getDescription())
+                .chatroomType(chatroomRequestDTO.getChatroomType() != null ? chatroomRequestDTO.getChatroomType() : ChatroomType.GROUP)
                 .build();
     }
 

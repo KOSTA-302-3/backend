@@ -1,6 +1,7 @@
 package web.mvc.santa_backend.chat.dto;
 
 import lombok.*;
+import web.mvc.santa_backend.common.enumtype.ChatroomType;
 
 import java.time.LocalDateTime;
 
@@ -17,4 +18,5 @@ public class ChatroomRequestDTO {
     private String password;
     private String imageUrl;
     private String description;
+    private ChatroomType chatroomType;
 }
