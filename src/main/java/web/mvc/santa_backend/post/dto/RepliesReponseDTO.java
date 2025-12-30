@@ -22,4 +22,6 @@ public class RepliesReponseDTO {
     private Long createUserId;
 
     private String userProfileImage;
+
+    private String badgeImgSrc;
 }
