@@ -22,6 +22,9 @@ import web.mvc.santa_backend.post.entity.Posts;
 import web.mvc.santa_backend.post.entity.dbtest.RedisFeedBacks;
 import web.mvc.santa_backend.post.entity.dbtest.RedisPosts;
 import web.mvc.santa_backend.post.repository.*;
+import web.mvc.santa_backend.user.entity.Badges;
+import web.mvc.santa_backend.user.entity.Users;
+import web.mvc.santa_backend.user.repository.CustomRepository;
 import web.mvc.santa_backend.user.repository.UserRepository;
 
 import java.io.IOException;
@@ -49,6 +52,8 @@ public class PostServiceImpl implements PostService {
     private FeedBackRepository feedBackRepository;
     @Autowired
     RedisTemplate<String, RedisFeedBacks> redisFeedBacksRedisTemplate;
+    @Autowired
+    CustomRepository customRepository;
 
 
 
@@ -89,9 +94,9 @@ public class PostServiceImpl implements PostService {
     }
 
     @Transactional
-    public Page<PostResponseDTO> getAllPostsWithOnFilter(Long level, int pageNo,Long userId) {
+    public Page<PostResponseDTO> getAllPostsWithOnFilter(Long level, int pageNo,Long userId,int pageVolume) {
 
-        Pageable pageable = PageRequest.of(pageNo - 1, 5);
+        Pageable pageable = PageRequest.of(pageNo - 1, pageVolume);
         Page<Posts> page = postRepository.findAllByPostLevelBetweenAndContentVisibleTrue(0L, level, pageable,userId);
 
         Page<PostResponseDTO> pageDTO = page.map(posts -> new PostResponseDTO(
@@ -104,6 +109,7 @@ public class PostServiceImpl implements PostService {
                 posts.getPostLevel(),
                 posts.isContentVisible(),
                 posts.getCreateUserId(),
+                customRepository.findById(posts.getCreateUserId()).map(c->c.getBadge()).map(b->b.getImageUrl()).orElse(""),
                 posts.getHashTags().stream().map(hashTags -> hashTags.getTag()).toList(),
                 posts.getImageSources().stream().map(imageSources -> imageSources.getSource()).toList(),
                 false
@@ -133,8 +139,8 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Page<PostResponseDTO> getFollowPostsWithOnFilter(Long userId, Long postLevel, int pageNo) {
-        Pageable pageable = PageRequest.of(pageNo - 1, 5);
+    public Page<PostResponseDTO> getFollowPostsWithOnFilter(Long userId, Long postLevel, int pageNo,int pageVolume) {
+        Pageable pageable = PageRequest.of(pageNo - 1, pageVolume);
         Page<Posts> page = postRepository.findAllByPostIdAndFollowOnFilter(userId, postLevel, pageable);
         //map(new::postDTO로 하려했으나 참조테이블 특정 컬럼 조회해야해서 이게 최선인거같다..
         Page<PostResponseDTO> pageDTO = page.map(posts -> new PostResponseDTO(
@@ -147,6 +153,7 @@ public class PostServiceImpl implements PostService {
                 posts.getPostLevel(),
                 posts.isContentVisible(),
                 posts.getCreateUserId(),
+                customRepository.findById(posts.getCreateUserId()).map(c->c.getBadge()).map(b->b.getImageUrl()).orElse(""),
                 posts.getHashTags().stream().map(hashTags -> hashTags.getTag()).toList(),
                 posts.getImageSources().stream().map(imageSources -> imageSources.getSource()).toList(),
                 false
@@ -157,7 +164,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public Page<PostDTO> getPostsByUserId(Long userId, int pageNo,Long findUser) {
 
-        Pageable pageable = PageRequest.of(pageNo - 1, 5);
+        Pageable pageable = PageRequest.of(pageNo - 1, 10);
 
         Page<Posts> page;
         if (userId == findUser){
@@ -221,8 +228,8 @@ public class PostServiceImpl implements PostService {
 
 
 
-        RedisPosts redisPosts = new RedisPosts(savedPost.getPostId(),redisImage, savedPost.getContent());
-        redisTemplate.opsForList().rightPush("queue:inference", redisPosts);
+//        RedisPosts redisPosts = new RedisPosts(savedPost.getPostId(),redisImage, savedPost.getContent());
+//        redisTemplate.opsForList().rightPush("queue:inference", redisPosts);
 
 
     }
@@ -355,6 +362,7 @@ public class PostServiceImpl implements PostService {
                 posts.getPostLevel(),
                 posts.isContentVisible(),
                posts.getCreateUserId(),
+               customRepository.findById(posts.getCreateUserId()).map(c->c.getBadge()).map(b->b.getImageUrl()).orElse(""),
                 posts.getHashTags().stream().map(hashTags -> hashTags.getTag()).toList(),
                 posts.getImageSources().stream().map(imageSources -> imageSources.getSource()).toList(),
                 userCheck
@@ -374,9 +382,13 @@ public class PostServiceImpl implements PostService {
                         .createdAt(feedBackDTO.getCreateAt())
                 .build());
 
+        Users users = userRepository.findById(feedBacks.getUserId()).get();
 
-        RedisFeedBacks redisFeedBacks = new RedisFeedBacks(feedBacks.getPosts().getPostId(),feedBacks.getLevel());
-        redisFeedBacksRedisTemplate.opsForList().rightPush("queue:feedback", redisFeedBacks);
+        users.setPoint(users.getPoint()+50);
+
+
+//        RedisFeedBacks redisFeedBacks = new RedisFeedBacks(feedBacks.getPosts().getPostId(),feedBacks.getLevel());
+//        redisFeedBacksRedisTemplate.opsForList().rightPush("queue:feedback", redisFeedBacks);
     }
 
     @Transactional
@@ -395,6 +407,7 @@ public class PostServiceImpl implements PostService {
                 posts.getPostLevel(),
                 posts.isContentVisible(),
                 posts.getCreateUserId(),
+                customRepository.findById(posts.getCreateUserId()).map(c->c.getBadge()).map(b->b.getImageUrl()).orElse(""),
                 posts.getHashTags().stream().map(hashTags -> hashTags.getTag()).toList(),
                 posts.getImageSources().stream().map(imageSources -> imageSources.getSource()).toList(),
                 false

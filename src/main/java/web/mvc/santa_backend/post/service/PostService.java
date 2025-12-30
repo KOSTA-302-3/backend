@@ -14,10 +14,10 @@ public interface PostService {
 
     Page<PostDTO> getAllPostsWithOffFilter(int pageNo);
 
-    Page<PostResponseDTO> getAllPostsWithOnFilter(Long level, int pageNo,Long userId);
+    Page<PostResponseDTO> getAllPostsWithOnFilter(Long level, int pageNo,Long userId,int pageVolume);
 
     Page<PostDTO> getFollowPostsWithOffFilter(Long userId, int pageNo);
-    Page<PostResponseDTO> getFollowPostsWithOnFilter(Long userId,Long postLevel,int pageNo);
+    Page<PostResponseDTO> getFollowPostsWithOnFilter(Long userId,Long postLevel,int pageNo,int pageVolume);
 
     Page<PostDTO> getPostsByUserId(Long userId,int pageNo,Long findUser);
 
